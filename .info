@@ -32,3 +32,134 @@ tool back:
     BetterOaut
     PostgreSQL (Prisma?)
     Lucia Auth (JWT ?)
+
+//////////////////////////////////////////////////
+frontend:
+    other - next.js
+    ui component - tailwind/shadcn
+
+backend:
+    db - (better-sqlite3) SQLLite3 (<file>.db)
+    api - node.js:
+        login - better-oaut ?
+        jwt - 
+        db acess - 
+
+db - table:
+    - users:
+        id - key | int auto increment
+        rank - int (0 admin:manual, 1 employer:using_verif, 2 job-seeker:default)
+        companies_id - int | null
+        firstname - string
+        lastname - string
+        email - string
+        email_contact - string
+        password_hash - string
+        address - string
+        description - string
+        resume - string (path to internal file saved)
+        created_at - timestamp
+        unique(email)
+
+    - user_skills
+        id - key | int auto increment
+        user_id - int
+        name - string
+        description - string
+
+    - experience
+        id - key | int auto increment
+        user_id - int
+        companies_id - int
+        name - string
+        description - string
+        type - int (0 stage, 1 alternance, ...)
+        part_time - bool
+        start - timestamp | null
+        end - timestamp | null
+
+    - disponibiliter
+        id - key | int auto increment
+        user_id - int
+        title - string | null
+        type - int (0 stage, 1 alternance, ...)
+        part_time - bool
+        start - timestamp
+        end - timestamp | null
+
+    - companies
+        id - key | int auto increment
+        name - string
+        description - string
+        link - string
+        employee_range - int (0 -> 0-10, 1 -> 11 - 100, ...)
+        unique(name)
+
+    - jobs
+        id - key | int auto increment
+        companies_id - int
+        title - string
+        description - string
+        type - int (0 stage, 1 alternance, ...)
+        salary_min - int
+        salary_max - int
+        created_at - timestamp
+
+    - job_skills
+        id - key | int auto increment
+        job_id - int
+        name - string
+        description - string
+
+    - applications
+        id - key | int auto increment
+        job_id - int
+        user_id - int
+        unique(job_id, user_id)
+
+api-auth:
+    POST /api/auth/register
+    POST /api/auth/login
+    POST /api/auth/logout + jwt
+    GEt  /api/auth/me + jwt
+
+api-users:
+    GET    /api/users/:id
+    PATCH  /api/users/:id + jwt
+    DELETE /api/users/:id + jwt
+    GET	   /api/users/:id/skills
+    POST   /api/users/:id/skills + jwt
+    PATCH  /api/users/:id/skills/:skillId + jwt
+    DELETE /api/users/:id/skills/:skillId + jwt
+    GET	   /api/users/:id/experience
+    POST   /api/users/:id/experience + jwt
+    PATCH  /api/users/:id/experience/:experienceId + jwt
+    DELETE /api/users/:id/experience/:experienceId + jwt
+    GET	   /api/users/:id/disponibiliter
+    POST   /api/users/:id/disponibiliter + jwt
+    PATCH  /api/users/:id/disponibiliter/:disponibiliterId + jwt
+    DELETE /api/users/:id/disponibiliter/:disponibiliterId + jwt
+
+api-compagnies:
+    GET    /api/companies
+    GET	   /api/companies/:id
+    POST   /api/companies + jwt
+    PATCH  /api/companies/:id + jwt
+    DELETE /api/companies/:id + jwt
+
+api-jobs:
+    GET	   /api/jobs
+    GET	   /api/jobs/:id
+    POST   /api/jobs + jwt
+    PATCH  /api/jobs/:id + jwt
+    DELETE /api/jobs/:id + jwt
+    GET	   /api/jobs/:id/skills
+    POST   /api/jobs/:id/skills + jwt
+
+api-applications:
+    POST   /api/applications + jwt
+    GET	   /api/applications?userId= + jwt
+    GET	   /api/applications?jobId= + jwt
+    DELETE /api/applications/:id + jwt
+
+api-admin: ...
