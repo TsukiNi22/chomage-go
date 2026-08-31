@@ -1,0 +1,27 @@
+## Compilation
+*.o
+*.a
+!cmake/libs/*.a
+*.so
+a.out
+
+## Vim
+*.sw*
+\#*#
+*~
+:*
+q
+vg
+z
+
+## Doxygen
+/html
+/latex
+
+## CMake
+/build
+__pycache__
+
+## Other
+/runner
+.info

@@ -1,0 +1,30 @@
+name: CD - Mirror
+
+on:
+  push:
+    branches: [main]
+
+env:
+  MIRROR_REPO_URL: ""
+
+jobs:
+  mirror:
+    runs-on: ${{ vars.RUNNER }}
+    defaults:
+      run:
+        shell: bash
+
+    #container:
+    #  image: ghcr.io/tsukini22/ci:latest
+
+    steps:
+      - name: Checkout (mirror complet)
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Push mirror
+        run: |
+          git remote add mirror "${{ env.MIRROR_REPO_URL }}"
+          git push mirror --mirror
