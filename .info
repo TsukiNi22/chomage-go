@@ -1,0 +1,34 @@
+to do:
+    - Map browser map (no account)
+    - Account creation (both employer & job-seeker)
+    - At least one job offer
+
+api:
+    map - OpenStreetMap
+
+lib:
+    map - Leaflet (js)
+
+db:
+    using sqlLite (.db local)
+
+tool front:
+    - code -
+    NextJs
+    Ts
+    React
+
+    - ui -
+    shadcn
+    tailwind
+
+    - map -
+    MapLibre GL JS | Leaflet ?
+
+tool back:
+    - code -
+    NodeJs
+    Axum (rust ?)
+    BetterOaut
+    PostgreSQL (Prisma?)
+    Lucia Auth (JWT ?)
