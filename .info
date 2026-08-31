@@ -33,6 +33,7 @@ tool back:
     PostgreSQL (Prisma?)
     Lucia Auth (JWT ?)
 
+zod ?
 //////////////////////////////////////////////////
 frontend:
     other - next.js
@@ -90,20 +91,23 @@ db - table:
     - companies
         id - key | int auto increment
         name - string
+        siret - string
         description - string
         link - string
         employee_range - int (0 -> 0-10, 1 -> 11 - 100, ...)
-        unique(name)
+        unique(name, siret)
 
     - jobs
         id - key | int auto increment
         companies_id - int
+        user_id - int
         title - string
         description - string
         type - int (0 stage, 1 alternance, ...)
         salary_min - int
         salary_max - int
         created_at - timestamp
+        unique(title, companies_id)
 
     - job_skills
         id - key | int auto increment
