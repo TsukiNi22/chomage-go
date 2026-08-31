@@ -33,7 +33,8 @@ tool back:
     PostgreSQL (Prisma?)
     Lucia Auth (JWT ?)
 
-zod ?
+express
+zod
 //////////////////////////////////////////////////
 frontend:
     other - next.js
