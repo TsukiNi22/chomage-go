@@ -65,6 +65,13 @@ db - table:
         created_at - timestamp
         unique(email)
 
+    - tokens:
+        id - key | int auto increment
+        user_id - int
+        token - string
+        created_at - timestamp
+        expire_at - timestamp
+
     - user_skills
         id - key | int auto increment
         user_id - int
