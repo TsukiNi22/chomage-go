@@ -89,7 +89,7 @@ db - table:
         start - timestamp | null
         end - timestamp | null
 
-    - disponibiliter
+    - availability
         id - key | int auto increment
         user_id - int
         title - string | null
@@ -135,7 +135,7 @@ api-auth:
     POST /api/auth/register
     POST /api/auth/login
     POST /api/auth/logout + jwt
-    GEt  /api/auth/me + jwt
+    GET  /api/auth/me + jwt
 
 api-users:
     GET    /api/users/:id

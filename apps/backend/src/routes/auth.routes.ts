@@ -1,11 +1,12 @@
 import {Router} from "express";
-import {validateJson} from "../middlewares/validateJson.middleware";
-import {loginSchema} from "../schemas/auth.schema";
-import {login} from "../controllers/auth.controller";
+import {requireAuthHeader} from "../middlewares/requireAuthHeader.middleware.ts"
+import * from "../controllers/auth.controller.ts";
 
 const router = Router();
 
+router.post("/register", register);
 router.post("/login", login);
-//router.get("/me", requireAuthHeader, getMe);
+router.post("/logout", requireAuthHeader, logout);
+router.get("/me", requireAuthHeader, me);
 
 export default router;
