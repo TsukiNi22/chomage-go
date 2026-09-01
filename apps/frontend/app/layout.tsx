@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
 import { Archivo, Spectral } from "next/font/google";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import "./globals.css";
 
-const titre = Archivo({
+const heading = Archivo({
     subsets: ["latin"],
-    variable: "--police-titre",
+    variable: "--heading-font",
     display: "swap",
 });
 
-const corps = Spectral({
+const body = Spectral({
     subsets: ["latin"],
     weight: ["300", "400", "600", "700"],
-    variable: "--police-corps",
+    variable: "--body-font",
     display: "swap",
 });
 
@@ -27,8 +29,18 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="fr" className={`${titre.variable} ${corps.variable}`}>
-            <body>{children}</body>
+        <html lang="fr" className={`${heading.variable} ${body.variable}`}>
+            <body className="flex min-h-screen flex-col">
+                <a
+                    href="#jobs"
+                    className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:border focus:border-primary focus:bg-background focus:px-4 focus:py-2 focus:font-heading focus:text-sm focus:text-primary"
+                >
+                    Aller au contenu principal
+                </a>
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+            </body>
         </html>
     );
 }

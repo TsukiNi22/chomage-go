@@ -6,13 +6,14 @@
 :root {
     --radius: 0.25rem;
 
-    --bleu-institutionnel: #1b3a6b;
-    --bleu-institutionnel-clair: #e3eaf5;
-    --bleu-institutionnel-fonce: #12294b;
-    --rouge-marianne: #c9191e;
+    --institutional-blue: #1b3a6b;
+    --institutional-blue-light: #e3eaf5;
+    --institutional-blue-dark: #12294b;
+    --marianne-red: #c9191e;
 
     --background: #ffffff;
     --foreground: #16192b;
+    --wash: #f3f6fb;
 
     --card: #ffffff;
     --card-foreground: #16192b;
@@ -22,7 +23,8 @@
     --primary: #1b3a6b;
     --primary-foreground: #ffffff;
 
-    --action: #1a1f2e;
+    --action: #b85433;
+    --action-hover: #9c4429;
     --action-foreground: #ffffff;
 
     --secondary: #eef2f8;
@@ -44,6 +46,7 @@
 .dark {
     --background: #0e121b;
     --foreground: #e9ecf4;
+    --wash: #131824;
 
     --card: #161b26;
     --card-foreground: #e9ecf4;
@@ -53,7 +56,8 @@
     --primary: #8fafe0;
     --primary-foreground: #0e121b;
 
-    --action: #e9ecf4;
+    --action: #d06a45;
+    --action-hover: #b85433;
     --action-foreground: #0e121b;
 
     --secondary: #1d2331;
@@ -75,6 +79,7 @@
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
+    --color-wash: var(--wash);
     --color-card: var(--card);
     --color-card-foreground: var(--card-foreground);
     --color-popover: var(--popover);
@@ -82,6 +87,7 @@
     --color-primary: var(--primary);
     --color-primary-foreground: var(--primary-foreground);
     --color-action: var(--action);
+    --color-action-hover: var(--action-hover);
     --color-action-foreground: var(--action-foreground);
     --color-secondary: var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
@@ -101,8 +107,8 @@
     --radius-lg: calc(var(--radius) + 2px);
     --radius-xl: calc(var(--radius) + 6px);
 
-    --font-titre: var(--police-titre), "Archivo", system-ui, sans-serif;
-    --font-corps: var(--police-corps), Spectral, Georgia, serif;
+    --font-heading: var(--heading-font), "Archivo", system-ui, sans-serif;
+    --font-body: var(--body-font), Spectral, Georgia, serif;
 }
 
 @layer base {
@@ -113,14 +119,14 @@
     body {
         background-color: var(--background);
         color: var(--foreground);
-        font-family: var(--font-corps);
+        font-family: var(--font-body);
     }
 
     h1,
     h2,
     h3,
     h4 {
-        font-family: var(--font-titre);
+        font-family: var(--font-heading);
         text-wrap: balance;
     }
 
