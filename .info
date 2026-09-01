@@ -60,6 +60,8 @@ db - table:
         address - string
         description - string
         resume - string (path to internal file saved)
+        localisation - bool
+        allowed_at - timestamp
         created_at - timestamp
         unique(email)
 
@@ -106,7 +108,7 @@ db - table:
         description - string
         type - int (0 stage, 1 alternance, ...)
         salary_min - int
-        salary_max - int
+        salary_max - int | null
         created_at - timestamp
         unique(title, companies_id)
 
