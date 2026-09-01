@@ -1,0 +1,69 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - db-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    restart: unless-stopped
+
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      PORT: ${PORT_BACKEND}
+
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - db-net
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:${PORT_BACKEND}/health || exit 1"]
+      interval: 10s
+      timeout: 2s
+      retries: 3
+      start_period: 5s
+    ports:
+      - "${PORT_BACKEND}:4000" # public port linked
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    restart: unless-stopped
+
+    environment:
+      BACKEND_URL: http://backend:${PORT_BACKEND}
+
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - app-net
+    ports:
+      - "${PORT_FRONTEND}:${PORT}" # public port linked
+
+networks:
+  db-net:
+    internal: true # only db <-> backend
+  app-net: {} # only backend <-> frontend, can't be acceded from host
+
+volumes:
+  db-data:
