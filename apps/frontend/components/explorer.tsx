@@ -8,9 +8,11 @@ import JobList from "@/components/job-list";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { jobs } from "@/lib/jobs";
+import { jobs, locatedJobs } from "@/lib/jobs";
 import type { Job } from "@/lib/jobs";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const Map = dynamic(
     function () {
@@ -25,31 +27,65 @@ const Map = dynamic(
 );
 
 const DISPLAY_LIMIT = 60;
+const CONTRACTS = ["CDI", "CDD", "Alternance", "Stage"];
+const FRANCE_LAT = 46.7;
+const FRANCE_LON = 2.4;
+const FRANCE_ZOOM = 6;
 
 export default function Explorer() {
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [search, setSearch] = useState("");
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [contract, setContract] = useState<string | null>(null);
+    const [location, setLocation] = useState("");
+    const [byPostalCode, setByPostalCode] = useState(false);
     const results = jobs.filter(function (job) {
         const text = search.toLowerCase();
 
+        if (location !== "") {
+            const place = location.toLowerCase();
+            let field = job.city.toLowerCase();
+            if (byPostalCode) {
+                field = job.postalCode;
+            }
+            if (!field.includes(place)) {
+                return false;
+            }
+        }
+
+        if (contract !== null && job.contract !== contract) {
+            return false;
+        }
         if (text === "") {
             return true;
         }
-        const target = job.title + " " + job.company + " " + job.city + " " + job.postalCode + " " + job.sector + " " + job.contract;
+        const target =
+            job.title +
+            " " +
+            job.company +
+            " " +
+            job.sector +
+            " " +
+            job.contract;
+
         return target.toLowerCase().includes(text);
     });
     const visibleJobs = results.slice(0, DISPLAY_LIMIT);
+    const mappableJobs = locatedJobs(visibleJobs);
 
-    let targetLat = null;
-    let targetLon = null;
-    let targetZoom = 6;
+    let targetLat = FRANCE_LAT;
+    let targetLon = FRANCE_LON;
+    let targetZoom = FRANCE_ZOOM;
 
     if (selectedJob !== null) {
         targetLat = selectedJob.lat;
         targetLon = selectedJob.lon;
         targetZoom = 14;
+    } else if ((search !== "" || location !== "") && mappableJobs.length > 0) {
+        targetLat = mappableJobs[0].lat;
+        targetLon = mappableJobs[0].lon;
+        targetZoom = 11;
     }
 
     function selectJob(job: Job) {
@@ -63,6 +99,23 @@ export default function Explorer() {
 
     function handleSearch(event: React.ChangeEvent<HTMLInputElement>) {
         setSearch(event.target.value);
+    }
+
+    function handleLocation(event: React.ChangeEvent<HTMLInputElement>) {
+        setLocation(event.target.value);
+    }
+
+    function toggleContract(value: string) {
+        if (contract === value) {
+            setContract(null);
+        } else {
+            setContract(value);
+        }
+    }
+
+    function toggleLocationMode(checked: boolean) {
+        setByPostalCode(checked);
+        setLocation("");
     }
 
     function toggleFullscreen() {
@@ -93,15 +146,69 @@ export default function Explorer() {
         fullscreenIcon = <Minimize2 className="h-4 w-4" />;
     }
 
+    let locationPlaceholder = "Commune : Rennes, Lyon…";
+    if (byPostalCode) {
+        locationPlaceholder = "Code postal : 35000…";
+    }
+
     let searchBar = null;
     if (!isFullscreen) {
         searchBar = (
             <div className="mx-auto mb-4 max-w-6xl">
-                <Input
-                    value={search}
-                    onChange={handleSearch}
-                    placeholder="Métier, entreprise, ville…"
-                />
+                <div className="flex flex-col gap-3 sm:flex-row">
+                    <Input
+                        value={search}
+                        onChange={handleSearch}
+                        placeholder="Métier, entreprise, secteur…"
+                        className="sm:flex-1"
+                    />
+                    <Input
+                        value={location}
+                        onChange={handleLocation}
+                        placeholder={locationPlaceholder}
+                        className="sm:w-72"
+                    />
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {CONTRACTS.map(function (value) {
+                        let style = "border-border bg-background hover:border-primary";
+                        if (contract === value) {
+                            style = "border-primary bg-accent text-accent-foreground";
+                        }
+
+                        return (
+                            <button
+                                key={value}
+                                type="button"
+                                onClick={function () {
+                                    toggleContract(value);
+                                }}
+                                aria-pressed={contract === value}
+                                className={cn(
+                                    "border px-3.5 py-1.5 font-heading text-xs font-medium transition-colors",
+                                    style,
+                                )}
+                            >
+                                {value}
+                            </button>
+                        );
+                    })}
+
+                    <span className="mx-1 h-5 w-px bg-border" />
+
+                    <Switch
+                        id="location-mode"
+                        checked={byPostalCode}
+                        onCheckedChange={toggleLocationMode}
+                    />
+                    <Label
+                        htmlFor="location-mode"
+                        className="font-heading text-xs font-medium"
+                    >
+                        Rechercher par code postal
+                    </Label>
+                </div>
             </div>
         );
     }
@@ -143,7 +250,7 @@ export default function Explorer() {
 
                 <div className="order-1 h-64 w-full lg:order-2 lg:h-full lg:flex-1 isolate">
                     <Map
-                        jobs={visibleJobs}
+                        jobs={mappableJobs}
                         selectedJob={selectedJob}
                         onSelect={selectJob}
                         targetLat={targetLat}

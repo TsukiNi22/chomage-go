@@ -26,7 +26,7 @@ export default function MinistryBrand(props: Props) {
                     Fraternité
                 </p>
             </div>
-            <span className={nameClass}>GéoEmploi</span>
+            <span className={nameClass}>ChômageGo</span>
         </div>
     );
 }

@@ -46,7 +46,8 @@ function Recenter(props: { lat: number | null; lon: number | null; zoom: number 
     return null;
 }
 
-function ResizeHandler() {
+function ResizeHandler()
+{
     const map = useMap();
 
     useEffect(
@@ -89,7 +90,7 @@ export default function Map(props: Props) {
     return (
         <MapContainer
             center={[46.7, 2.4]}
-            zoom={6}
+            zoom={5}
             scrollWheelZoom={true}
             className="h-full w-full"
         >

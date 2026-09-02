@@ -23,7 +23,7 @@ const body = Spectral({
 });
 
 export const metadata: Metadata = {
-    title: "GéoEmploi",
+    title: "ChômageGo",
     description:
         "Trouvez les offres d'emploi autour de vous sur une carte. Ministère du Job et Bonheur.",
 };
