@@ -9,13 +9,9 @@ import * as schemas from "../schemas/users.schema";
 export async function getUser(req: Request, res: Response, next: NextFunction)
 {
     // Determine user
-    const currentId = req.user ? Number(req.user.id) : null;
     let id = Number(req.params.id);
-    if (isNaN(id)) {
-        if (currentId === null) throw new HttpError(401, "Non authentifie");
-        id = currentId;
-    }
-    const isSelf = (currentId !== null && id === currentId);
+    if (isNaN(id)) id = req.user.id;
+    const isSelf = (id == req.user.id);
 
     // Get asked user
     const user = await db.query.users.findFirst({
@@ -43,6 +39,8 @@ export async function getUser(req: Request, res: Response, next: NextFunction)
 
     // Parse it into json format
     res.json(user);
+
+    next();
 }
 
 export function patchUser(req: Request, res: Response, next: NextFunction)
