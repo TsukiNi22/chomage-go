@@ -45,7 +45,7 @@ router.post("/applications", requireAuthHeader, applicationsController.postAppli
  *       401:
  *         description: Missing or invalid auth header
  */
-router.get("/applications", requireAuthHeader, applicationsController.gatApplication);
+router.get("/applications", requireAuthHeader, applicationsController.getApplication);
 
 /**
  * @openapi

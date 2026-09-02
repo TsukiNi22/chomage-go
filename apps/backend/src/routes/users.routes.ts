@@ -59,17 +59,6 @@ router.get("/:id", usersController.getUser);
  */
 router.patch("/:id", requireAuthHeader, usersController.patchUser);
 
-<<<<<<< HEAD
-router.get("/:id/experience", getExperience);
-router.post("/:id/experience", requireAuthHeader, postExperience);
-router.patch("/:id/experience/:experienceId", requireAuthHeader, patchExperience);
-router.delete("/:id/experience/:experienceId", requireAuthHeader, deleteExperience);
-
-router.get("/:id/availability", getAvailability);
-router.post("/:id/availability", requireAuthHeader, postAvailability);
-router.patch("/:id/availability/:availabilityId", requireAuthHeader, patchAvailability);
-router.delete("/:id/availability/:availabilityId", requireAuthHeader, deleteAvailability);
-=======
 /**
  * @openapi
  * /users/{id}:
