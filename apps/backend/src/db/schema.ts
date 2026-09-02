@@ -16,6 +16,7 @@ export const companies = pgTable(
 
 export const users = pgTable("users", {
     id: serial("id").primaryKey(),
+    name: varchar("name", { length: 255 }).notNull(), // better-auth
     rank: integer("rank").notNull().default(2), // 0 admin, 1 employer, 2 job-seeker
     companiesId: integer("companies_id").references(() => companies.id),
     firstname: varchar("firstname", { length: 100 }).notNull(),
@@ -23,7 +24,7 @@ export const users = pgTable("users", {
     email: varchar("email", { length: 255 }).notNull().unique(),
     emailContact: varchar("email_contact", { length: 255 }),
     emailVerified: boolean("email_verified").notNull().default(false), // better-auth
-    passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+    passwordHash: varchar("password_hash", { length: 255 }), // better-auth stocke le mot de passe dans account
     address: text("address"),
     description: text("description"),
     resume: text("resume"), // base64 blob
@@ -34,7 +35,7 @@ export const users = pgTable("users", {
 });
 
 export const session = pgTable("session", {
-    id: text("id").primaryKey(),
+    id: serial("id").primaryKey(),
     userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     token: varchar("token", { length: 512 }).notNull().unique(),
     expiresAt: timestamp("expires_at").notNull(),
@@ -44,8 +45,25 @@ export const session = pgTable("session", {
     updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
 });
 
+export const account = pgTable("account", {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    accountId: varchar("account_id", { length: 255 }).notNull(),
+    providerId: varchar("provider_id", { length: 255 }).notNull(),
+    issuer: text("issuer"),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    idToken: text("id_token"),
+    accessTokenExpiresAt: timestamp("access_token_expires_at"),
+    refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+    scope: text("scope"),
+    password: text("password"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
+});
+
 export const verification = pgTable("verification", {
-    id: text("id").primaryKey(),
+    id: serial("id").primaryKey(),
     identifier: varchar("identifier", { length: 255 }).notNull(),
     value: text("value").notNull(),
     expiresAt: timestamp("expires_at").notNull(),

@@ -89,7 +89,7 @@ export default function JobDetails(props: Props) {
     return (
         <Dialog open={props.open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-lg gap-0 p-0">
-                <DialogHeader className="border-b border-border p-6 text-left">
+                <DialogHeader className="border-b border-border p-6 pr-14 text-left">
                     <div className="flex items-start justify-between gap-4">
                         <DialogTitle className="font-heading text-xl font-bold text-primary">
                             {job.title}
