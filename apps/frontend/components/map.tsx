@@ -25,6 +25,29 @@ function Recenter(props: { lat: number | null; lon: number | null; zoom: number 
     return null;
 }
 
+function ResizeHandler() {
+    const map = useMap();
+
+    useEffect(
+        function () {
+            const container = map.getContainer();
+
+            const observer = new ResizeObserver(function () {
+                map.invalidateSize();
+            });
+
+            observer.observe(container);
+
+            return function () {
+                observer.disconnect();
+            };
+        },
+        [map],
+    );
+
+    return null;
+}
+
 type Props = {
     jobs: Job[];
     selectedJob: Job | null;
@@ -33,6 +56,13 @@ type Props = {
     targetLon: number | null;
     targetZoom: number;
 };
+
+const IGN_WMTS_URL =
+    "https://data.geopf.fr/wmts?" +
+    "SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile" +
+    "&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2" +
+    "&STYLE=normal&FORMAT=image/png" +
+    "&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}";
 
 export default function Map(props: Props) {
     return (
@@ -43,8 +73,8 @@ export default function Map(props: Props) {
             className="h-full w-full"
         >
             <TileLayer
-                url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; les contributeurs <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url={IGN_WMTS_URL}
+                attribution='&copy; <a href="https://www.ign.fr/">IGN</a> - Géoplateforme'
                 maxZoom={19}
             />
 
@@ -53,6 +83,7 @@ export default function Map(props: Props) {
                 lon={props.targetLon}
                 zoom={props.targetZoom}
             />
+            <ResizeHandler />
         </MapContainer>
     );
 }

@@ -10,7 +10,7 @@ export default function Hero() {
                 </h1>
                 <p className="max-w-xl text-lg text-muted-foreground">
                     Visualisez les offres d&apos;emploi autour de vous sur une carte
-                    interactive fondée sur OpenStreetMap. Moins de transport, plus de vie.
+                    interactive fondée sur IGN. Moins de transport, plus de vie.
                 </p>
             </div>
         </section>
