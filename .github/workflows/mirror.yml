@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-  MIRROR_REPO_URL: ""
+  MIRROR_REPO_URL: "https://github.com/EpitechPGE3-2026/G-SVR-500-BDX-5-1-survivor-4.git"
 
 jobs:
   mirror:
