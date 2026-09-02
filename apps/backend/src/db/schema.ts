@@ -30,7 +30,7 @@ export const users = pgTable("users", {
     localisation: boolean("localisation").default(false),
     allowedAt: timestamp("allowed_at"),
     createdAt: timestamp("created_at").defaultNow(),
-        updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()), // better-auth
+    updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()), // better-auth
 });
 
 export const session = pgTable("session", {
