@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Spectral } from "next/font/google";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
+import AppFrame from "@/components/app-frame";
+import CguGate from "@/components/cgu-gate";
 import "./globals.css";
 
 const heading = localFont({
@@ -35,16 +35,15 @@ export default function RootLayout({
 }) {
     return (
         <html lang="fr" className={`${heading.variable} ${body.variable}`}>
-            <body className="flex min-h-screen flex-col">
+            <body>
                 <a
                     href="#jobs"
                     className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:border focus:border-primary focus:bg-background focus:px-4 focus:py-2 focus:font-heading focus:text-sm focus:text-primary"
                 >
                     Aller au contenu principal
                 </a>
-                <Header />
-                <main className="flex-1">{children}</main>
-                <Footer />
+                <AppFrame>{children}</AppFrame>
+                <CguGate />
             </body>
         </html>
     );

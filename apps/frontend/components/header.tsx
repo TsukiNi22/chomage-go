@@ -9,8 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 
 const links = [
-    { label: "Offres", href: "#jobs" },
-    { label: "À propos", href: "#about" },
+    { label: "Comment ça marche", href: "/#how" },
+    { label: "Carte des offres", href: "/carte" },
 ];
 
 export default function Header() {
@@ -64,7 +64,9 @@ export default function Header() {
     return (
         <>
             <header className="flex items-center justify-between gap-6 border-b-2 border-primary bg-background px-8 py-4">
-                <MinistryBrand />
+                <Link href="/" aria-label="Retour à l'accueil">
+                    <MinistryBrand />
+                </Link>
 
                 <nav aria-label="Navigation principale" className="hidden lg:block">
                     <ul className="flex items-center gap-8">

@@ -12,8 +12,8 @@ export const auth = betterAuth({
     user: {
         modelName: "users",
         additionalFields: {
-            rank: { type: "number", required: true, defaultValue: 2 },
-            companiesId: { type: "number", required: false, fieldName: "companies_id" },
+            rank: { type: "number", required: true, defaultValue: 2, input: false },
+            companiesId: { type: "number", required: false, fieldName: "companies_id", input: false },
             firstname: { type: "string", required: true },
             lastname: { type: "string", required: true },
             emailContact: { type: "string", required: false, fieldName: "email_contact" },
@@ -21,7 +21,7 @@ export const auth = betterAuth({
             description: { type: "string", required: false },
             resume: { type: "string", required: false },
             localisation: { type: "boolean", required: false },
-            allowedAt: { type: "date", required: false, fieldName: "allowed_at" },
+            allowedAt: { type: "date", required: false, fieldName: "allowed_at", input: false },
         },
     },
     session: {

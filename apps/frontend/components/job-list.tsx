@@ -2,7 +2,10 @@
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { distanceInKm, formatDistance } from "@/lib/distance";
 import type { Job } from "@/lib/jobs";
+
+type Position = { lat: number; lon: number };
 
 export function formatSalary(job: Job): string {
     const low = job.salaryMin.toLocaleString("fr-FR");
@@ -16,6 +19,7 @@ export function formatSalary(job: Job): string {
 type JobRowProps = {
     job: Job;
     selected: boolean;
+    position?: Position | null;
     onSelect: (job: Job) => void;
 };
 
@@ -24,6 +28,21 @@ function JobRow(props: JobRowProps) {
 
     function handleClick() {
         props.onSelect(job);
+    }
+
+    let distanceBadge = null;
+    if (props.position && job.needsLocationCheck === false) {
+        const km = distanceInKm(
+            props.position.lat,
+            props.position.lon,
+            job.lat,
+            job.lon,
+        );
+        distanceBadge = (
+            <span className="font-heading font-semibold text-action">
+                {formatDistance(km)}
+            </span>
+        );
     }
 
     let locationWarning = null;
@@ -65,8 +84,11 @@ function JobRow(props: JobRowProps) {
 
                 <p className="mt-1 text-sm">{job.company}</p>
 
-                <p className="mt-2 text-sm text-muted-foreground">
-                    {job.city} ({job.postalCode})
+                <p className="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
+                    <span>
+                        {job.city} ({job.postalCode})
+                    </span>
+                    {distanceBadge}
                 </p>
 
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -82,6 +104,7 @@ function JobRow(props: JobRowProps) {
 type Props = {
     jobs: Job[];
     total: number;
+    position?: Position | null;
     selectedJob: Job | null;
     onSelect: (job: Job) => void;
 };
@@ -124,6 +147,7 @@ export default function JobList(props: Props) {
                             key={job.id}
                             job={job}
                             selected={selected}
+                            position={props.position}
                             onSelect={props.onSelect}
                         />
                     );

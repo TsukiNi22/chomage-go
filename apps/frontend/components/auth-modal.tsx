@@ -144,7 +144,6 @@ export default function AuthModal(props: Props) {
             name: signupFirstname + " " + signupLastname,
             firstname: signupFirstname,
             lastname: signupLastname,
-            rank: 2,
         });
 
         setLoading(false);
