@@ -1,11 +1,48 @@
 import {Request, Response, NextFunction} from "express";
 import {validateJson} from "../utils/validateJson.utils";
-import {HttpError} from "../middlewares/httpError";
+import {HttpError} from "../types/httpError";
+import {db} from "../db";
+import {users} from "../db/schema";
+import {eq} from "drizzle-orm";
 import * as schemas from "../schemas/users.schema";
 
-export function getUser(req: Request, res: Response, next: NextFunction)
+export async function getUser(req: Request, res: Response, next: NextFunction)
 {
-    next();
+    // Determine user
+    const currentId = req.user ? Number(req.user.id) : null;
+    let id = Number(req.params.id);
+    if (isNaN(id)) {
+        if (currentId === null) throw new HttpError(401, "Non authentifie");
+        id = currentId;
+    }
+    const isSelf = (currentId !== null && id === currentId);
+
+    // Get asked user
+    const user = await db.query.users.findFirst({
+        where: eq(users.id, id),
+        columns: {
+            id: true,
+            firstname: true,
+            lastname: true,
+            companiesId: true,
+            emailContact: true,
+            address: true,
+            description: true,
+            resume: true,
+            rank: isSelf,
+            email: isSelf,
+            emailVerified: isSelf,
+            localisation: isSelf,
+            passwordHash: false,
+            allowedAt: false,
+            createdAt: false,
+            updatedAt: false,
+        },
+    });
+    if (!user) throw new HttpError(404, "Utilisateur introuvable");
+
+    // Parse it into json format
+    res.json(user);
 }
 
 export function patchUser(req: Request, res: Response, next: NextFunction)

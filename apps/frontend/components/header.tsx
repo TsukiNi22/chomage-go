@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import MinistryBrand from "@/components/ministry-brand";
 import { Button } from "@/components/ui/button";
 import AuthModal from "./auth-modal";
@@ -43,9 +44,12 @@ export default function Header() {
     } else if (session) {
         accountArea = (
             <div className="flex items-center gap-3">
-                <span className="font-heading text-sm font-medium text-primary">
+                <Link
+                    href="/profil"
+                    className="font-heading text-sm font-medium text-primary underline-offset-4 hover:underline"
+                >
                     {session.user.name}
-                </span>
+                </Link>
                 <Button
                     variant="ghost"
                     onClick={handleSignOut}
