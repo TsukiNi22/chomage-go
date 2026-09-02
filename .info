@@ -59,7 +59,7 @@ db - table:
         password_hash - string
         address - string
         description - string
-        resume - string (path to internal file saved)
+        resume - (string : path to internal file saved / blob : file base64)
         localisation - bool
         allowed_at - timestamp
         created_at - timestamp
@@ -113,6 +113,7 @@ db - table:
         user_id - int
         title - string
         description - string
+        localisation - string
         type - int (0 stage, 1 alternance, ...)
         salary_min - int
         salary_max - int | null
@@ -175,5 +176,9 @@ api-applications:
     GET	   /api/applications?userId= + jwt
     GET	   /api/applications?jobId= + jwt
     DELETE /api/applications/:id + jwt
+
+api-utils:
+    GET    /api/utils/tiles/:z/:x/:y
+    PATCH  /api/utils/tiles/:z/:x/:y + jwt
 
 api-admin: ...
