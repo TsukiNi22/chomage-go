@@ -1,6 +1,6 @@
 import {Router} from "express";
 import {requireAuthHeader} from "../middlewares/requireAuthHeader.middleware.ts"
-import * from "../controllers/jobs.controller.ts";
+import {getJobs, getJob, postJob, patchJob, deleteJob, getSkills, postSkill, patchSkill, deleteSkill} from "../controllers/jobs.controller.ts";
 
 const router = Router();
 

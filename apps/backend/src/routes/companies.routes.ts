@@ -1,13 +1,13 @@
 import {Router} from "express";
 import {requireAuthHeader} from "../middlewares/requireAuthHeader.middleware.ts"
-import * from "../controllers/compagnies.controller.ts";
+import {getCompagnies, getCompagnie, postCompagnie, patchCompagnie, deleteCompagnie} from "../controllers/companies.controller.ts";
 
 const router = Router();
 
-router.get("/compagnies", getCompagnies);
-router.get("/compagnies/:id", getCompagnie);
-router.post("/compagnies", requireAuthHeader, postCompagnie);
-router.patch("/compagnies/:id", requireAuthHeader, patchCompagnie);
-router.delete("/compagnies/:id", requireAuthHeader, deleteCompagnie);
+router.get("/companies", getCompagnies);
+router.get("/companies/:id", getCompagnie);
+router.post("/companies", requireAuthHeader, postCompagnie);
+router.patch("/companies/:id", requireAuthHeader, patchCompagnie);
+router.delete("/companies/:id", requireAuthHeader, deleteCompagnie);
 
 export default router;

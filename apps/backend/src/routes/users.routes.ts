@@ -1,6 +1,11 @@
 import {Router} from "express";
 import {requireAuthHeader} from "../middlewares/requireAuthHeader.middleware.ts"
-import * from "../controllers/users.controller.ts";
+import {
+    getUser, patchUser, deleteUser,
+    getSkill, postSkill, patchSkill, deleteSkill,
+    getExperience, postExperience, patchExperience, deleteExperience,
+    getAvailability, postAvailability, patchAvailability, deleteAvailability,
+} from "../controllers/users.controller.ts";
 
 const router = Router();
 
@@ -15,12 +20,12 @@ router.delete("/:id/skills/:skillId", requireAuthHeader, deleteSkill);
 
 router.get("/:id/experience", getExperience);
 router.post("/:id/experience", requireAuthHeader, postExperience);
-router.patch("/:id/experience/experienceId", requireAuthHeader, patchExperience);
-router.delete("/:id/experience/experienceId", requireAuthHeader, deleteExperience);
+router.patch("/:id/experience/:experienceId", requireAuthHeader, patchExperience);
+router.delete("/:id/experience/:experienceId", requireAuthHeader, deleteExperience);
 
 router.get("/:id/availability", getAvailability);
 router.post("/:id/availability", requireAuthHeader, postAvailability);
-router.patch("/:id/availability/availabilityId", requireAuthHeader, patchAvailability);
-router.delete("/:id/availability/availabilityId", requireAuthHeader, deleteAvailability);
+router.patch("/:id/availability/:availabilityId", requireAuthHeader, patchAvailability);
+router.delete("/:id/availability/:availabilityId", requireAuthHeader, deleteAvailability);
 
 export default router;
