@@ -4,9 +4,10 @@ import { useState } from "react";
 import MinistryBrand from "@/components/ministry-brand";
 import { Button } from "@/components/ui/button";
 import AuthModal from "./auth-modal";
+import Link from "next/link";
 
 const links = [
-    { label: "Offres", href: "#jobs" },
+    { label: "Home", href: "/" },
     { label: "À propos", href: "#about" },
 ];
 
@@ -55,7 +56,7 @@ export default function Header() {
                         asChild
                         className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
                     >
-                        <a href="#publish">Publier une offre</a>
+                        <Link href="/offres">Publier une offre</Link>
                     </Button>
                 </div>
             </header>
