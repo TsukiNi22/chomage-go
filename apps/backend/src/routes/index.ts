@@ -1,24 +1,17 @@
 import {Router} from "express";
-import authRoutes from "./auth.routes";
+import authRoutes from "./auth.routes.ts";
 import jobsRoutes from "./jobs.routes";
-import usersRoutes from "./users.routes";
-import companiesRoutes from "./companies.routes";
-import applicationsRoutes from "./applications.routes";
+import usersRoutes from "./users.routes.ts";
+import companiesRoutes from "./companies.routes.ts";
+import jobsRoutes from "./jobs.routes.ts";
+import applicationsRoutes from "./applications.routes.ts";
 
 // Init router
 export const router = Router();
 
 // Link routes
 router.use("/auth", authRoutes);
-
-// Jobs routes
-router.use("/", jobsRoutes);
-
-// User routes
 router.use("/users", usersRoutes);
-
-// Companies routes
-router.use("/", companiesRoutes);
-
-// Applications routes
-router.use("/", applicationsRoutes);
+router.use("/companies", companiesRoutes);
+router.use("/jobs", jobsRoutes);
+router.use("/applications", applicationsRoutes);

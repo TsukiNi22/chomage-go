@@ -1,7 +1,11 @@
 allowBuilds:
+  '@scarf/scarf': false
   esbuild: false
   sharp: false
   unrs-resolver: false
+
+minimumReleaseAgeExclude:
+  - lucide-react@1.39.0
 
 packages:
   - "apps/*"
