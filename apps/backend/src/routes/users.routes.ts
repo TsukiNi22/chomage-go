@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {requireAuthHeader} from "../middlewares/requireAuthHeader.middleware.ts"
+import {requireAuth} from "../middlewares/requireAuth.middleware.ts"
 import * as usersController from "../controllers/users.controller.ts";
 
 const router = Router();
@@ -57,7 +57,7 @@ router.get("/:id", usersController.getUser);
  *       404:
  *         description: User not found
  */
-router.patch("/:id", requireAuthHeader, usersController.patchUser);
+router.patch("/:id", requireAuth, usersController.patchUser);
 
 /**
  * @openapi
@@ -80,7 +80,7 @@ router.patch("/:id", requireAuthHeader, usersController.patchUser);
  *       404:
  *         description: User not found
  */
-router.delete("/:id", requireAuthHeader, usersController.deleteUser);
+router.delete("/:id", requireAuth, usersController.deleteUser);
 
 /**
  * @openapi
@@ -132,7 +132,7 @@ router.get("/:id/skills", usersController.getSkill);
  *       404:
  *         description: User not found
  */
-router.post("/:id/skills", requireAuthHeader, usersController.postSkill);
+router.post("/:id/skills", requireAuth, usersController.postSkill);
 
 /**
  * @openapi
@@ -168,7 +168,7 @@ router.post("/:id/skills", requireAuthHeader, usersController.postSkill);
  *       404:
  *         description: User or skill not found
  */
-router.patch("/:id/skills/:skillId", requireAuthHeader, usersController.patchSkill);
+router.patch("/:id/skills/:skillId", requireAuth, usersController.patchSkill);
 
 /**
  * @openapi
@@ -195,7 +195,7 @@ router.patch("/:id/skills/:skillId", requireAuthHeader, usersController.patchSki
  *       404:
  *         description: User or skill not found
  */
-router.delete("/:id/skills/:skillId", requireAuthHeader, usersController.deleteSkill);
+router.delete("/:id/skills/:skillId", requireAuth, usersController.deleteSkill);
 
 /**
  * @openapi
@@ -254,7 +254,7 @@ router.get("/:id/experience", usersController.getExperience);
  *       404:
  *         description: User not found
  */
-router.post("/:id/experience", requireAuthHeader, usersController.postExperience);
+router.post("/:id/experience", requireAuth, usersController.postExperience);
 
 /**
  * @openapi
@@ -294,7 +294,7 @@ router.post("/:id/experience", requireAuthHeader, usersController.postExperience
  *       404:
  *         description: User or experience entry not found
  */
-router.patch("/:id/experience/experienceId", requireAuthHeader, usersController.patchExperience);
+router.patch("/:id/experience/experienceId", requireAuth, usersController.patchExperience);
 
 /**
  * @openapi
@@ -321,7 +321,7 @@ router.patch("/:id/experience/experienceId", requireAuthHeader, usersController.
  *       404:
  *         description: User or experience entry not found
  */
-router.delete("/:id/experience/experienceId", requireAuthHeader, usersController.deleteExperience);
+router.delete("/:id/experience/experienceId", requireAuth, usersController.deleteExperience);
 
 /**
  * @openapi
@@ -378,7 +378,7 @@ router.get("/:id/availability", usersController.getAvailability);
  *       404:
  *         description: User not found
  */
-router.post("/:id/availability", requireAuthHeader, usersController.postAvailability);
+router.post("/:id/availability", requireAuth, usersController.postAvailability);
 
 /**
  * @openapi
@@ -417,7 +417,7 @@ router.post("/:id/availability", requireAuthHeader, usersController.postAvailabi
  *       404:
  *         description: User or availability entry not found
  */
-router.patch("/:id/availability/availabilityId", requireAuthHeader, usersController.patchAvailability);
+router.patch("/:id/availability/availabilityId", requireAuth, usersController.patchAvailability);
 
 /**
  * @openapi
@@ -444,6 +444,6 @@ router.patch("/:id/availability/availabilityId", requireAuthHeader, usersControl
  *       404:
  *         description: User or availability entry not found
  */
-router.delete("/:id/availability/availabilityId", requireAuthHeader, usersController.deleteAvailability);
+router.delete("/:id/availability/availabilityId", requireAuth, usersController.deleteAvailability);
 
 export default router;

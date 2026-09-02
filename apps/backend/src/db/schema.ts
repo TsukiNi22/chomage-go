@@ -22,6 +22,7 @@ export const users = pgTable("users", {
     lastname: varchar("lastname", { length: 100 }).notNull(),
     email: varchar("email", { length: 255 }).notNull().unique(),
     emailContact: varchar("email_contact", { length: 255 }),
+    emailVerified: boolean("email_verified").notNull().default(false), // better-auth
     passwordHash: varchar("password_hash", { length: 255 }).notNull(),
     address: text("address"),
     description: text("description"),
@@ -29,14 +30,26 @@ export const users = pgTable("users", {
     localisation: boolean("localisation").default(false),
     allowedAt: timestamp("allowed_at"),
     createdAt: timestamp("created_at").defaultNow(),
+        updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()), // better-auth
 });
 
-export const tokens = pgTable("tokens", {
-    id: serial("id").primaryKey(),
-    userId: integer("user_id").notNull().references(() => users.id),
-    token: varchar("token", { length: 512 }).notNull(),
+export const session = pgTable("session", {
+    id: text("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    token: varchar("token", { length: 512 }).notNull().unique(),
+    expiresAt: timestamp("expires_at").notNull(),
+    ipAddress: varchar("ip_address", { length: 45 }),
+    userAgent: text("user_agent"),
     createdAt: timestamp("created_at").defaultNow(),
-    expireAt: timestamp("expire_at").notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
+});
+
+export const verification = pgTable("verification", {
+    id: text("id").primaryKey(),
+    identifier: varchar("identifier", { length: 255 }).notNull(),
+    value: text("value").notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const userSkills = pgTable("user_skills", {
@@ -142,6 +155,6 @@ export const applicationsRelations = relations(applications, ({ one }) => ({
   user: one(users, { fields: [applications.userId], references: [users.id] }),
 }));
 
-export const tokensRelations = relations(tokens, ({ one }) => ({
-  user: one(users, { fields: [tokens.userId], references: [users.id] }),
+export const sessionRelations = relations(session, ({ one }) => ({
+    user: one(users, { fields: [session.userId], references: [users.id] }),
 }));

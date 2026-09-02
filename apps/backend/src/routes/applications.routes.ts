@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {requireAuthHeader} from "../middlewares/requireAuthHeader.middleware.ts"
+import {requireAuth} from "../middlewares/requireAuth.middleware.ts"
 import * as applicationsController from "../controllers/applications.controller.ts";
 
 const router = Router();
@@ -29,7 +29,7 @@ const router = Router();
  *       409:
  *         description: Already applied to this job
  */
-router.post("/applications", requireAuthHeader, applicationsController.postApplication);
+router.post("/applications", requireAuth, applicationsController.postApplication);
 
 /**
  * @openapi
@@ -45,7 +45,7 @@ router.post("/applications", requireAuthHeader, applicationsController.postAppli
  *       401:
  *         description: Missing or invalid auth header
  */
-router.get("/applications", requireAuthHeader, applicationsController.getApplication);
+router.get("/applications", requireAuth, applicationsController.getApplication);
 
 /**
  * @openapi
@@ -68,6 +68,6 @@ router.get("/applications", requireAuthHeader, applicationsController.getApplica
  *       404:
  *         description: Application not found
  */
-router.delete("/applications/:id", requireAuthHeader, applicationsController.deleteApplication);
+router.delete("/applications/:id", requireAuth, applicationsController.deleteApplication);
 
 export default router;

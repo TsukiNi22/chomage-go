@@ -3,4 +3,6 @@ DB_USER=root
 DB_PASSWORD=root
 DB_NAME=geoemploi
 DB_HOST=localhost
+BETTER_AUTH_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+BETTER_AUTH_URL=http://localhost:3000
 PORT=4000

@@ -1,8 +1,10 @@
 import express, {Express} from "express";
 import swaggerUi from "swagger-ui-express";
+import {toNodeHandler} from "better-auth/node";
 import {router} from "./routes";
 import {errorHandler} from "./middlewares/errorHandler.middleware";
 import {swaggerSpec} from "./config/swagger.config";
+import {auth} from "./lib/auth";
 
 export function createApp(): Express
 {
@@ -12,6 +14,9 @@ export function createApp(): Express
     app.get("/health", (req, res) => {
         res.status(200).json({ status: "ok" });
     });
+
+    // better-auth endpoint (need to be before json parsing)
+    app.all("/api/auth/{*splat}", toNodeHandler(auth));
 
     // Setup each action/step for the API (REST)
     app.use(express.json()); // Auto parse the body has a json
