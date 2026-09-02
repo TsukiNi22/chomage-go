@@ -1,5 +1,6 @@
 import {Request, Response, NextFunction} from "express";
 import {validateJson} from "../utils/validateJson.utils";
+import {HttpError} from "../middlewares/httpError";
 import {
     patchUserSchema,
     postSkillSchema, patchSkillSchema,
@@ -9,10 +10,30 @@ import {
 
 export async function getUser(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO: check - req.params.id est bien présent/valide
-        // TODO: DB call - récupérer l'user par id
-        // TODO: throw - si user introuvable -> erreur (404)
-        // TODO: res.json({...}) - renvoyer l'user (sans le password)
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - const user = db.prepare("SELECT * FROM users WHERE id = ?").get(id);
+        const user: any = undefined; // placeholder
+
+        if (!user) {
+            throw new HttpError(404, "user not found");
+        }
+
+        res.json({
+            id: user.id,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            email: user.email,
+            address: user.address,
+            description: user.description,
+            resume: user.resume,
+            localisation: user.localisation,
+            rank: user.rank,
+            companies_id: user.companies_id,
+        });
 
     } catch (error) {
         next(error);
@@ -26,13 +47,24 @@ export async function patchUser(req: Request, res: Response, next: NextFunction)
             return next();
         }
 
-        // TODO: check - req.params.id est bien présent/valide
-        // TODO: check - vérifier que l'user connecté (requireAuthHeader) est bien le propriétaire du profil
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - vérifier que l'user existe
-        // TODO: throw - si introuvable -> erreur (404)
-        // TODO: DB call - mettre à jour l'user
-        // TODO: res.json({...}) - renvoyer l'user mis à jour
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        if (req.userId !== id) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        // TODO: DB - const existing = db.prepare("SELECT id FROM users WHERE id = ?").get(id);
+        const existing: any = undefined; // placeholder
+        if (!existing) {
+            throw new HttpError(404, "user not found");
+        }
+
+        // TODO: DB - UPDATE users SET ... WHERE id = ? (avec les champs présents dans req.body)
+
+        res.json({id, ...req.body});
 
     } catch (error) {
         next(error);
@@ -42,13 +74,24 @@ export async function patchUser(req: Request, res: Response, next: NextFunction)
 
 export async function deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO: check - req.params.id est bien présent/valide
-        // TODO: check - vérifier que l'user connecté est bien le propriétaire (ou admin)
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - vérifier que l'user existe
-        // TODO: throw - si introuvable -> erreur (404)
-        // TODO: DB call - supprimer l'user (+ cascade ? applications, skills, etc.)
-        // TODO: res.json({...}) - confirmer la suppression
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        if (req.userId !== id) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        // TODO: DB - const existing = db.prepare("SELECT id FROM users WHERE id = ?").get(id);
+        const existing: any = undefined; // placeholder
+        if (!existing) {
+            throw new HttpError(404, "user not found");
+        }
+
+        // TODO: DB - DELETE user (+ cascade tokens, user_skills, experience, availability, applications)
+
+        res.status(204).send();
 
     } catch (error) {
         next(error);
@@ -60,11 +103,16 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 
 export async function getSkill(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO: check - req.params.id est bien présent/valide
-        // TODO: DB call - vérifier que l'user existe
-        // TODO: throw - si introuvable -> erreur (404)
-        // TODO: DB call - récupérer les skills de l'user
-        // TODO: res.json({...}) - renvoyer la liste des skills
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - vérifier que l'user existe
+        // TODO: DB - const skills = db.prepare("SELECT * FROM user_skills WHERE user_id = ?").all(id);
+        const skills: any[] = []; // placeholder
+
+        res.json(skills);
 
     } catch (error) {
         next(error);
@@ -78,11 +126,21 @@ export async function postSkill(req: Request, res: Response, next: NextFunction)
             return next();
         }
 
-        // TODO: check - req.params.id est bien présent/valide
-        // TODO: check - vérifier que l'user connecté est bien le propriétaire du profil
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - créer la skill liée à l'user
-        // TODO: res.json({...}) - renvoyer la skill créée
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        if (req.userId !== id) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        const {name, description} = req.body;
+
+        // TODO: DB - INSERT INTO user_skills (user_id, name, description) VALUES (?, ?, ?)
+        // const skillId = result.lastInsertRowid;
+
+        res.status(201).json({user_id: id, name, description});
 
     } catch (error) {
         next(error);
@@ -96,13 +154,25 @@ export async function patchSkill(req: Request, res: Response, next: NextFunction
             return next();
         }
 
-        // TODO: check - req.params.id et req.params.skillId sont présents/valides
-        // TODO: DB call - vérifier que la skill existe et appartient bien à l'user
-        // TODO: throw - si introuvable -> erreur (404)
-        // TODO: check - vérifier que l'user connecté est bien le propriétaire
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - mettre à jour la skill
-        // TODO: res.json({...}) - renvoyer la skill mise à jour
+        const id = Number(req.params.id);
+        const skillId = Number(req.params.skillId);
+        if (!Number.isInteger(id) || !Number.isInteger(skillId)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - const skill = db.prepare("SELECT * FROM user_skills WHERE id = ? AND user_id = ?").get(skillId, id);
+        const skill: any = undefined; // placeholder
+        if (!skill) {
+            throw new HttpError(404, "skill not found");
+        }
+
+        if (req.userId !== id) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        // TODO: DB - UPDATE user_skills SET ... WHERE id = ?
+
+        res.json({id: skillId, ...req.body});
 
     } catch (error) {
         next(error);
@@ -112,13 +182,25 @@ export async function patchSkill(req: Request, res: Response, next: NextFunction
 
 export async function deleteSkill(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO: check - req.params.id et req.params.skillId sont présents/valides
-        // TODO: DB call - vérifier que la skill existe et appartient bien à l'user
-        // TODO: throw - si introuvable -> erreur (404)
-        // TODO: check - vérifier que l'user connecté est bien le propriétaire
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - supprimer la skill
-        // TODO: res.json({...}) - confirmer la suppression
+        const id = Number(req.params.id);
+        const skillId = Number(req.params.skillId);
+        if (!Number.isInteger(id) || !Number.isInteger(skillId)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - const skill = db.prepare("SELECT * FROM user_skills WHERE id = ? AND user_id = ?").get(skillId, id);
+        const skill: any = undefined; // placeholder
+        if (!skill) {
+            throw new HttpError(404, "skill not found");
+        }
+
+        if (req.userId !== id) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        // TODO: DB - DELETE FROM user_skills WHERE id = ?
+
+        res.status(204).send();
 
     } catch (error) {
         next(error);
@@ -130,11 +212,16 @@ export async function deleteSkill(req: Request, res: Response, next: NextFunctio
 
 export async function getExperience(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO: check - req.params.id est bien présent/valide
-        // TODO: DB call - vérifier que l'user existe
-        // TODO: throw - si introuvable -> erreur (404)
-        // TODO: DB call - récupérer les expériences de l'user
-        // TODO: res.json({...}) - renvoyer la liste des expériences
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - vérifier que l'user existe
+        // TODO: DB - const experiences = db.prepare("SELECT * FROM experience WHERE user_id = ?").all(id);
+        const experiences: any[] = []; // placeholder
+
+        res.json(experiences);
 
     } catch (error) {
         next(error);
@@ -148,11 +235,25 @@ export async function postExperience(req: Request, res: Response, next: NextFunc
             return next();
         }
 
-        // TODO: check - req.params.id est bien présent/valide
-        // TODO: check - vérifier que l'user connecté est bien le propriétaire du profil
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - créer l'expérience liée à l'user
-        // TODO: res.json({...}) - renvoyer l'expérience créée
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        if (req.userId !== id) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        const {companies_id, name, description, type, part_time, start, end} = req.body;
+
+        if (companies_id) {
+            // TODO: DB - vérifier que companies_id existe
+            // if (!company) throw new HttpError(404, "company not found");
+        }
+
+        // TODO: DB - INSERT INTO experience (user_id, companies_id, name, description, type, part_time, start, end) VALUES (...)
+
+        res.status(201).json({user_id: id, companies_id, name, description, type, part_time, start, end});
 
     } catch (error) {
         next(error);
@@ -166,13 +267,25 @@ export async function patchExperience(req: Request, res: Response, next: NextFun
             return next();
         }
 
-        // TODO: check - req.params.id et req.params.experienceId sont présents/valides
-        // TODO: DB call - vérifier que l'expérience existe et appartient bien à l'user
-        // TODO: throw - si introuvable -> erreur (404)
-        // TODO: check - vérifier que l'user connecté est bien le propriétaire
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - mettre à jour l'expérience
-        // TODO: res.json({...}) - renvoyer l'expérience mise à jour
+        const id = Number(req.params.id);
+        const experienceId = Number(req.params.experienceId);
+        if (!Number.isInteger(id) || !Number.isInteger(experienceId)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - const experience = db.prepare("SELECT * FROM experience WHERE id = ? AND user_id = ?").get(experienceId, id);
+        const experience: any = undefined; // placeholder
+        if (!experience) {
+            throw new HttpError(404, "experience not found");
+        }
+
+        if (req.userId !== id) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        // TODO: DB - UPDATE experience SET ... WHERE id = ?
+
+        res.json({id: experienceId, ...req.body});
 
     } catch (error) {
         next(error);
@@ -182,13 +295,25 @@ export async function patchExperience(req: Request, res: Response, next: NextFun
 
 export async function deleteExperience(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO: check - req.params.id et req.params.experienceId sont présents/valides
-        // TODO: DB call - vérifier que l'expérience existe et appartient bien à l'user
-        // TODO: throw - si introuvable -> erreur (404)
-        // TODO: check - vérifier que l'user connecté est bien le propriétaire
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - supprimer l'expérience
-        // TODO: res.json({...}) - confirmer la suppression
+        const id = Number(req.params.id);
+        const experienceId = Number(req.params.experienceId);
+        if (!Number.isInteger(id) || !Number.isInteger(experienceId)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - const experience = db.prepare("SELECT * FROM experience WHERE id = ? AND user_id = ?").get(experienceId, id);
+        const experience: any = undefined; // placeholder
+        if (!experience) {
+            throw new HttpError(404, "experience not found");
+        }
+
+        if (req.userId !== id) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        // TODO: DB - DELETE FROM experience WHERE id = ?
+
+        res.status(204).send();
 
     } catch (error) {
         next(error);
@@ -200,11 +325,16 @@ export async function deleteExperience(req: Request, res: Response, next: NextFu
 
 export async function getAvailability(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO: check - req.params.id est bien présent/valide
-        // TODO: DB call - vérifier que l'user existe
-        // TODO: throw - si introuvable -> erreur (404)
-        // TODO: DB call - récupérer les disponibilités de l'user
-        // TODO: res.json({...}) - renvoyer la liste des disponibilités
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - vérifier que l'user existe
+        // TODO: DB - const availabilities = db.prepare("SELECT * FROM availability WHERE user_id = ?").all(id);
+        const availabilities: any[] = []; // placeholder
+
+        res.json(availabilities);
 
     } catch (error) {
         next(error);
@@ -218,11 +348,20 @@ export async function postAvailability(req: Request, res: Response, next: NextFu
             return next();
         }
 
-        // TODO: check - req.params.id est bien présent/valide
-        // TODO: check - vérifier que l'user connecté est bien le propriétaire du profil
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - créer la disponibilité liée à l'user
-        // TODO: res.json({...}) - renvoyer la disponibilité créée
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        if (req.userId !== id) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        const {title, type, part_time, start, end} = req.body;
+
+        // TODO: DB - INSERT INTO availability (user_id, title, type, part_time, start, end) VALUES (...)
+
+        res.status(201).json({user_id: id, title, type, part_time, start, end});
 
     } catch (error) {
         next(error);
@@ -236,13 +375,25 @@ export async function patchAvailability(req: Request, res: Response, next: NextF
             return next();
         }
 
-        // TODO: check - req.params.id et req.params.availabilityId sont présents/valides
-        // TODO: DB call - vérifier que la disponibilité existe et appartient bien à l'user
-        // TODO: throw - si introuvable -> erreur (404)
-        // TODO: check - vérifier que l'user connecté est bien le propriétaire
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - mettre à jour la disponibilité
-        // TODO: res.json({...}) - renvoyer la disponibilité mise à jour
+        const id = Number(req.params.id);
+        const availabilityId = Number(req.params.availabilityId);
+        if (!Number.isInteger(id) || !Number.isInteger(availabilityId)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - const availability = db.prepare("SELECT * FROM availability WHERE id = ? AND user_id = ?").get(availabilityId, id);
+        const availability: any = undefined; // placeholder
+        if (!availability) {
+            throw new HttpError(404, "availability not found");
+        }
+
+        if (req.userId !== id) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        // TODO: DB - UPDATE availability SET ... WHERE id = ?
+
+        res.json({id: availabilityId, ...req.body});
 
     } catch (error) {
         next(error);
@@ -252,13 +403,25 @@ export async function patchAvailability(req: Request, res: Response, next: NextF
 
 export async function deleteAvailability(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO: check - req.params.id et req.params.availabilityId sont présents/valides
-        // TODO: DB call - vérifier que la disponibilité existe et appartient bien à l'user
-        // TODO: throw - si introuvable -> erreur (404)
-        // TODO: check - vérifier que l'user connecté est bien le propriétaire
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - supprimer la disponibilité
-        // TODO: res.json({...}) - confirmer la suppression
+        const id = Number(req.params.id);
+        const availabilityId = Number(req.params.availabilityId);
+        if (!Number.isInteger(id) || !Number.isInteger(availabilityId)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - const availability = db.prepare("SELECT * FROM availability WHERE id = ? AND user_id = ?").get(availabilityId, id);
+        const availability: any = undefined; // placeholder
+        if (!availability) {
+            throw new HttpError(404, "availability not found");
+        }
+
+        if (req.userId !== id) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        // TODO: DB - DELETE FROM availability WHERE id = ?
+
+        res.status(204).send();
 
     } catch (error) {
         next(error);

@@ -1,11 +1,14 @@
 import {Request, Response, NextFunction} from "express";
 import {validateJson} from "../utils/validateJson.utils";
-import {postJobSchema, patchJobSchema, postSkillSchema, patchSkillSchema} from "../schemas/jobs.schema";
+import {HttpError} from "../middlewares/httpError";
+import {postJobSchema, patchJobSchema, postSkillSchema} from "../schemas/jobs.schema";
 
 export async function getJobs(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO: DB call - récupérer tous les jobs (avec filtres/pagination ? géoloc ?)
-        // TODO: res.json({...}) - renvoyer la liste des jobs
+        // TODO: DB - const jobs = db.prepare("SELECT * FROM jobs").all();
+        const jobs: any[] = []; // placeholder
+
+        res.json(jobs);
 
     } catch (error) {
         next(error);
@@ -15,10 +18,19 @@ export async function getJobs(req: Request, res: Response, next: NextFunction) {
 
 export async function getJob(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO: check - req.params.id est bien présent/valide
-        // TODO: DB call - récupérer le job par id
-        // TODO: throw - si job introuvable -> erreur (404)
-        // TODO: res.json({...}) - renvoyer le job
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - const job = db.prepare("SELECT * FROM jobs WHERE id = ?").get(id);
+        const job: any = undefined; // placeholder
+
+        if (!job) {
+            throw new HttpError(404, "job not found");
+        }
+
+        res.json(job);
 
     } catch (error) {
         next(error);
@@ -32,11 +44,26 @@ export async function postJob(req: Request, res: Response, next: NextFunction) {
             return next();
         }
 
-        // TODO: check - l'id de l'user vient de requireAuthHeader (ex: req.user.id)
-        // TODO: check - vérifier que l'user a le droit de poster un job (compagnie liée, rôle ?)
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - créer le job
-        // TODO: res.json({...}) - renvoyer le job créé
+        const {companies_id, title, description, type, salary_min, salary_max} = req.body;
+
+        // TODO: DB - const currentUser = db.prepare("SELECT rank, companies_id FROM users WHERE id = ?").get(req.userId);
+        const currentUser: any = undefined; // placeholder
+        if (!currentUser || (currentUser.rank !== 0 && currentUser.companies_id !== companies_id)) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        // TODO: DB - const existing = db.prepare("SELECT id FROM jobs WHERE title = ? AND companies_id = ?").get(title, companies_id);
+        const existing: any = undefined; // placeholder
+        if (existing) {
+            throw new HttpError(409, "job already exists for this company");
+        }
+
+        // TODO: DB - INSERT INTO jobs (companies_id, user_id, title, description, type, salary_min, salary_max, created_at)
+        // VALUES (companies_id, req.userId, title, description, type, salary_min, salary_max ?? null, Date.now())
+        // const jobId = result.lastInsertRowid;
+        const jobId: any = undefined; // placeholder
+
+        res.status(201).json({id: jobId, companies_id, title, description, type, salary_min, salary_max});
 
     } catch (error) {
         next(error);
@@ -50,13 +77,26 @@ export async function patchJob(req: Request, res: Response, next: NextFunction) 
             return next();
         }
 
-        // TODO: check - req.params.id est bien présent/valide
-        // TODO: DB call - vérifier que le job existe
-        // TODO: throw - si job introuvable -> erreur (404)
-        // TODO: check - vérifier que l'user est bien propriétaire/admin de ce job
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - mettre à jour le job
-        // TODO: res.json({...}) - renvoyer le job mis à jour
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - const job = db.prepare("SELECT * FROM jobs WHERE id = ?").get(id);
+        const job: any = undefined; // placeholder
+        if (!job) {
+            throw new HttpError(404, "job not found");
+        }
+
+        // TODO: DB - const currentUser = db.prepare("SELECT rank FROM users WHERE id = ?").get(req.userId);
+        const currentUser: any = undefined; // placeholder
+        if (!currentUser || (currentUser.rank !== 0 && job.user_id !== req.userId)) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        // TODO: DB - UPDATE jobs SET ... WHERE id = ?
+
+        res.json({id, ...req.body});
 
     } catch (error) {
         next(error);
@@ -66,13 +106,26 @@ export async function patchJob(req: Request, res: Response, next: NextFunction) 
 
 export async function deleteJob(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO: check - req.params.id est bien présent/valide
-        // TODO: DB call - vérifier que le job existe
-        // TODO: throw - si job introuvable -> erreur (404)
-        // TODO: check - vérifier que l'user est bien propriétaire/admin de ce job
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - supprimer le job
-        // TODO: res.json({...}) - confirmer la suppression
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - const job = db.prepare("SELECT * FROM jobs WHERE id = ?").get(id);
+        const job: any = undefined; // placeholder
+        if (!job) {
+            throw new HttpError(404, "job not found");
+        }
+
+        // TODO: DB - const currentUser = db.prepare("SELECT rank FROM users WHERE id = ?").get(req.userId);
+        const currentUser: any = undefined; // placeholder
+        if (!currentUser || (currentUser.rank !== 0 && job.user_id !== req.userId)) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        // TODO: DB - DELETE job (+ cascade job_skills, applications liées)
+
+        res.status(204).send();
 
     } catch (error) {
         next(error);
@@ -82,11 +135,16 @@ export async function deleteJob(req: Request, res: Response, next: NextFunction)
 
 export async function getSkills(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO: check - req.params.id (jobId) est bien présent/valide
-        // TODO: DB call - vérifier que le job existe
-        // TODO: throw - si job introuvable -> erreur (404)
-        // TODO: DB call - récupérer les skills liées à ce job
-        // TODO: res.json({...}) - renvoyer la liste des skills
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - vérifier que le job existe
+        // TODO: DB - const skills = db.prepare("SELECT * FROM job_skills WHERE job_id = ?").all(id);
+        const skills: any[] = []; // placeholder
+
+        res.json(skills);
 
     } catch (error) {
         next(error);
@@ -100,13 +158,26 @@ export async function postSkill(req: Request, res: Response, next: NextFunction)
             return next();
         }
 
-        // TODO: check - req.params.id (jobId) est bien présent/valide
-        // TODO: DB call - vérifier que le job existe
-        // TODO: throw - si job introuvable -> erreur (404)
-        // TODO: check - vérifier que l'user est bien propriétaire/admin de ce job
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - créer la skill liée au job
-        // TODO: res.json({...}) - renvoyer la skill créée
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - const job = db.prepare("SELECT * FROM jobs WHERE id = ?").get(id);
+        const job: any = undefined; // placeholder
+        if (!job) {
+            throw new HttpError(404, "job not found");
+        }
+
+        if (job.user_id !== req.userId) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        const {name, description} = req.body;
+
+        // TODO: DB - INSERT INTO job_skills (job_id, name, description) VALUES (?, ?, ?)
+
+        res.status(201).json({job_id: id, name, description});
 
     } catch (error) {
         next(error);
@@ -114,19 +185,34 @@ export async function postSkill(req: Request, res: Response, next: NextFunction)
     next();
 }
 
+
 export async function patchSkill(req: Request, res: Response, next: NextFunction) {
     try {
         if (!validateJson(patchSkillSchema, req, res)) {
             return next();
         }
 
-        // TODO: check - req.params.id (jobId) et req.params.skillId sont présents/valides
-        // TODO: DB call - vérifier que la skill existe et appartient bien au job
-        // TODO: throw - si introuvable -> erreur (404)
-        // TODO: check - vérifier que l'user est bien propriétaire/admin de ce job
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - mettre à jour la skill
-        // TODO: res.json({...}) - renvoyer la skill mise à jour
+        const id = Number(req.params.id);
+        const skillId = Number(req.params.skillId);
+        if (!Number.isInteger(id) || !Number.isInteger(skillId)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - const skill = db.prepare("SELECT * FROM job_skills WHERE id = ? AND job_id = ?").get(skillId, id);
+        const skill: any = undefined; // placeholder
+        if (!skill) {
+            throw new HttpError(404, "skill not found");
+        }
+
+        // TODO: DB - const job = db.prepare("SELECT user_id FROM jobs WHERE id = ?").get(id);
+        const job: any = undefined; // placeholder
+        if (!job || job.user_id !== req.userId) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        // TODO: DB - UPDATE job_skills SET ... WHERE id = ?
+
+        res.json({id: skillId, ...req.body});
 
     } catch (error) {
         next(error);
@@ -136,13 +222,27 @@ export async function patchSkill(req: Request, res: Response, next: NextFunction
 
 export async function deleteSkill(req: Request, res: Response, next: NextFunction) {
     try {
-        // TODO: check - req.params.id (jobId) et req.params.skillId sont présents/valides
-        // TODO: DB call - vérifier que la skill existe et appartient bien au job
-        // TODO: throw - si introuvable -> erreur (404)
-        // TODO: check - vérifier que l'user est bien propriétaire/admin de ce job
-        // TODO: throw - si pas autorisé -> erreur (403)
-        // TODO: DB call - supprimer la skill
-        // TODO: res.json({...}) - confirmer la suppression
+        const id = Number(req.params.id);
+        const skillId = Number(req.params.skillId);
+        if (!Number.isInteger(id) || !Number.isInteger(skillId)) {
+            throw new HttpError(400, "invalid id");
+        }
+
+        // TODO: DB - const skill = db.prepare("SELECT * FROM job_skills WHERE id = ? AND job_id = ?").get(skillId, id);
+        const skill: any = undefined; // placeholder
+        if (!skill) {
+            throw new HttpError(404, "skill not found");
+        }
+
+        // TODO: DB - const job = db.prepare("SELECT user_id FROM jobs WHERE id = ?").get(id);
+        const job: any = undefined; // placeholder
+        if (!job || job.user_id !== req.userId) {
+            throw new HttpError(403, "not allowed");
+        }
+
+        // TODO: DB - DELETE FROM job_skills WHERE id = ?
+
+        res.status(204).send();
 
     } catch (error) {
         next(error);

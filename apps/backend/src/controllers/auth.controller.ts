@@ -1,27 +1,12 @@
 import {Request, Response, NextFunction} from "express";
-import {z} from "zod";
+import bcrypt from "bcrypt";
+import {randomBytes} from "crypto";
 import {validateJson} from "../utils/validateJson.utils";
-import {loginSchema, registerSchema, logoutSchema, meSchema} from "../schemas/auth.schema";
+import {HttpError} from "../middlewares/httpError";
+import {loginSchema, registerSchema} from "../schemas/auth.schema";
 
-export async function login(req: Request, res: Response, next: NextFunction) {
-    try {
-        if (!validateJson(loginSchema, req, res)) {
-            return next();
-        }
-
-        // TODO: DB call - récupérer l'user par email (req.body.email)
-        // TODO: check - user existe ?
-        // TODO: throw - si user n'existe pas -> erreur "invalid credentials" (401)
-        // TODO: check - comparer password (hash) avec celui en DB
-        // TODO: throw - si password incorrect -> erreur "invalid credentials" (401)
-        // TODO: DB call ou lib - générer le JWT une fois l'user validé
-        // TODO: res.json({...}) - renvoyer le JWT + infos user
-
-    } catch (error) {
-        next(error);
-    }
-    next();
-}
+const TOKEN_EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 jours
+const SALT_ROUNDS = 10;
 
 export async function register(req: Request, res: Response, next: NextFunction) {
     try {
@@ -29,11 +14,70 @@ export async function register(req: Request, res: Response, next: NextFunction) 
             return next();
         }
 
-        // TODO: DB call - check si un user existe déjà avec cet email
-        // TODO: throw - si email déjà pris -> erreur "email already used" (409)
-        // TODO: hash le password avant stockage
-        // TODO: DB call - créer le nouvel user
-        // TODO: res.json({...}) - renvoyer l'user créé (sans le password) ou un JWT direct
+        const {firstname, lastname, email, email_contact, password, address, description} = req.body;
+
+        // TODO: DB - check unique(email) : const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email);
+        // if (existing) throw new HttpError(409, "email already used");
+
+        const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+
+        // TODO: DB - INSERT INTO users (rank, firstname, lastname, email, email_contact, password_hash, address, description, created_at)
+        // VALUES (2, firstname, lastname, email, email_contact ?? null, password_hash, address ?? null, description ?? null, Date.now())
+        // const userId = result.lastInsertRowid;
+        const userId: any = undefined; // placeholder
+
+        const token = randomBytes(32).toString("hex");
+        const expire_at = Date.now() + TOKEN_EXPIRATION_MS;
+        // TODO: DB - db.prepare("INSERT INTO tokens (user_id, token, created_at, expire_at) VALUES (?, ?, ?, ?)").run(userId, token, Date.now(), expire_at);
+
+        res.status(201).json({
+            id: userId,
+            firstname,
+            lastname,
+            email,
+            token,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+    next();
+}
+
+export async function login(req: Request, res: Response, next: NextFunction) {
+    try {
+        if (!validateJson(loginSchema, req, res)) {
+            return next();
+        }
+
+        const {email, password} = req.body;
+
+        // TODO: DB - const user = db.prepare("SELECT * FROM users WHERE email = ?").get(email);
+        const user: any = undefined; // placeholder
+
+        if (!user) {
+            throw new HttpError(401, "invalid credentials");
+        }
+
+        const passwordMatch = await bcrypt.compare(password, user.password_hash);
+        if (!passwordMatch) {
+            throw new HttpError(401, "invalid credentials");
+        }
+
+        const token = randomBytes(32).toString("hex");
+        const expire_at = Date.now() + TOKEN_EXPIRATION_MS;
+        // TODO: DB - db.prepare("INSERT INTO tokens (user_id, token, created_at, expire_at) VALUES (?, ?, ?, ?)").run(user.id, token, Date.now(), expire_at);
+
+        res.json({
+            token,
+            user: {
+                id: user.id,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                email: user.email,
+                rank: user.rank,
+            },
+        });
 
     } catch (error) {
         next(error);
@@ -43,14 +87,15 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 
 export async function logout(req: Request, res: Response, next: NextFunction) {
     try {
-        if (!validateJson(logoutSchema, req, res)) {
-            return next();
+        // pas de body à valider ici, le token vient du header (requireAuthHeader)
+
+        if (!req.token) {
+            throw new HttpError(401, "not authenticated");
         }
 
-        // TODO: check - vérifier la validité du JWT (req.body.jwt)
-        // TODO: throw - si JWT invalide/expiré -> erreur (401)
-        // TODO: DB call - invalider le JWT/la session (blacklist ou suppression en DB)
-        // TODO: res.json({...}) - confirmer le logout
+        // TODO: DB - db.prepare("DELETE FROM tokens WHERE token = ?").run(req.token);
+
+        res.status(204).send();
 
     } catch (error) {
         next(error);
@@ -60,15 +105,27 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
 
 export async function me(req: Request, res: Response, next: NextFunction) {
     try {
-        if (!validateJson(meSchema, req, res)) {
-            return next();
+        // pas de body à valider ici, le token vient du header
+
+        if (!req.userId) {
+            throw new HttpError(401, "not authenticated");
         }
 
-        // TODO: check - vérifier la validité du JWT (req.body.jwt)
-        // TODO: throw - si JWT invalide/expiré -> erreur (401)
-        // TODO: DB call - récupérer l'user via l'id contenu dans le JWT
-        // TODO: throw - si user introuvable -> erreur (404)
-        // TODO: res.json({...}) - renvoyer les infos de l'user (sans le password)
+        // TODO: DB - const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.userId);
+        const user: any = undefined; // placeholder
+
+        if (!user) {
+            throw new HttpError(404, "user not found");
+        }
+
+        res.json({
+            id: user.id,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            email: user.email,
+            rank: user.rank,
+            companies_id: user.companies_id,
+        });
 
     } catch (error) {
         next(error);
