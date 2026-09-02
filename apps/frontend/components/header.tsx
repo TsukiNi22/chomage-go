@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import MinistryBrand from "@/components/ministry-brand";
 import { Button } from "@/components/ui/button";
 import AuthModal from "./auth-modal";
+import { Skeleton } from "@/components/ui/skeleton";
+import { authClient } from "@/lib/auth-client";
 
 const links = [
     { label: "Offres", href: "#jobs" },
@@ -12,6 +15,7 @@ const links = [
 
 export default function Header() {
     const [modalOpen, setModalOpen] = useState(false);
+    const { data: session, isPending } = authClient.useSession();
 
     function openModal() {
         setModalOpen(true);
@@ -19,6 +23,42 @@ export default function Header() {
 
     function closeModal() {
         setModalOpen(false);
+    }
+
+    async function handleSignOut() {
+        await authClient.signOut();
+    }
+
+    let accountArea = (
+    <Button
+        variant="ghost"
+        onClick={openModal}
+        className="font-heading font-semibold text-primary hover:bg-accent"
+    >
+        Se connecter/S&apos;inscrire
+    </Button>
+    );
+    
+    if (isPending) {
+        accountArea = <Skeleton className="h-9 w-32" />;
+    } else if (session) {
+        accountArea = (
+            <div className="flex items-center gap-3">
+                <Link
+                    href="/profil"
+                    className="font-heading text-sm font-medium text-primary underline-offset-4 hover:underline"
+                >
+                    {session.user.name}
+                </Link>
+                <Button
+                    variant="ghost"
+                    onClick={handleSignOut}
+                    className="font-heading font-semibold text-primary hover:bg-accent"
+                >
+                    Se déconnecter
+                </Button>
+            </div>
+        );
     }
 
     return (
@@ -44,13 +84,7 @@ export default function Header() {
                 </nav>
 
                 <div className="flex items-center gap-3">
-                    <Button
-                        variant="ghost"
-                        onClick={openModal}
-                        className="font-heading font-semibold text-primary hover:bg-accent"
-                    >
-                        Se connecter/S'inscrire
-                    </Button>
+                    {accountArea}
                     <Button
                         asChild
                         className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"

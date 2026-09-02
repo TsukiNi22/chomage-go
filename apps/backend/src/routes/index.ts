@@ -1,6 +1,5 @@
 import {Router} from "express";
 import authRoutes from "./auth.routes.ts";
-import jobsRoutes from "./jobs.routes";
 import usersRoutes from "./users.routes.ts";
 import companiesRoutes from "./companies.routes.ts";
 import jobsRoutes from "./jobs.routes.ts";
