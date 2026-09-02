@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import MinistryBrand from "@/components/ministry-brand";
 import { Button } from "@/components/ui/button";
 import AuthModal from "./auth-modal";
 
@@ -23,9 +24,7 @@ export default function Header() {
     return (
         <>
             <header className="flex items-center justify-between gap-6 border-b-2 border-primary bg-background px-8 py-4">
-                <span className="font-heading text-xl font-bold tracking-tight text-primary">
-                    GéoEmploi
-                </span>
+                <MinistryBrand />
 
                 <nav aria-label="Navigation principale" className="hidden lg:block">
                     <ul className="flex items-center gap-8">

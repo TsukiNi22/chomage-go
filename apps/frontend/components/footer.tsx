@@ -29,9 +29,6 @@ export default function Footer() {
                             <h2 className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-primary">
                                 {section.title}
                             </h2>
-                            <p className="max-w-xs text-sm text-muted-foreground">
-                                {section.text}
-                            </p>
                         </div>
                     );
                 })}
