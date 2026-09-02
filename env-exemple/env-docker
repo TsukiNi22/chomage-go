@@ -1,0 +1,7 @@
+// path: <root>/.env
+DB_USER=root
+DB_PASSWORD=root
+DB_NAME=geoemploi
+PORT_BACKEND=4000
+PORT_FRONTEND=3000
+PORT=3000
