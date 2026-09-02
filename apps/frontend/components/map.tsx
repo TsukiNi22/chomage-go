@@ -6,6 +6,27 @@ import { MapContainer, Marker, TileLayer, Tooltip, useMap } from "react-leaflet"
 import "leaflet/dist/leaflet.css";
 import type { Job } from "@/lib/jobs";
 
+
+function createIcon(color: string, size: number) {
+    return L.divIcon({
+        className: "",
+        html:
+            '<span style="display:block;width:' +
+            size +
+            "px;height:" +
+            size +
+            "px;border-radius:9999px;background:" +
+            color +
+            ';border:2px solid #ffffff"></span>',
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+    })
+}
+
+const jobIcon = createIcon("#1b3a6b", 14);
+const activeJobIcon = createIcon("#b85433", 22);
+
+
 function Recenter(props: { lat: number | null; lon: number | null; zoom: number }) {
     const map = useMap();
     const lat = props.lat;
@@ -25,7 +46,8 @@ function Recenter(props: { lat: number | null; lon: number | null; zoom: number 
     return null;
 }
 
-function ResizeHandler() {
+function ResizeHandler()
+{
     const map = useMap();
 
     useEffect(
@@ -68,14 +90,14 @@ export default function Map(props: Props) {
     return (
         <MapContainer
             center={[46.7, 2.4]}
-            zoom={6}
+            zoom={5}
             scrollWheelZoom={true}
             className="h-full w-full"
         >
             <TileLayer
                 url={IGN_WMTS_URL}
                 attribution='&copy; <a href="https://www.ign.fr/">IGN</a> - Géoplateforme'
-                maxZoom={19}
+                maxZoom={18}
             />
 
             <Recenter
@@ -83,6 +105,39 @@ export default function Map(props: Props) {
                 lon={props.targetLon}
                 zoom={props.targetZoom}
             />
+            {props.jobs.map(function (job) {
+                let icon = jobIcon;
+                let floating = false;
+                if (props.selectedJob !== null && props.selectedJob.id === job.id) {
+                    icon = activeJobIcon;
+                    floating = true;
+                }
+
+                return (
+                    <Marker
+                        key={job.id}
+                        position={[job.lat, job.lon]}
+                        icon={icon}
+                        eventHandlers={{
+                            click: function () {
+                                props.onSelect(job);
+                            },
+                        }}
+                    >
+                        <Tooltip direction="top" offset={[0, -10]} permanent={floating}>
+                            <span className="font-heading text-sm font-semibold text-primary">
+                                {job.title}
+                            </span>
+                            <br />
+                            <span className="text-xs">{job.company}</span>
+                            <br />
+                            <span className="text-xs text-muted-foreground">
+                                {job.contract} · {job.city}
+                            </span>
+                        </Tooltip>
+                    </Marker>
+                );
+            })}
             <ResizeHandler />
         </MapContainer>
     );

@@ -107,7 +107,7 @@
     --radius-lg: calc(var(--radius) + 2px);
     --radius-xl: calc(var(--radius) + 6px);
 
-    --font-heading: var(--heading-font), "Archivo", system-ui, sans-serif;
+    --font-heading: var(--heading-font), system-ui, -apple-system, sans-serif;
     --font-body: var(--body-font), Spectral, Georgia, serif;
 }
 
@@ -134,4 +134,37 @@
         outline: 2px solid var(--ring);
         outline-offset: 2px;
     }
+
+}
+
+.leaflet-container .leaflet-tooltip {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-body);
+    border: 1px solid var(--primary);
+    border-radius: 2px;
+    box-shadow: none;
+    padding: 8px 10px;
+    line-height: 1.45;
+    white-space: nowrap;
+}
+
+.leaflet-container .leaflet-tooltip-top::before {
+    border-top-color: var(--primary);
+}
+
+.leaflet-container .leaflet-tooltip-bottom::before {
+    border-bottom-color: var(--primary);
+}
+
+.leaflet-container .leaflet-tooltip-left::before {
+    border-left-color: var(--primary);
+}
+
+.leaflet-container .leaflet-tooltip-right::before {
+    border-right-color: var(--primary);
+}
+
+.leaflet-container {
+    font-family: var(--font-body);
 }
