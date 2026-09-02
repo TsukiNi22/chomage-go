@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
-import { Archivo, Spectral } from "next/font/google";
+import localFont from "next/font/local";
+import { Spectral } from "next/font/google";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import "./globals.css";
 
-const heading = Archivo({
-    subsets: ["latin"],
+const heading = localFont({
+    src: [
+        { path: "./fonts/Marianne-Regular.woff2", weight: "400", style: "normal" },
+        { path: "./fonts/Marianne-Medium.woff2", weight: "500", style: "normal" },
+        { path: "./fonts/Marianne-Bold.woff2", weight: "700", style: "normal" },
+    ],
     variable: "--heading-font",
     display: "swap",
 });
@@ -18,7 +23,7 @@ const body = Spectral({
 });
 
 export const metadata: Metadata = {
-    title: "GéoEmploi",
+    title: "ChômageGo",
     description:
         "Trouvez les offres d'emploi autour de vous sur une carte. Ministère du Job et Bonheur.",
 };

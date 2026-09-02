@@ -19,7 +19,6 @@ function Field(props: {
     id: string;
     label: string;
     type: string;
-    placeholder: string;
     autoComplete: string;
 }) {
     return (
@@ -33,7 +32,6 @@ function Field(props: {
             <Input
                 id={props.id}
                 type={props.type}
-                placeholder={props.placeholder}
                 autoComplete={props.autoComplete}
             />
         </div>

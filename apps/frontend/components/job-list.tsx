@@ -26,6 +26,18 @@ function JobRow(props: JobRowProps) {
         props.onSelect(job);
     }
 
+    let locationWarning = null;
+    if (job.needsLocationCheck) {
+        locationWarning = (
+            <Badge
+                variant="outline"
+                className="mt-2 border-destructive font-heading text-destructive"
+            >
+                Localisation à vérifier
+            </Badge>
+        );
+    }
+
     let rowBackground = "bg-background hover:bg-muted";
     if (props.selected) {
         rowBackground = "bg-accent";
@@ -60,6 +72,8 @@ function JobRow(props: JobRowProps) {
                 <p className="mt-1 text-sm text-muted-foreground">
                     {formatSalary(job)}
                 </p>
+
+                {locationWarning}
             </button>
         </li>
     );

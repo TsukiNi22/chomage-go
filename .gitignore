@@ -53,3 +53,5 @@ z
 
 .cache/
 brief_chomage-go.pdf
+
+apps/backend/.geocode/
