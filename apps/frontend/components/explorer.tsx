@@ -31,8 +31,16 @@ export default function Explorer() {
     const [search, setSearch] = useState("");
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const results = jobs.filter(function (job) {
+        const text = search.toLowerCase();
 
-    const visibleJobs = jobs.slice(0, DISPLAY_LIMIT);
+        if (text === "") {
+            return true;
+        }
+        const target = job.title + " " + job.company + " " + job.city + " " + job.postalCode + " " + job.sector + " " + job.contract;
+        return target.toLowerCase().includes(text);
+    });
+    const visibleJobs = results.slice(0, DISPLAY_LIMIT);
 
     let targetLat = null;
     let targetLon = null;
@@ -127,7 +135,7 @@ export default function Explorer() {
                 <div className="order-2 h-full w-full overflow-y-auto border-border lg:order-1 lg:w-[26rem] lg:border-r">
                     <JobList
                         jobs={visibleJobs}
-                        total={jobs.length}
+                        total={results.length}
                         selectedJob={selectedJob}
                         onSelect={selectJob}
                     />
