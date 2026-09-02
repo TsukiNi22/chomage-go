@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const sections = [
     {
         title: "Données personnelles",
@@ -19,8 +21,14 @@ export default function Footer() {
             <div className="mx-auto flex max-w-6xl flex-col gap-8 lg:flex-row lg:justify-between">
                 <div className="flex flex-col gap-3">
                     <span className="font-heading text-base font-bold tracking-tight text-primary">
-                        GéoEmploi
+                        ChômageGo
                     </span>
+                    <Link
+                        href="/cgu"
+                        className="font-heading text-sm font-medium text-primary underline-offset-4 hover:underline"
+                    >
+                        Conditions générales d&apos;utilisation
+                    </Link>
                 </div>
 
                 {sections.map(function (section) {

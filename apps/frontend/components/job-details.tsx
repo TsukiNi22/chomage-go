@@ -13,10 +13,14 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { formatSalary } from "@/components/job-list";
+import { distanceInKm, formatDistance } from "@/lib/distance";
 import type { Job } from "@/lib/jobs";
+
+type Position = { lat: number; lon: number };
 
 type Props = {
     job: Job | null;
+    position?: Position | null;
     open: boolean;
     onClose: () => void;
 };
@@ -59,6 +63,17 @@ export default function JobDetails(props: Props) {
 
     if (job === null) {
         return null;
+    }
+
+    let distanceField = null;
+    if (props.position && job.needsLocationCheck === false) {
+        const km = distanceInKm(
+            props.position.lat,
+            props.position.lon,
+            job.lat,
+            job.lon,
+        );
+        distanceField = <Field label="Distance" value={formatDistance(km)} />;
     }
 
     const publishedAt = new Date(job.publishedAt).toLocaleDateString("fr-FR", {
@@ -119,6 +134,7 @@ export default function JobDetails(props: Props) {
                         <Field label="Secteur" value={job.sector} />
                         <Field label="Télétravail" value={job.remote} />
                         <Field label="Publiée le" value={publishedAt} />
+                        {distanceField}
                     </div>
                 </div>
 

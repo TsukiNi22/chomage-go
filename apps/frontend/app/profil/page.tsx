@@ -264,7 +264,7 @@ export default function ProfilPage() {
                     <p className="text-xs leading-relaxed text-muted-foreground">
                         Votre position est calculée sur votre appareil pour trier les
                         offres par proximité. Elle n&apos;est ni transmise ni conservée
-                        sur nos serveurs. GéoEmploi reste pleinement utilisable sans
+                        sur nos serveurs. ChômageGo reste pleinement utilisable sans
                         cette option.
                     </p>
                 </div>

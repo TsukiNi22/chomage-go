@@ -2,10 +2,9 @@
 
 import { useEffect } from "react";
 import L from "leaflet";
-import { MapContainer, Marker, TileLayer, Tooltip, useMap } from "react-leaflet";
+import { Circle, MapContainer, Marker, TileLayer, Tooltip, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Job } from "@/lib/jobs";
-
 
 function createIcon(color: string, size: number) {
     return L.divIcon({
@@ -17,15 +16,15 @@ function createIcon(color: string, size: number) {
             size +
             "px;border-radius:9999px;background:" +
             color +
-            ';border:2px solid #ffffff"></span>',
+            ';border:2px solid #ffffff;box-shadow:0 0 0 1px rgba(16,25,43,0.35)"></span>',
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2],
-    })
+    });
 }
 
 const jobIcon = createIcon("#1b3a6b", 14);
 const activeJobIcon = createIcon("#b85433", 22);
-
+const userIcon = createIcon("#1c6144", 18);
 
 function Recenter(props: { lat: number | null; lon: number | null; zoom: number }) {
     const map = useMap();
@@ -46,8 +45,7 @@ function Recenter(props: { lat: number | null; lon: number | null; zoom: number 
     return null;
 }
 
-function ResizeHandler()
-{
+function ResizeHandler() {
     const map = useMap();
 
     useEffect(
@@ -77,6 +75,9 @@ type Props = {
     targetLat: number | null;
     targetLon: number | null;
     targetZoom: number;
+    userLat?: number | null;
+    userLon?: number | null;
+    radiusKm?: number | null;
 };
 
 const IGN_WMTS_URL =
@@ -87,10 +88,51 @@ const IGN_WMTS_URL =
     "&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}";
 
 export default function Map(props: Props) {
+    let userLat = null;
+    let userLon = null;
+    if (props.userLat !== undefined && props.userLat !== null) {
+        userLat = props.userLat;
+    }
+    if (props.userLon !== undefined && props.userLon !== null) {
+        userLon = props.userLon;
+    }
+
+    let userMarker = null;
+    if (userLat !== null && userLon !== null) {
+        userMarker = (
+            <Marker position={[userLat, userLon]} icon={userIcon}>
+                <Tooltip direction="top" offset={[0, -12]}>
+                    Vous êtes ici
+                </Tooltip>
+            </Marker>
+        );
+    }
+
+    let radiusCircle = null;
+    if (
+        userLat !== null &&
+        userLon !== null &&
+        props.radiusKm !== undefined &&
+        props.radiusKm !== null
+    ) {
+        radiusCircle = (
+            <Circle
+                center={[userLat, userLon]}
+                radius={props.radiusKm * 1000}
+                pathOptions={{
+                    color: "#1b3a6b",
+                    weight: 1,
+                    fillColor: "#1b3a6b",
+                    fillOpacity: 0.06,
+                }}
+            />
+        );
+    }
+
     return (
         <MapContainer
             center={[46.7, 2.4]}
-            zoom={5}
+            zoom={6}
             scrollWheelZoom={true}
             className="h-full w-full"
         >
@@ -105,6 +147,10 @@ export default function Map(props: Props) {
                 lon={props.targetLon}
                 zoom={props.targetZoom}
             />
+
+            {radiusCircle}
+            {userMarker}
+
             {props.jobs.map(function (job) {
                 let icon = jobIcon;
                 let floating = false;
@@ -138,6 +184,7 @@ export default function Map(props: Props) {
                     </Marker>
                 );
             })}
+
             <ResizeHandler />
         </MapContainer>
     );

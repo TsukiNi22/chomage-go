@@ -6,8 +6,8 @@ export const authClient = createAuthClient({
     plugins: [
         inferAdditionalFields({
             user: {
-                rank: { type: "number" },
-                companiesId: { type: "number", required: false },
+                rank: { type: "number", input: false },
+                companiesId: { type: "number", required: false, input: false },
                 firstname: { type: "string" },
                 lastname: { type: "string" },
                 emailContact: { type: "string", required: false },
@@ -15,7 +15,7 @@ export const authClient = createAuthClient({
                 description: { type: "string", required: false },
                 resume: { type: "string", required: false },
                 localisation: { type: "boolean", required: false },
-                allowedAt: { type: "date", required: false },
+                allowedAt: { type: "date", required: false, input: false },
             },
         }),
     ],

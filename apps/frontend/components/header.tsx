@@ -5,13 +5,13 @@ import Link from "next/link";
 import MinistryBrand from "@/components/ministry-brand";
 import { Button } from "@/components/ui/button";
 import AuthModal from "./auth-modal";
-import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 
 const links = [
-    { label: "Home", href: "/" },
-    { label: "À propos", href: "#about" },
+    { label: "Carte des offres", href: "/carte" },
+    { label: "Publier une offre", href: "/offres" },
+    { label: "Comment ça marche", href: "/#how" },
 ];
 
 export default function Header() {
@@ -65,7 +65,9 @@ export default function Header() {
     return (
         <>
             <header className="flex items-center justify-between gap-6 border-b-2 border-primary bg-background px-8 py-4">
-                <MinistryBrand />
+                <Link href="/" aria-label="Retour à l'accueil">
+                    <MinistryBrand />
+                </Link>
 
                 <nav aria-label="Navigation principale" className="hidden lg:block">
                     <ul className="flex items-center gap-8">
