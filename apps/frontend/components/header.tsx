@@ -50,7 +50,7 @@ export default function Header() {
                         onClick={openModal}
                         className="font-heading font-semibold text-primary hover:bg-accent"
                     >
-                        Se connecter
+                        Se connecter/S'inscrire
                     </Button>
                     <Button
                         asChild
