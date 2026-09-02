@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import MinistryBrand from "@/components/ministry-brand";
 import { Button } from "@/components/ui/button";
 import AuthModal from "./auth-modal";
@@ -11,7 +12,10 @@ const links = [
     { label: "À propos", href: "#about" },
 ];
 
+const PUBLISH_JOB_ROUTE = "/offres";
+
 export default function Header() {
+    const pathname = usePathname();
     const [modalOpen, setModalOpen] = useState(false);
 
     function openModal() {
@@ -21,6 +25,8 @@ export default function Header() {
     function closeModal() {
         setModalOpen(false);
     }
+
+    const isOnPublishPage = pathname === PUBLISH_JOB_ROUTE;
 
     return (
         <>
@@ -52,12 +58,14 @@ export default function Header() {
                     >
                         Se connecter/S'inscrire
                     </Button>
-                    <Button
-                        asChild
-                        className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
-                    >
-                        <Link href="/offres">Publier une offre</Link>
-                    </Button>
+                    {!isOnPublishPage && (
+                        <Button
+                            asChild
+                            className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+                        >
+                            <Link href="/offres">Publier une offre</Link>
+                        </Button>
+                    )}
                 </div>
             </header>
 
