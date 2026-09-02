@@ -13,6 +13,13 @@ export default function EmployerJobsPage() {
             return [...previous, newPosting];
         });
     }
+    function handleDelete(id: number) {
+        setPostings(function (previous) {
+            return previous.filter(function (posting) {
+                return posting.id !== id;
+            });
+        });
+    }
     return (
         <div className="mx-auto max-w-6xl px-6 py-10">
             <div className="mb-6 flex items-center justify-between">
@@ -22,7 +29,7 @@ export default function EmployerJobsPage() {
                 <p className="text-sm text-muted-foreground">{postings.length} offre(s)</p>
             </div>
 
-            <JobPostingsTable postings={postings} />
+            <JobPostingsTable postings={postings} onDelete={handleDelete} />
             <div className="mt-6 flex justify-end">
                 <CreateJobPostingDialog onCreate={handleCreate} />
             </div>
