@@ -1,0 +1,6 @@
+// path: <root>/apps/backend/.env
+DB_USER=root
+DB_PASSWORD=root
+DB_NAME=geoemploi
+DB_HOST=localhost
+PORT=4000
