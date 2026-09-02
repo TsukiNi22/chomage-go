@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, User } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 type Props = {
     open: boolean;
@@ -20,6 +21,9 @@ function Field(props: {
     label: string;
     type: string;
     autoComplete: string;
+    placeholder?: string;
+    value?: string;
+    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
     return (
         <div className="flex flex-col gap-1.5">
@@ -33,6 +37,9 @@ function Field(props: {
                 id={props.id}
                 type={props.type}
                 autoComplete={props.autoComplete}
+                placeholder={props.placeholder}
+                value={props.value}
+                onChange={props.onChange}
             />
         </div>
     );
@@ -87,6 +94,14 @@ function SignupTypeChoice(props: { onChoose: (type: SignupType) => void }) {
 export default function AuthModal(props: Props) {
     const [tab, setTab] = useState("login");
     const [signupType, setSignupType] = useState<SignupType>(null);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [signupLastname, setSignupLastname] = useState("");
+    const [signupFirstname, setSignupFirstname] = useState("");
+    const [signupEmail, setSignupEmail] = useState("");
+    const [signupPassword, setSignupPassword] = useState("");
 
     function handleOpenChange(open: boolean) {
         if (!open) {
@@ -99,17 +114,86 @@ export default function AuthModal(props: Props) {
         setSignupType(null);
     }
 
-    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        setLoading(true);
+        setError(null);
+    
+        const result = await authClient.signIn.email({
+            email: email,
+            password: password,
+        });
+    
+        setLoading(false);
+    
+        if (result.error) {
+            setError("Identifiants incorrects.");
+        } else {
+            props.onClose();
+        }
+    }
+
+    async function handleSignup(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        const result = await authClient.signUp.email({
+            email: signupEmail,
+            password: signupPassword,
+            name: signupFirstname + " " + signupLastname,
+            firstname: signupFirstname,
+            lastname: signupLastname,
+            rank: 2,
+        });
+
+        setLoading(false);
+
+        if (result.error) {
+            setError(result.error.message || "Création du compte impossible.");
+        } else {
+            props.onClose();
+        }
     }
 
     function backToChoice() {
         setSignupType(null);
+        setError(null);
+    }
+
+    let submitLabel = "Se connecter";
+    if (loading) {
+        submitLabel = "Connexion…";
+    }
+
+    let signupLabel = "Créer mon compte";
+    if (loading) {
+        signupLabel = "Création…";
+    }
+
+    let errorMessage = null;
+    if (error !== null) {
+        errorMessage = (
+            <p
+                aria-live="polite"
+                className="border border-destructive bg-destructive/5 px-3 py-2 text-sm text-destructive"
+            >
+                {error}
+            </p>
+        );
     }
 
     return (
         <Dialog open={props.open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-md gap-0 p-0">
+                <DialogHeader className="border-b border-border p-6 pr-14 text-left">
+                    <DialogTitle className="font-heading text-xl font-bold text-primary">
+                        Accéder à votre espace
+                    </DialogTitle>
+                    <DialogDescription>
+                        Demandeur d&apos;emploi ou employeur, un seul compte suffit.
+                    </DialogDescription>
+                </DialogHeader>
 
                 <div className="p-6">
                     <Tabs value={tab} onValueChange={handleTabChange}>
@@ -129,18 +213,29 @@ export default function AuthModal(props: Props) {
                                     label="Adresse électronique"
                                     type="email"
                                     autoComplete="email"
+                                    value={email}
+                                    onChange={function (event){
+                                        setEmail(event.target.value);
+                                    }}
                                 />
                                 <Field
                                     id="login-password"
                                     label="Mot de passe"
                                     type="password"
                                     autoComplete="current-password"
+                                    value={password}
+                                    onChange={function (event){
+                                        setPassword(event.target.value);
+                                    }}
                                 />
+                                {errorMessage}
+
                                 <Button
                                     type="submit"
+                                    disabled={loading}
                                     className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
                                 >
-                                    Se connecter
+                                    {submitLabel}
                                 </Button>
                             </form>
                         </TabsContent>
@@ -148,31 +243,68 @@ export default function AuthModal(props: Props) {
                         <TabsContent value="signup">
                             {signupType === null && ( <SignupTypeChoice onChoose={setSignupType} /> )}
                             {signupType === "individual" && (
-                            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                            <form onSubmit={handleSignup} className="flex flex-col gap-4">
                                 <Field
-                                    id="signup-name"
-                                    label="Nom et prénom"
+                                    id="signup-lastname"
+                                    label="Nom"
                                     type="text"
-                                    autoComplete="name"
+                                    autoComplete="family-name"
+                                    value={signupLastname}
+                                    onChange={function (event) {
+                                        setSignupLastname(event.target.value);
+                                    }}
+                                />
+                                <Field
+                                    id="signup-firstname"
+                                    label="Prénom"
+                                    type="text"
+                                    autoComplete="given-name"
+                                    value={signupFirstname}
+                                    onChange={function (event) {
+                                        setSignupFirstname(event.target.value);
+                                    }}
                                 />
                                 <Field
                                     id="signup-email"
                                     label="Adresse électronique"
                                     type="email"
                                     autoComplete="email"
+                                    value={signupEmail}
+                                    onChange={function (event) {
+                                        setSignupEmail(event.target.value);
+                                    }}
                                 />
                                 <Field
                                     id="signup-password"
                                     label="Mot de passe"
                                     type="password"
                                     autoComplete="new-password"
+                                    placeholder="8 caractères minimum"
+                                    value={signupPassword}
+                                    onChange={function (event) {
+                                        setSignupPassword(event.target.value);
+                                    }}
                                 />
-                                <Button
-                                    type="submit"
-                                    className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
-                                >
-                                    Créer mon compte
-                                </Button>
+
+                                {errorMessage}
+
+                                <div className="flex gap-3">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={backToChoice}
+                                        className="font-heading font-semibold"
+                                    >
+                                        Retour
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="flex-1 bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+                                    >
+                                        {signupLabel}
+                                    </Button>
+                                </div>
                             </form>
                             )}
                             {signupType === "employer" && (
