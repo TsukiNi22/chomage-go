@@ -14,9 +14,7 @@ export default function AppFrame(props: { children: React.ReactNode }) {
         return (
             <div className="flex h-screen flex-col overflow-hidden">
                 <Header />
-                <main className="flex min-h-0 flex-1 flex-col bg-wash px-6 py-6">
-                    {props.children}
-                </main>
+                <main className="flex min-h-0 flex-1 flex-col">{props.children}</main>
             </div>
         );
     }

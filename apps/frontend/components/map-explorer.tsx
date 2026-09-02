@@ -441,8 +441,7 @@ export default function MapExplorer(props: ExplorerProps) {
         );
     }
 
-    let shellClass =
-        "mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col border border-border bg-background";
+    let shellClass = "flex min-h-0 flex-1 flex-col bg-background";
     if (props.embedded === true) {
         shellClass =
             "mx-auto flex h-[38rem] w-full max-w-6xl flex-col border border-border bg-background";
