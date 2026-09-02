@@ -9,8 +9,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 
 const links = [
-    { label: "Comment ça marche", href: "/#how" },
     { label: "Carte des offres", href: "/carte" },
+    { label: "Publier une offre", href: "/offres" },
+    { label: "Comment ça marche", href: "/#how" },
 ];
 
 export default function Header() {
@@ -91,7 +92,7 @@ export default function Header() {
                         asChild
                         className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
                     >
-                        <a href="#publish">Publier une offre</a>
+                        <Link href="/offres">Publier une offre</Link>
                     </Button>
                 </div>
             </header>
