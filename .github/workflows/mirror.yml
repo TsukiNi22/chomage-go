@@ -5,17 +5,16 @@ on:
     branches: [main]
 
 env:
-  MIRROR_REPO_URL: "https://github.com/EpitechPGE3-2026/G-SVR-500-BDX-5-1-survivor-4.git"
+  MIRROR_REPO_URL: "git@github.com:EpitechPGE3-2026/G-SVR-500-BDX-5-1-survivor-4.git"
 
 jobs:
   mirror:
+    if: github.repository != 'EpitechPGE3-2026/G-SVR-500-BDX-5-1-survivor-4'
+
     runs-on: ${{ vars.RUNNER }}
     defaults:
       run:
         shell: bash
-
-    #container:
-    #  image: ghcr.io/tsukini22/ci:latest
 
     steps:
       - name: Checkout (mirror complet)
@@ -24,7 +23,8 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Push mirror
-        run: |
-          git remote add mirror "${{ env.MIRROR_REPO_URL }}"
-          git push mirror --mirror
+      - name: Mirror Repository
+        uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url: ${{ env.MIRROR_REPO_URL }}
+          ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}

@@ -13,7 +13,7 @@ const router = Router();
  *     parameters:
  *       - in: path
  *         name: id
- *         required: true
+ *         required: false
  *         schema: { type: integer }
  *     responses:
  *       200:
@@ -21,11 +21,12 @@ const router = Router();
  *       404:
  *         description: User not found
  */
-router.get("/:id", usersController.getUser);
+router.get("/:id", requireAuth, usersController.getUser);
+router.get("/", requireAuth, usersController.getUser);
 
 /**
  * @openapi
- * /users/{id}:
+ * /users/:
  *   patch:
  *     summary: Update a user
  *     tags: [Users]
@@ -57,21 +58,16 @@ router.get("/:id", usersController.getUser);
  *       404:
  *         description: User not found
  */
-router.patch("/:id", requireAuth, usersController.patchUser);
+router.patch("/", requireAuth, usersController.patchUser);
 
 /**
  * @openapi
- * /users/{id}:
+ * /users/:
  *   delete:
  *     summary: Delete a user
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
  *     responses:
  *       200:
  *         description: User deleted
@@ -80,7 +76,7 @@ router.patch("/:id", requireAuth, usersController.patchUser);
  *       404:
  *         description: User not found
  */
-router.delete("/:id", requireAuth, usersController.deleteUser);
+router.delete("/", requireAuth, usersController.deleteUser);
 
 /**
  * @openapi
@@ -91,7 +87,7 @@ router.delete("/:id", requireAuth, usersController.deleteUser);
  *     parameters:
  *       - in: path
  *         name: id
- *         required: true
+ *         required: false
  *         schema: { type: integer }
  *     responses:
  *       200:
@@ -100,20 +96,16 @@ router.delete("/:id", requireAuth, usersController.deleteUser);
  *         description: User not found
  */
 router.get("/:id/skills", usersController.getSkill);
+router.get("/skills", usersController.getSkill);
 
 /**
  * @openapi
- * /users/{id}/skills:
+ * /users/skills:
  *   post:
  *     summary: Add a skill to a user
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
  *     requestBody:
  *       required: true
  *       content:
@@ -132,25 +124,16 @@ router.get("/:id/skills", usersController.getSkill);
  *       404:
  *         description: User not found
  */
-router.post("/:id/skills", requireAuth, usersController.postSkill);
+router.post("/skills", requireAuth, usersController.postSkill);
 
 /**
  * @openapi
- * /users/{id}/skills/{skillId}:
+ * /users/skills/{skillId}:
  *   patch:
  *     summary: Update a user skill
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
- *       - in: path
- *         name: skillId
- *         required: true
- *         schema: { type: integer }
  *     requestBody:
  *       required: true
  *       content:
@@ -168,21 +151,17 @@ router.post("/:id/skills", requireAuth, usersController.postSkill);
  *       404:
  *         description: User or skill not found
  */
-router.patch("/:id/skills/:skillId", requireAuth, usersController.patchSkill);
+router.patch("/skills/:skillId", requireAuth, usersController.patchSkill);
 
 /**
  * @openapi
- * /users/{id}/skills/{skillId}:
+ * /users/skills/{skillId}:
  *   delete:
  *     summary: Remove a user skill
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
  *       - in: path
  *         name: skillId
  *         required: true
@@ -195,7 +174,7 @@ router.patch("/:id/skills/:skillId", requireAuth, usersController.patchSkill);
  *       404:
  *         description: User or skill not found
  */
-router.delete("/:id/skills/:skillId", requireAuth, usersController.deleteSkill);
+router.delete("/skills/:skillId", requireAuth, usersController.deleteSkill);
 
 /**
  * @openapi
@@ -206,7 +185,7 @@ router.delete("/:id/skills/:skillId", requireAuth, usersController.deleteSkill);
  *     parameters:
  *       - in: path
  *         name: id
- *         required: true
+ *         required: false
  *         schema: { type: integer }
  *     responses:
  *       200:
@@ -215,20 +194,16 @@ router.delete("/:id/skills/:skillId", requireAuth, usersController.deleteSkill);
  *         description: User not found
  */
 router.get("/:id/experience", usersController.getExperience);
+router.get("/experience", usersController.getExperience);
 
 /**
  * @openapi
- * /users/{id}/experience:
+ * /users/experience:
  *   post:
  *     summary: Add an experience entry to a user
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
  *     requestBody:
  *       required: true
  *       content:
@@ -254,21 +229,17 @@ router.get("/:id/experience", usersController.getExperience);
  *       404:
  *         description: User not found
  */
-router.post("/:id/experience", requireAuth, usersController.postExperience);
+router.post("/experience", requireAuth, usersController.postExperience);
 
 /**
  * @openapi
- * /users/{id}/experience/{experienceId}:
+ * /users/experience/{experienceId}:
  *   patch:
  *     summary: Update an experience entry
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
  *       - in: path
  *         name: experienceId
  *         required: true
@@ -294,21 +265,17 @@ router.post("/:id/experience", requireAuth, usersController.postExperience);
  *       404:
  *         description: User or experience entry not found
  */
-router.patch("/:id/experience/experienceId", requireAuth, usersController.patchExperience);
+router.patch("/experience/:experienceId", requireAuth, usersController.patchExperience);
 
 /**
  * @openapi
- * /users/{id}/experience/{experienceId}:
+ * /users/experience/{experienceId}:
  *   delete:
  *     summary: Delete an experience entry
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
  *       - in: path
  *         name: experienceId
  *         required: true
@@ -321,7 +288,7 @@ router.patch("/:id/experience/experienceId", requireAuth, usersController.patchE
  *       404:
  *         description: User or experience entry not found
  */
-router.delete("/:id/experience/experienceId", requireAuth, usersController.deleteExperience);
+router.delete("/experience/:experienceId", requireAuth, usersController.deleteExperience);
 
 /**
  * @openapi
@@ -332,7 +299,7 @@ router.delete("/:id/experience/experienceId", requireAuth, usersController.delet
  *     parameters:
  *       - in: path
  *         name: id
- *         required: true
+ *         required: false
  *         schema: { type: integer }
  *     responses:
  *       200:
@@ -341,20 +308,16 @@ router.delete("/:id/experience/experienceId", requireAuth, usersController.delet
  *         description: User not found
  */
 router.get("/:id/availability", usersController.getAvailability);
+router.get("/availability", usersController.getAvailability);
 
 /**
  * @openapi
- * /users/{id}/availability:
+ * /users/availability:
  *   post:
  *     summary: Add an availability entry to a user
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
  *     requestBody:
  *       required: true
  *       content:
@@ -378,21 +341,17 @@ router.get("/:id/availability", usersController.getAvailability);
  *       404:
  *         description: User not found
  */
-router.post("/:id/availability", requireAuth, usersController.postAvailability);
+router.post("/availability", requireAuth, usersController.postAvailability);
 
 /**
  * @openapi
- * /users/{id}/availability/{availabilityId}:
+ * /users/availability/{availabilityId}:
  *   patch:
  *     summary: Update an availability entry
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
  *       - in: path
  *         name: availabilityId
  *         required: true
@@ -417,21 +376,17 @@ router.post("/:id/availability", requireAuth, usersController.postAvailability);
  *       404:
  *         description: User or availability entry not found
  */
-router.patch("/:id/availability/availabilityId", requireAuth, usersController.patchAvailability);
+router.patch("/availability/:availabilityId", requireAuth, usersController.patchAvailability);
 
 /**
  * @openapi
- * /users/{id}/availability/{availabilityId}:
+ * /users/availability/{availabilityId}:
  *   delete:
  *     summary: Delete an availability entry
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
  *       - in: path
  *         name: availabilityId
  *         required: true
@@ -444,6 +399,6 @@ router.patch("/:id/availability/availabilityId", requireAuth, usersController.pa
  *       404:
  *         description: User or availability entry not found
  */
-router.delete("/:id/availability/availabilityId", requireAuth, usersController.deleteAvailability);
+router.delete("/availability/:availabilityId", requireAuth, usersController.deleteAvailability);
 
 export default router;

@@ -6,6 +6,8 @@ import MinistryBrand from "@/components/ministry-brand";
 import { Button } from "@/components/ui/button";
 import AuthModal from "./auth-modal";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
+import { authClient } from "@/lib/auth-client";
 
 const links = [
     { label: "Home", href: "/" },
@@ -17,6 +19,7 @@ const PUBLISH_JOB_ROUTE = "/offres";
 export default function Header() {
     const pathname = usePathname();
     const [modalOpen, setModalOpen] = useState(false);
+    const { data: session, isPending } = authClient.useSession();
 
     function openModal() {
         setModalOpen(true);
@@ -27,6 +30,41 @@ export default function Header() {
     }
 
     const isOnPublishPage = pathname === PUBLISH_JOB_ROUTE;
+    async function handleSignOut() {
+        await authClient.signOut();
+    }
+
+    let accountArea = (
+    <Button
+        variant="ghost"
+        onClick={openModal}
+        className="font-heading font-semibold text-primary hover:bg-accent"
+    >
+        Se connecter/S&apos;inscrire
+    </Button>
+    );
+    
+    if (isPending) {
+        accountArea = <Skeleton className="h-9 w-32" />;
+    } else if (session) {
+        accountArea = (
+            <div className="flex items-center gap-3">
+                <Link
+                    href="/profil"
+                    className="font-heading text-sm font-medium text-primary underline-offset-4 hover:underline"
+                >
+                    {session.user.name}
+                </Link>
+                <Button
+                    variant="ghost"
+                    onClick={handleSignOut}
+                    className="font-heading font-semibold text-primary hover:bg-accent"
+                >
+                    Se déconnecter
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <>
