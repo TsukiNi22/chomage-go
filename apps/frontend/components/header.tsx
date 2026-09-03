@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import AuthModal from "./auth-modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
+import Link from "next/link";
 
 const links = [
     { label: "Carte des offres", href: "/carte" },
