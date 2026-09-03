@@ -45,6 +45,8 @@ services:
       timeout: 2s
       retries: 3
       start_period: 5s
+    ports:
+      - "${PORT_BACKEND}:4000" # appele par le navigateur, doit etre publie
 
   frontend:
     build:
@@ -54,6 +56,7 @@ services:
 
     environment:
       BACKEND_URL: http://backend:${PORT_BACKEND}
+      NEXT_PUBLIC_API_URL: http://localhost:${PORT_BACKEND}
 
     depends_on:
       backend:
