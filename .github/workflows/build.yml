@@ -32,6 +32,20 @@ jobs:
           PORT_FRONTEND=3000
           PORT=3000
           EOF
+          
+          cat <<EOF > apps/backend.env
+          DB_USER=root
+          DB_PASSWORD=root
+          DB_NAME=chomage-go
+          DB_HOST=localhost
+          BETTER_AUTH_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          BETTER_AUTH_URL=http://localhost:4000
+          PORT=4000
+          EOF
+          
+          cat <<EOF > apps/frontend/.env.local
+          NEXT_PUBLIC_API_URL=http://localhost:4000
+          EOF
 
       - name: Build images
         run: docker compose build
@@ -78,7 +92,7 @@ jobs:
 
       - name: Assemble distributable bundle
         run: |
-          cp docker-compose.yml dist/docker-compose.yml
+          cp docker-compose.dist.yml dist/docker-compose.yml
           cp .env dist/.env
           cat <<'EOF' > dist/README.md
           ## Lancer la démo
@@ -90,11 +104,17 @@ jobs:
           Ouvrir : http://localhost:3000
 
           ## Comptes de démonstration
+          
           | Rôle      | Email                  | Mot de passe |
           |-----------|------------------------|--------------|
           | Admin     | admin@demo.local       | demo1234     |
           | Employeur | employer@demo.local    | demo1234     |
           | Candidat  | candidate@demo.local   | demo1234     |
+          
+          ## Stop la démo
+
+          docker compose down -v
+
           EOF
 
       - name: Stop stack

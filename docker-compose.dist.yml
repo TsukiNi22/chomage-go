@@ -19,8 +19,6 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-    ports:
-      - "5432:5432" # public port linked
 
   backend:
     build:
@@ -47,8 +45,6 @@ services:
       timeout: 2s
       retries: 3
       start_period: 5s
-    ports:
-      - "${PORT_BACKEND}:4000" # public port linked
 
   frontend:
     build:
@@ -69,7 +65,7 @@ services:
 
 networks:
   db-net:
-    #internal: true # only db <-> backend
+    internal: true # only db <-> backend
   app-net: {} # only backend <-> frontend, can't be acceded from host
 
 volumes:
