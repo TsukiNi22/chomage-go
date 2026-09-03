@@ -30,6 +30,10 @@ router.get("/jobs", jobsController.getJobs);
  *     responses:
  *       200:
  *         description: Job data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Job"
  *       404:
  *         description: Job not found
  */
