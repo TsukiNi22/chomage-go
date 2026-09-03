@@ -1,0 +1,79 @@
+name: CD - Build
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    if: github.repository != 'TsukiNi22/chomage-go'
+
+    runs-on: ${{ vars.RUNNER }}
+    defaults:
+      run:
+        shell: bash
+  
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Write CD env
+        run: |
+          cp .env.example .env
+          cp apps/backend/.env.example apps/backend/.env
+          cp apps/frontend/.env.local.example apps/frontend/.env.local
+
+      - name: Build images
+        run: docker compose build
+
+      - name: Start stack
+        run: |
+          docker compose up -d
+          docker compose logs
+
+      - name: Export images
+        run: |
+          mkdir -p dist
+          docker save chomage-go-backend:latest -o dist/backend.tar
+          docker save chomage-go-frontend:latest -o dist/frontend.tar
+
+      - name: Assemble distributable bundle
+        run: |
+          cp docker-compose.dist.yml dist/docker-compose.yml
+          cp .env dist/.env
+          cat <<'EOF' > dist/README.md
+          ## Lancer la démo
+
+          docker load -i backend.tar
+          docker load -i frontend.tar
+          docker compose up -d
+
+          Ouvrir : http://localhost:3000
+
+          ## Comptes de démonstration
+          
+          | Rôle      | Email                  | Mot de passe |
+          |-----------|------------------------|--------------|
+          | Admin     | admin@demo.local       | demo1234     |
+          | Employeur | employer@demo.local    | demo1234     |
+          | Candidat  | candidate@demo.local   | demo1234     |
+          
+          ## Stop la démo
+
+          docker compose down -v
+
+          EOF
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: chomage-go-build-${{ github.sha }}
+          path: dist/
+          include-hidden-files: true
+          retention-days: 1

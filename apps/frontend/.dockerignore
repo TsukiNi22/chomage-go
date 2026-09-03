@@ -1,0 +1,11 @@
+# .dockerignore
+**/node_modules
+**/dist
+**/build
+**/.next
+**/.turbo
+**/.git
+**/coverage
+**/*.log
+.vscode
+.idea

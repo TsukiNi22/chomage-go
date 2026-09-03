@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {requireAuthHeader} from "../middlewares/requireAuthHeader.middleware.ts"
+import {requireAuth} from "../middlewares/requireAuth.middleware.ts"
 import * as jobsController from "../controllers/jobs.controller.ts";
 
 const router = Router();
@@ -65,7 +65,7 @@ router.get("/jobs/:id", jobsController.getJob);
  *       401:
  *         description: Missing or invalid auth header
  */
-router.post("/jobs", requireAuthHeader, jobsController.postJob);
+router.post("/jobs", requireAuth, jobsController.postJob);
 
 /**
  * @openapi
@@ -100,7 +100,7 @@ router.post("/jobs", requireAuthHeader, jobsController.postJob);
  *       404:
  *         description: Job not found
  */
-router.patch("/jobs/:id", requireAuthHeader, jobsController.patchJob);
+router.patch("/jobs/:id", requireAuth, jobsController.patchJob);
 
 /**
  * @openapi
@@ -123,7 +123,7 @@ router.patch("/jobs/:id", requireAuthHeader, jobsController.patchJob);
  *       404:
  *         description: Job not found
  */
-router.delete("/jobs/:id", requireAuthHeader, jobsController.deleteJob);
+router.delete("/jobs/:id", requireAuth, jobsController.deleteJob);
 
 /**
  * @openapi
@@ -175,7 +175,7 @@ router.get("/jobs/:id/skills", jobsController.getSkills);
  *       404:
  *         description: Job not found
  */
-router.post("/jobs/:id/skills", requireAuthHeader, jobsController.postSkill);
+router.post("/jobs/:id/skills", requireAuth, jobsController.postSkill);
 
 /**
  * @openapi
@@ -211,7 +211,7 @@ router.post("/jobs/:id/skills", requireAuthHeader, jobsController.postSkill);
  *       404:
  *         description: Job or skill not found
  */
-router.patch("/jobs/:id/skills/:skillId", requireAuthHeader, jobsController.patchSkill);
+router.patch("/jobs/:id/skills/:skillId", requireAuth, jobsController.patchSkill);
 
 /**
  * @openapi
@@ -238,6 +238,6 @@ router.patch("/jobs/:id/skills/:skillId", requireAuthHeader, jobsController.patc
  *       404:
  *         description: Job or skill not found
  */
-router.delete("/jobs/:id/skills/:skillId", requireAuthHeader, jobsController.deleteSkill);
+router.delete("/jobs/:id/skills/:skillId", requireAuth, jobsController.deleteSkill);
 
 export default router;

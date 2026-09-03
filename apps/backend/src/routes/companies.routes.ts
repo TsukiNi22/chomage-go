@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {requireAuthHeader} from "../middlewares/requireAuthHeader.middleware.ts"
+import {requireAuth} from "../middlewares/requireAuth.middleware.ts"
 import * as companiesController from "../controllers/companies.controller.ts";
 
 const router = Router();
@@ -64,7 +64,7 @@ router.get("/companies/:id", companiesController.getCompanie);
  *       409:
  *         description: Company name already exists
  */
-router.post("/companies", requireAuthHeader, companiesController.postCompanie);
+router.post("/companies", requireAuth, companiesController.postCompanie);
 
 /**
  * @openapi
@@ -97,7 +97,7 @@ router.post("/companies", requireAuthHeader, companiesController.postCompanie);
  *       404:
  *         description: Company not found
  */
-router.patch("/companies/:id", requireAuthHeader, companiesController.patchCompanie);
+router.patch("/companies/:id", requireAuth, companiesController.patchCompanie);
 
 /**
  * @openapi
@@ -120,6 +120,6 @@ router.patch("/companies/:id", requireAuthHeader, companiesController.patchCompa
  *       404:
  *         description: Company not found
  */
-router.delete("/companies/:id", requireAuthHeader, companiesController.deleteCompanie);
+router.delete("/companies/:id", requireAuth, companiesController.deleteCompanie);
 
 export default router;

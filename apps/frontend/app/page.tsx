@@ -1,13 +1,19 @@
+import Hero from "@/components/hero";
+import KeyFigures from "@/components/key-figures";
+import HowItWorks from "@/components/how-it-works";
+import MapExplorer from "@/components/map-explorer";
+
 export default function Home() {
-  return (
-    <html lang="fr">
-        <body>
-            <h1>GeoEmploi</h1>
-            <p>Bienvenue sur GeoEmploi</p>
-            <div style={{ fontSize: "12px", color: "gray" }}>
-                Port: {process.env.PORT}
+    return (
+        <>
+            <Hero />
+            <KeyFigures />
+            <div id="jobs" className="border-b border-border bg-wash px-6 py-12">
+                <MapExplorer embedded={true} />
             </div>
-        </body>
-    </html>
-  );
+            <div id="how">
+                <HowItWorks />
+            </div>
+        </>
+    );
 }

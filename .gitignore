@@ -13,8 +13,9 @@ node_modules/
 
 # testing
 /coverage
+meta/
+!apps/backend/drizzle/meta/
 
-# next.js
 .next/
 out/
 
@@ -35,6 +36,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+!apps/backend/.env.example
+!apps/frontend/.env.local.example
 
 # vercel
 .vercel
@@ -52,3 +56,7 @@ q
 vg
 z
 
+.cache/
+brief_chomage-go.pdf
+
+apps/backend/.geocode/

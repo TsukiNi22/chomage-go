@@ -1,0 +1,72 @@
+name: chomage-go
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - db-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    ports:
+      - "${PORT_DB}:${PORT_DB}" # public port linked
+
+  backend:
+    image: chomage-go-backend:latest
+    restart: unless-stopped
+
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${PORT_DB}/${DB_NAME}
+
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - db-net
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://backend:${PORT_BACKEND}/health || exit 1"]
+      interval: 10s
+      timeout: 2s
+      retries: 3
+      start_period: 5s
+    ports:
+      - "${PORT_BACKEND}:${PORT_BACKEND}" # public port linked
+
+  frontend:
+    image: chomage-go-frontend:latest
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - app-net
+    ports:
+      - "${PORT_FRONTEND}:${PORT_PUBLIC}" # public port linked
+
+networks:
+  db-net:
+    #internal: true # only db <-> backend
+  app-net: {} # only backend <-> frontend, can't be acceded from host
+
+volumes:
+  db-data:

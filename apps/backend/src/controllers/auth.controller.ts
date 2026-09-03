@@ -1,17 +1,24 @@
 import {Request, Response, NextFunction} from "express";
+import {validateJson} from "../utils/validateJson.utils";
+import {HttpError} from "../types/httpError";
+import * as schemas from "../schemas/auth.schema";
 
-export async function register(req: Request, res: Response, next: NextFunction)
+export function register(req: Request, res: Response, next: NextFunction)
 {
+    next();
 }
 
-export async function login(req: Request, res: Response, next: NextFunction)
+export function login(req: Request, res: Response, next: NextFunction)
 {
+    next();
 }
 
-export async function logout(req: Request, res: Response, next: NextFunction)
+export function logout(req: Request, res: Response, next: NextFunction)
 {
+    next();
 }
 
-export async function me(req: Request, res: Response, next: NextFunction)
+export function me(req: Request, res: Response, next: NextFunction)
 {
+    next();
 }
