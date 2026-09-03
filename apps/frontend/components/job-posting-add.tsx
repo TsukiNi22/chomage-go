@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
+import { RequiredMark, RequiredFieldsNote } from "@/components/form-required-mark";
 import type { ContractType, EmployerJobPosting } from "@/lib/employer-jobs";
 
 const contractTypes: ContractType[] = ["CDI", "CDD", "Alternance", "Stage", "Freelance"];
@@ -79,19 +80,21 @@ export default function CreateJobPostingDialog(props: Props) {
                     </DialogTitle>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">                    <RequiredFieldsNote />
+
+                    <RequiredFieldsNote />
                     <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="title">Titre</Label>
+                        <Label htmlFor="title">Titre<RequiredMark /></Label>
                         <Input id="title" name="title" required />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="description">Description</Label>
+                        <Label htmlFor="description">Description<RequiredMark /></Label>
                         <Textarea id="description" name="description" required rows={3} />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="contractType">Type de contrat</Label>
+                        <Label htmlFor="contractType">Type de contrat<RequiredMark /></Label>
                         <Select
                             value={contractType}
                             onValueChange={function (value) {
@@ -117,6 +120,7 @@ export default function CreateJobPostingDialog(props: Props) {
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="skills">
                             Compétences requises
+                            <RequiredMark />
                             <span className="ml-1 font-normal text-muted-foreground">
                                 (séparées par des virgules)
                             </span>
@@ -130,7 +134,7 @@ export default function CreateJobPostingDialog(props: Props) {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="salaryMin">Salaire minimum (€ brut/an)</Label>
+                        <Label htmlFor="salaryMin">Salaire minimum (€ brut/an)<RequiredMark /></Label>
                         <Input
                             id="salaryMin"
                             name="salaryMin"

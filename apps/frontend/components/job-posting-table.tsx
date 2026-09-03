@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Trash2 } from "lucide-react";
 import type { EmployerJobPosting } from "@/lib/employer-jobs";
 
@@ -23,6 +24,7 @@ export default function JobPostingsTable(props: Props) {
         );
     }
     return (
+        <TooltipProvider delayDuration={200}>
         <div className="overflow-x-auto border border-border bg-background">
             <Table>
                 <TableHeader>
@@ -45,10 +47,16 @@ export default function JobPostingsTable(props: Props) {
                                     {posting.title}
                                 </TableCell>
 
-                                <TableCell className="max-w-xs whitespace-normal break-words text-sm text-muted-foreground">
-                                    {posting.description}
-                                </TableCell>
-
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <p className="cursor-default truncate">
+                                            {posting.description}
+                                        </p>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                        <p>{posting.description}</p>
+                                    </TooltipContent>
+                                </Tooltip>
                                 <TableCell>
                                     <Badge variant="outline" className="font-heading">
                                         {posting.contractType}
@@ -94,5 +102,6 @@ export default function JobPostingsTable(props: Props) {
                 </TableBody>
             </Table>
         </div>
+        </TooltipProvider>
     );
 }
