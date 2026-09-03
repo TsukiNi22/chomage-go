@@ -5,16 +5,117 @@ on:
     branches: [main]
 
 jobs:
-  mirror:
+  build:
     if: github.repository != 'TsukiNi22/chomage-go'
 
     runs-on: ${{ vars.RUNNER }}
     defaults:
       run:
         shell: bash
-
+  
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
           fetch-depth: 1
+
+      - name: Write CD env
+        run: |
+          cat <<EOF > .env
+          DB_USER=root
+          DB_PASSWORD=root
+          DB_NAME=chomage-go
+          BETTER_AUTH_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          BETTER_AUTH_URL=http://localhost:4000
+          FRONTEND_URL=http://localhost:3000
+          PORT_BACKEND=4000
+          PORT_FRONTEND=3000
+          PORT=3000
+          EOF
+          
+          cat <<EOF > apps/backend/.env
+          DB_USER=root
+          DB_PASSWORD=root
+          DB_NAME=chomage-go
+          DB_HOST=localhost
+          BETTER_AUTH_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          BETTER_AUTH_URL=http://localhost:4000
+          PORT=4000
+          EOF
+          
+          cat <<EOF > apps/frontend/.env.local
+          NEXT_PUBLIC_API_URL=http://localhost:4000
+          EOF
+
+      - name: Build images
+        run: docker compose build
+
+      - name: Start stack
+        run: docker compose up -d
+
+      - name: Wait for backend health
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4000/health; then
+              echo "backend is healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "backend never became healthy"
+          docker compose logs
+          exit 1
+
+      - name: Verify demo accounts are seeded (smoke test)
+        run: |
+          for email in admin@demo.local employer@demo.local candidate@demo.local; do
+            code=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
+              -X POST http://localhost:4000/api/auth/sign-in/email \
+              -H "Content-Type: application/json" \
+              -d "{\"email\":\"$email\",\"password\":\"demo1234\"}")
+            if [ "$code" != "200" ]; then
+              echo "login failed for $email (HTTP $code)"
+              cat /tmp/resp.json
+              docker compose logs backend
+              exit 1
+            fi
+            echo "OK: $email"
+          done
+
+      - name: Export images
+        run: |
+          mkdir -p dist
+          docker save chomage-go-backend:latest -o dist/backend.tar
+          docker save chomage-go-frontend:latest -o dist/frontend.tar
+
+      - name: Assemble distributable bundle
+        run: |
+          cp docker-compose.yml dist/docker-compose.yml
+          cp .env dist/.env
+          cat <<'EOF' > dist/README.md
+          ## Lancer la démo
+
+          docker load -i backend.tar
+          docker load -i frontend.tar
+          docker compose up -d
+
+          Ouvrir : http://localhost:3000
+
+          ## Comptes de démonstration
+          | Rôle      | Email                  | Mot de passe |
+          |-----------|------------------------|--------------|
+          | Admin     | admin@demo.local       | demo1234     |
+          | Employeur | employer@demo.local    | demo1234     |
+          | Candidat  | candidate@demo.local   | demo1234     |
+          EOF
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chomage-go-build-${{ github.sha }}
+          path: dist/
+          retention-days: 14
