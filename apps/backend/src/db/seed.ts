@@ -1,6 +1,6 @@
 import {auth} from "../lib/auth.ts";
 import {db, client} from "./index.ts";
-import {users, companies} from "./schema.ts";
+import {users, companies, addresses} from "./schema.ts";
 import {eq} from "drizzle-orm";
 
 const DEMO_PASSWORD = "demo1234";
@@ -24,13 +24,35 @@ async function ensureUser(
 async function main()
 {
     const existingCompany = await db.query.companies.findFirst({ where: eq(companies.siret, "12345678900011") });
-    const companyId = existingCompany?.id ?? (await db.insert(companies).values({
-        name: "Acme Corp",
-        siret: "12345678900011",
-        description: "Entreprise de démonstration",
-        link: "https://acme.example",
-        employeeRange: 1,
-    }).returning())[0].id;
+
+    let companyId: number;
+    if (existingCompany) {
+        companyId = existingCompany.id;
+    } else {
+        const [address] = await db.insert(addresses).values({
+            label: "12 rue de la Paix, 75002 Paris",
+            street: "12 rue de la Paix",
+            postalCode: "75002",
+            city: "Paris",
+            latitude: 48.8698,
+            longitude: 2.3312,
+            geocodingSource: "seed",
+            geocodingScore: 1,
+            geocodedAt: new Date(),
+            needsLocationCheck: false,
+        }).returning();
+
+        const [company] = await db.insert(companies).values({
+            name: "Acme Corp",
+            siret: "12345678900011",
+            description: "Entreprise de démonstration",
+            link: "https://acme.example",
+            employeeRange: 1,
+            addressId: address.id,
+        }).returning();
+
+        companyId = company.id;
+    }
 
     await ensureUser("admin@demo.local", "Admin Demo", "Admin", "Demo", 0);
     await ensureUser("employer@demo.local", "Employeur Demo", "Employeur", "Demo", 1, companyId);
