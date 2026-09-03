@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import MinistryBrand from "@/components/ministry-brand";
 import { Button } from "@/components/ui/button";
@@ -68,14 +69,18 @@ export default function Header() {
         );
     }
 
-    let publishButton = (
+    let publishButton: React.ReactNode = (
         <Button
             asChild
             className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
         >
-            <Link href="/offres">Publier une offre</Link>
+            <Link href={PUBLISH_JOB_ROUTE}>Publier une offre</Link>
         </Button>
     );
+
+    if (isOnPublishPage) {
+        publishButton = null;
+    }
 
     if (cgu.ready && !cgu.accepted) {
         accountArea = (
@@ -125,21 +130,8 @@ export default function Header() {
                 </nav>
 
                 <div className="flex items-center gap-3">
-                    <Button
-                        variant="ghost"
-                        onClick={openModal}
-                        className="font-heading font-semibold text-primary hover:bg-accent"
-                    >
-                        Se connecter/S'inscrire
-                    </Button>
-                    {!isOnPublishPage && (
-                        <Button
-                            asChild
-                            className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
-                        >
-                            <Link href="/offres">Publier une offre</Link>
-                        </Button>
-                    )}
+                    {accountArea}
+                    {publishButton}
                 </div>
             </header>
 
