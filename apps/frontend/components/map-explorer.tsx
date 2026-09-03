@@ -461,7 +461,7 @@ export default function MapExplorer(props: ExplorerProps) {
                     <Input
                         value={location}
                         onChange={handleLocation}
-                        placeholder="Commune ou code postal : Rennes, 35000…"
+                        placeholder="Addresse ou code postal..."
                         className="lg:w-72"
                         aria-label="Rechercher une commune ou un code postal"
                     />

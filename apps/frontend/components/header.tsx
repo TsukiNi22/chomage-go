@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import AuthModal from "./auth-modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
+import { useCgu } from "@/components/cgu-provider";
 
 const links = [
     { label: "Carte des offres", href: "/carte" },
@@ -20,6 +21,7 @@ export default function Header() {
     const pathname = usePathname();
     const [modalOpen, setModalOpen] = useState(false);
     const { data: session, isPending } = authClient.useSession();
+    const cgu = useCgu();
 
     function openModal() {
         setModalOpen(true);
@@ -63,6 +65,38 @@ export default function Header() {
                     Se déconnecter
                 </Button>
             </div>
+        );
+    }
+
+    let publishButton = (
+        <Button
+            asChild
+            className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+        >
+            <Link href="/offres">Publier une offre</Link>
+        </Button>
+    );
+
+    if (cgu.ready && !cgu.accepted) {
+        accountArea = (
+            <Button
+                variant="ghost"
+                disabled
+                title="Acceptez les conditions générales pour continuer"
+                className="font-heading font-semibold text-primary"
+            >
+                Se connecter/S&apos;inscrire
+            </Button>
+        );
+
+        publishButton = (
+            <Button
+                disabled
+                title="Acceptez les conditions générales pour continuer"
+                className="bg-action font-heading font-semibold text-action-foreground"
+            >
+                Publier une offre
+            </Button>
         );
     }
 
