@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { usePathname } from "next/navigation";
 import MinistryBrand from "@/components/ministry-brand";
 import { Button } from "@/components/ui/button";
 import AuthModal from "./auth-modal";
@@ -14,7 +14,10 @@ const links = [
     { label: "Comment ça marche", href: "/#how" },
 ];
 
+const PUBLISH_JOB_ROUTE = "/offres";
+
 export default function Header() {
+    const pathname = usePathname();
     const [modalOpen, setModalOpen] = useState(false);
     const { data: session, isPending } = authClient.useSession();
 
@@ -26,6 +29,7 @@ export default function Header() {
         setModalOpen(false);
     }
 
+    const isOnPublishPage = pathname === PUBLISH_JOB_ROUTE;
     async function handleSignOut() {
         await authClient.signOut();
     }
@@ -87,13 +91,21 @@ export default function Header() {
                 </nav>
 
                 <div className="flex items-center gap-3">
-                    {accountArea}
                     <Button
-                        asChild
-                        className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+                        variant="ghost"
+                        onClick={openModal}
+                        className="font-heading font-semibold text-primary hover:bg-accent"
                     >
-                        <Link href="/offres">Publier une offre</Link>
+                        Se connecter/S'inscrire
                     </Button>
+                    {!isOnPublishPage && (
+                        <Button
+                            asChild
+                            className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+                        >
+                            <Link href="/offres">Publier une offre</Link>
+                        </Button>
+                    )}
                 </div>
             </header>
 
