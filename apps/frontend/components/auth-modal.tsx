@@ -32,6 +32,9 @@ function Field(props: {
                 className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
             >
                 {props.label}
+                <span aria-hidden="true" className="ml-0.5 text-destructive">
+                    *
+                </span>
             </Label>
             <Input
                 id={props.id}
@@ -40,6 +43,7 @@ function Field(props: {
                 placeholder={props.placeholder}
                 value={props.value}
                 onChange={props.onChange}
+                required
             />
         </div>
     );
@@ -160,6 +164,16 @@ export default function AuthModal(props: Props) {
         setError(null);
     }
 
+    function RequiredFieldsNote() {
+    return (
+        <p className="text-xs text-muted-foreground">
+            Les champs marqués d&apos;un{" "}
+            <span aria-hidden="true" className="text-destructive">*</span>{" "}
+            sont obligatoires.
+        </p>
+    );
+}
+
     let submitLabel = "Se connecter";
     if (loading) {
         submitLabel = "Connexion…";
@@ -207,6 +221,7 @@ export default function AuthModal(props: Props) {
 
                         <TabsContent value="login">
                             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                                <RequiredFieldsNote />
                                 <Field
                                     id="login-email"
                                     label="Adresse électronique"
@@ -243,6 +258,7 @@ export default function AuthModal(props: Props) {
                             {signupType === null && ( <SignupTypeChoice onChoose={setSignupType} /> )}
                             {signupType === "individual" && (
                             <form onSubmit={handleSignup} className="flex flex-col gap-4">
+                                <RequiredFieldsNote />
                                 <Field
                                     id="signup-lastname"
                                     label="Nom"
@@ -308,6 +324,7 @@ export default function AuthModal(props: Props) {
                             )}
                             {signupType === "employer" && (
                                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                                    <RequiredFieldsNote />
                                     <Field
                                         id="employer-lastname"
                                         label="Nom"
