@@ -1,0 +1,10 @@
+1. Langue de la page -> (critère 8.3)
+2. Lien d'évitement -> (critère 12.7)
+3. Attributs alt sur les images ->
+4. Étiquettes de formulaire -> (critère 11.1)
+5. Icônes seules = boutons sans texte visible -> (critère 7.1)
+6. Contraste des couleurs -> (critère 3.2)
+7. Titre de page pertinent -> (critère 8.4)
+8. Focus visible au clavier -> (critère 10.7)
+9. Messages d'erreur de formulaire compréhensibles -> (critère 11.10)
+10. Les zones de regroupement de contenus sont identifiables -> (critère 12.6)
