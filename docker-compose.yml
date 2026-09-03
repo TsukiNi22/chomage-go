@@ -58,6 +58,7 @@ services:
 
     environment:
       BACKEND_URL: http://backend:${PORT_BACKEND}
+      NEXT_PUBLIC_API_URL: http://localhost:${PORT_BACKEND}
 
     depends_on:
       backend:
