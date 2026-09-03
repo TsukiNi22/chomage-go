@@ -26,7 +26,7 @@ jobs:
           DB_PASSWORD=root
           DB_NAME=chomage-go
           BETTER_AUTH_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          BETTER_AUTH_URL=http://localhost:4000
+          BETTER_AUTH_URL=http://backend:4000
           FRONTEND_URL=http://localhost:3000
           PORT_BACKEND=4000
           PORT_FRONTEND=3000
@@ -39,12 +39,12 @@ jobs:
           DB_NAME=chomage-go
           DB_HOST=localhost
           BETTER_AUTH_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          BETTER_AUTH_URL=http://localhost:4000
+          BETTER_AUTH_URL=http://backend:4000
           PORT=4000
           EOF
           
           cat <<EOF > apps/frontend/.env.local
-          NEXT_PUBLIC_API_URL=http://localhost:4000
+          NEXT_PUBLIC_API_URL=http://backend:4000
           EOF
 
       - name: Build images
@@ -122,8 +122,8 @@ jobs:
         run: docker compose down -v
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: chomage-go-build-${{ github.sha }}
           path: dist/
-          retention-days: 14
+          retention-days: 1
