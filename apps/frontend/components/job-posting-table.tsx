@@ -43,7 +43,7 @@ export default function JobPostingsTable(props: Props) {
                     {props.postings.map(function (posting) {
                         return (
                             <TableRow key={posting.id}>
-                                <TableCell className="font-heading font-semibold text-primary">
+                                <TableCell className="max-w-48 whitespace-normal break-words font-heading font-semibold text-primary">
                                     {posting.title}
                                 </TableCell>
 
@@ -63,7 +63,7 @@ export default function JobPostingsTable(props: Props) {
                                     </Badge>
                                 </TableCell>
 
-                                <TableCell>
+                                <TableCell className="max-w-56 whitespace-normal">
                                     <div className="flex flex-wrap gap-1">
                                         {posting.requiredSkills.map(function (skill) {
                                             return (

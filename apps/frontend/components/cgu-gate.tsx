@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -12,39 +11,18 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import {
-    CGU_DATE,
-    CGU_VERSION,
-    readAcceptedVersion,
-    saveAcceptedVersion,
-} from "@/lib/cgu";
+import { useCgu } from "@/components/cgu-provider";
+import { CGU_DATE, CGU_VERSION } from "@/lib/cgu";
 
 const EXEMPT_PATHS = ["/cgu"];
 
 export default function CguGate() {
     const pathname = usePathname();
-    const [open, setOpen] = useState(false);
-    const [previousVersion, setPreviousVersion] = useState<string | null>(null);
+    const cgu = useCgu();
 
-    useEffect(
-        function () {
-            if (EXEMPT_PATHS.includes(pathname)) {
-                setOpen(false);
-                return;
-            }
-
-            const accepted = readAcceptedVersion();
-            setPreviousVersion(accepted);
-            if (accepted !== CGU_VERSION) {
-                setOpen(true);
-            }
-        },
-        [pathname],
-    );
-
-    function accept() {
-        saveAcceptedVersion(CGU_VERSION);
-        setOpen(false);
+    let open = false;
+    if (cgu.ready && !cgu.accepted && !EXEMPT_PATHS.includes(pathname)) {
+        open = true;
     }
 
     function blockClose(event: Event) {
@@ -55,21 +33,21 @@ export default function CguGate() {
     let intro =
         "Avant d'utiliser ChômageGo, vous devez prendre connaissance des conditions générales d'utilisation et les accepter.";
 
-    if (previousVersion !== null) {
+    if (cgu.previousVersion !== null) {
         title = "Les conditions générales ont changé";
         intro =
             "Une nouvelle version des conditions générales d'utilisation est entrée en vigueur. Vous devez l'accepter pour continuer.";
     }
 
     let versionLine = "Version " + CGU_VERSION + " du " + CGU_DATE;
-    if (previousVersion !== null) {
+    if (cgu.previousVersion !== null) {
         versionLine =
             "Version " +
             CGU_VERSION +
             " du " +
             CGU_DATE +
             " · vous aviez accepté la version " +
-            previousVersion;
+            cgu.previousVersion;
     }
 
     return (
@@ -107,7 +85,6 @@ export default function CguGate() {
                     <p>
                         <Link
                             href="/cgu"
-                            target="_blank"
                             className="font-heading font-semibold text-primary underline underline-offset-4"
                         >
                             Lire les conditions générales dans leur intégralité
@@ -118,7 +95,7 @@ export default function CguGate() {
                 <DialogFooter className="border-t border-border bg-muted p-6">
                     <Button
                         type="button"
-                        onClick={accept}
+                        onClick={cgu.accept}
                         className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
                     >
                         J&apos;accepte les conditions générales

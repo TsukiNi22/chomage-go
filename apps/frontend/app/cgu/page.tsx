@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import CguAcceptBar from "@/components/cgu-accept-bar";
 import { CGU_DATE, CGU_VERSION } from "@/lib/cgu";
 
 export const metadata: Metadata = {
@@ -130,6 +131,8 @@ export default function CguPage() {
                     })}
                 </div>
             </div>
+
+            <CguAcceptBar />
         </div>
     );
 }

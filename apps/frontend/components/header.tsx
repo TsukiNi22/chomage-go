@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import MinistryBrand from "@/components/ministry-brand";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import AuthModal from "./auth-modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { useCgu } from "@/components/cgu-provider";
 
 const links = [
     { label: "Carte des offres", href: "/carte" },
@@ -21,6 +23,7 @@ export default function Header() {
     const pathname = usePathname();
     const [modalOpen, setModalOpen] = useState(false);
     const { data: session, isPending } = authClient.useSession();
+    const cgu = useCgu();
 
     function openModal() {
         setModalOpen(true);
@@ -67,6 +70,42 @@ export default function Header() {
         );
     }
 
+    let publishButton: React.ReactNode = (
+        <Button
+            asChild
+            className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+        >
+            <Link href={PUBLISH_JOB_ROUTE}>Publier une offre</Link>
+        </Button>
+    );
+
+    if (isOnPublishPage) {
+        publishButton = null;
+    }
+
+    if (cgu.ready && !cgu.accepted) {
+        accountArea = (
+            <Button
+                variant="ghost"
+                disabled
+                title="Acceptez les conditions générales pour continuer"
+                className="font-heading font-semibold text-primary"
+            >
+                Se connecter/S&apos;inscrire
+            </Button>
+        );
+
+        publishButton = (
+            <Button
+                disabled
+                title="Acceptez les conditions générales pour continuer"
+                className="bg-action font-heading font-semibold text-action-foreground"
+            >
+                Publier une offre
+            </Button>
+        );
+    }
+
     return (
         <>
             <header className="flex items-center justify-between gap-6 border-b-2 border-primary bg-background px-8 py-4">
@@ -92,21 +131,8 @@ export default function Header() {
                 </nav>
 
                 <div className="flex items-center gap-3">
-                    <Button
-                        variant="ghost"
-                        onClick={openModal}
-                        className="font-heading font-semibold text-primary hover:bg-accent"
-                    >
-                        Se connecter/S'inscrire
-                    </Button>
-                    {!isOnPublishPage && (
-                        <Button
-                            asChild
-                            className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
-                        >
-                            <Link href="/offres">Publier une offre</Link>
-                        </Button>
-                    )}
+                    {accountArea}
+                    {publishButton}
                 </div>
             </header>
 
