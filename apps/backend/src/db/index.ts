@@ -7,5 +7,5 @@ const url =
     process.env.DATABASE_URL ||
     `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:5432/${process.env.DB_NAME}`;
 
-const client = postgres(url);
+export const client = postgres(url);
 export const db = drizzle(client, {schema});

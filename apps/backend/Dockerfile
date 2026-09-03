@@ -12,5 +12,4 @@ COPY apps/backend ./apps/backend
 
 WORKDIR /app/apps/backend
 EXPOSE 4000
-CMD ["pnpm", "dev"]
-CMD ["sh", "-c", "node dist/db/migrate.js && node dist/db/seed.js && node dist/index.js"]
+CMD ["sh", "-c", "node src/db/migrate.ts && node src/db/seed.ts && pnpm dev"]

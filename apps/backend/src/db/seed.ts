@@ -1,6 +1,6 @@
-import {auth} from "../lib/auth";
-import {db, client} from "./index";
-import {users, companies} from "./schema";
+import {auth} from "../lib/auth.ts";
+import {db, client} from "./index.ts";
+import {users, companies} from "./schema.ts";
 import {eq} from "drizzle-orm";
 
 const DEMO_PASSWORD = "demo1234";
@@ -14,7 +14,7 @@ async function ensureUser(
         console.log(`[seed] ${email} already exists, skipping`);
         return;
     }
-    const { user } = await auth.api.signUpEmail({ body: { email, password: DEMO_PASSWORD, name } });
+    const { user } = await auth.api.signUpEmail({ body: { email, password: DEMO_PASSWORD, name, firstname, lastname } });
     await db.update(users)
         .set({ rank, firstname, lastname, companiesId, emailVerified: true, allowedAt: new Date() })
         .where(eq(users.id, Number(user.id)));
