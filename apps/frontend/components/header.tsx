@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import AuthModal from "./auth-modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
+import { useCgu } from "@/components/cgu-provider";
 
 const links = [
     { label: "Carte des offres", href: "/carte" },
@@ -17,6 +18,7 @@ const links = [
 export default function Header() {
     const [modalOpen, setModalOpen] = useState(false);
     const { data: session, isPending } = authClient.useSession();
+    const cgu = useCgu();
 
     function openModal() {
         setModalOpen(true);
@@ -62,6 +64,38 @@ export default function Header() {
         );
     }
 
+    let publishButton = (
+        <Button
+            asChild
+            className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+        >
+            <Link href="/offres">Publier une offre</Link>
+        </Button>
+    );
+
+    if (cgu.ready && !cgu.accepted) {
+        accountArea = (
+            <Button
+                variant="ghost"
+                disabled
+                title="Acceptez les conditions générales pour continuer"
+                className="font-heading font-semibold text-primary"
+            >
+                Se connecter/S&apos;inscrire
+            </Button>
+        );
+
+        publishButton = (
+            <Button
+                disabled
+                title="Acceptez les conditions générales pour continuer"
+                className="bg-action font-heading font-semibold text-action-foreground"
+            >
+                Publier une offre
+            </Button>
+        );
+    }
+
     return (
         <>
             <header className="flex items-center justify-between gap-6 border-b-2 border-primary bg-background px-8 py-4">
@@ -88,12 +122,7 @@ export default function Header() {
 
                 <div className="flex items-center gap-3">
                     {accountArea}
-                    <Button
-                        asChild
-                        className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
-                    >
-                        <Link href="/offres">Publier une offre</Link>
-                    </Button>
+                    {publishButton}
                 </div>
             </header>
 
