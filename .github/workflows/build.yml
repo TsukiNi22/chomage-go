@@ -32,20 +32,6 @@ jobs:
           PORT_FRONTEND=3000
           PORT=3000
           EOF
-          
-          cat <<EOF > apps/backend/.env
-          DB_USER=root
-          DB_PASSWORD=root
-          DB_NAME=chomage-go
-          DB_HOST=localhost
-          BETTER_AUTH_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          BETTER_AUTH_URL=http://localhost:4000
-          PORT=4000
-          EOF
-          
-          cat <<EOF > apps/frontend/.env.local
-          NEXT_PUBLIC_API_URL=http://localhost:4000
-          EOF
 
       - name: Build images
         run: docker compose build
