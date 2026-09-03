@@ -5,6 +5,8 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
 
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -20,7 +22,7 @@ services:
       timeout: 3s
       retries: 5
     ports:
-      - "5432:5432" # public port linked
+      - "${PORT_DB}:${PORT_DB}" # public port linked
 
   backend:
     build:
@@ -28,12 +30,10 @@ services:
       dockerfile: apps/backend/Dockerfile
     restart: unless-stopped
 
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
-      PORT: ${PORT_BACKEND}
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
-      FRONTEND_URL: ${FRONTEND_URL}
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${PORT_DB}/${DB_NAME}
 
     depends_on:
       db:
@@ -48,7 +48,7 @@ services:
       retries: 3
       start_period: 5s
     ports:
-      - "${PORT_BACKEND}:4000" # public port linked
+      - "${PORT_BACKEND}:${PORT_BACKEND}" # public port linked
 
   frontend:
     build:
@@ -56,8 +56,8 @@ services:
       dockerfile: apps/frontend/Dockerfile
     restart: unless-stopped
 
-    environment:
-      BACKEND_URL: http://backend:${PORT_BACKEND}
+    env_file:
+      - .env
 
     depends_on:
       backend:
@@ -65,7 +65,7 @@ services:
     networks:
       - app-net
     ports:
-      - "${PORT_FRONTEND}:${PORT}" # public port linked
+      - "${PORT_FRONTEND}:${PORT_PUBLIC}" # public port linked
 
 networks:
   db-net:

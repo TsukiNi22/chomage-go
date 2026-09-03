@@ -14,6 +14,8 @@ export type UserProfile = {
 };
 
 const base = process.env.NEXT_PUBLIC_API_URL || "";
+if (base == "")
+    console.log("[frontend] NEXT_PUBLIC_API_URL is missing");
 
 export async function fetchMyProfile(): Promise<UserProfile | null> {
     const response = await fetch(base + "/api/users", {
