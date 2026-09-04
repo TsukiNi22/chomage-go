@@ -17,6 +17,7 @@ CREATE TABLE "addresses" (
 	"updated_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
+ALTER TABLE "applications" ADD COLUMN "description" text;--> statement-breakpoint
 ALTER TABLE "companies" ADD COLUMN "address_id" integer;--> statement-breakpoint
 ALTER TABLE "jobs" ADD COLUMN "address_id" integer;--> statement-breakpoint
 ALTER TABLE "users" ADD COLUMN "address_id" integer;--> statement-breakpoint

@@ -15,30 +15,10 @@ CREATE TABLE "account" (
 	"updated_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-CREATE TABLE "addresses" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"label" text NOT NULL,
-	"street" varchar(255),
-	"postal_code" varchar(10),
-	"city" varchar(100),
-	"country_code" varchar(2) DEFAULT 'FR' NOT NULL,
-	"latitude" double precision,
-	"longitude" double precision,
-	"lambert_x" double precision,
-	"lambert_y" double precision,
-	"geocoding_source" varchar(50),
-	"geocoding_score" double precision,
-	"geocoded_at" timestamp,
-	"needs_location_check" boolean DEFAULT true NOT NULL,
-	"created_at" timestamp DEFAULT now(),
-	"updated_at" timestamp DEFAULT now()
-);
---> statement-breakpoint
 CREATE TABLE "applications" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"job_id" integer NOT NULL,
 	"user_id" integer NOT NULL,
-	"description" text,
 	CONSTRAINT "applications_job_id_user_id_unique" UNIQUE("job_id","user_id")
 );
 --> statement-breakpoint
@@ -59,7 +39,6 @@ CREATE TABLE "companies" (
 	"description" text,
 	"link" varchar(500),
 	"employee_range" integer NOT NULL,
-	"address_id" integer,
 	CONSTRAINT "companies_name_siret_unique" UNIQUE("name","siret")
 );
 --> statement-breakpoint
@@ -86,7 +65,6 @@ CREATE TABLE "jobs" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"companies_id" integer NOT NULL,
 	"user_id" integer NOT NULL,
-	"address_id" integer,
 	"title" varchar(255) NOT NULL,
 	"description" text,
 	"type" integer NOT NULL,
@@ -127,7 +105,6 @@ CREATE TABLE "users" (
 	"email_verified" boolean DEFAULT false NOT NULL,
 	"password_hash" varchar(255),
 	"address" text,
-	"address_id" integer,
 	"description" text,
 	"resume" text,
 	"localisation" boolean DEFAULT false,
@@ -149,17 +126,11 @@ ALTER TABLE "account" ADD CONSTRAINT "account_user_id_users_id_fk" FOREIGN KEY (
 ALTER TABLE "applications" ADD CONSTRAINT "applications_job_id_jobs_id_fk" FOREIGN KEY ("job_id") REFERENCES "public"."jobs"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "applications" ADD CONSTRAINT "applications_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "availability" ADD CONSTRAINT "availability_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "companies" ADD CONSTRAINT "companies_address_id_addresses_id_fk" FOREIGN KEY ("address_id") REFERENCES "public"."addresses"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "experience" ADD CONSTRAINT "experience_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "experience" ADD CONSTRAINT "experience_companies_id_companies_id_fk" FOREIGN KEY ("companies_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "job_skills" ADD CONSTRAINT "job_skills_job_id_jobs_id_fk" FOREIGN KEY ("job_id") REFERENCES "public"."jobs"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "jobs" ADD CONSTRAINT "jobs_companies_id_companies_id_fk" FOREIGN KEY ("companies_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "jobs" ADD CONSTRAINT "jobs_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "jobs" ADD CONSTRAINT "jobs_address_id_addresses_id_fk" FOREIGN KEY ("address_id") REFERENCES "public"."addresses"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_skills" ADD CONSTRAINT "user_skills_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "users" ADD CONSTRAINT "users_companies_id_companies_id_fk" FOREIGN KEY ("companies_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "users" ADD CONSTRAINT "users_address_id_addresses_id_fk" FOREIGN KEY ("address_id") REFERENCES "public"."addresses"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "idx_addresses_city" ON "addresses" USING btree ("city");--> statement-breakpoint
-CREATE INDEX "idx_addresses_postal_code" ON "addresses" USING btree ("postal_code");--> statement-breakpoint
-CREATE INDEX "idx_addresses_coords" ON "addresses" USING btree ("latitude","longitude");
+ALTER TABLE "users" ADD CONSTRAINT "users_companies_id_companies_id_fk" FOREIGN KEY ("companies_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;
