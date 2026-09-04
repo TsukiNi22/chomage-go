@@ -80,8 +80,7 @@ export default function CreateJobPostingDialog(props: Props) {
                     </DialogTitle>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">                    <RequiredFieldsNote />
-
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <RequiredFieldsNote />
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="title">Titre<RequiredMark /></Label>
