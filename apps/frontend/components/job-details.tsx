@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { formatSalary } from "@/components/job-list";
 import { distanceInKm, formatDistance } from "@/lib/distance";
 import type { Job } from "@/lib/jobs";
+import { useApplications } from "@/lib/applications-context";
 
 type Position = { lat: number; lon: number };
 
@@ -51,6 +52,8 @@ export default function JobDetails(props: Props) {
         [jobId],
     );
 
+    const { addApplication } = useApplications();
+
     function handleOpenChange(open: boolean) {
         if (!open) {
             props.onClose();
@@ -58,6 +61,9 @@ export default function JobDetails(props: Props) {
     }
 
     function handleApply() {
+        if (job !== null) {
+            addApplication(job);
+        }
         setApplied(true);
     }
 

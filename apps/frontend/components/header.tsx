@@ -17,14 +17,16 @@ import {
 } from "@/components/ui/sheet";
 import { authClient } from "@/lib/auth-client";
 import { useCgu } from "@/components/cgu-provider";
+import { UserRank } from "@/lib/user-rank";
+import { useRouter } from "next/navigation";
 
 const links = [
     { label: "Carte des offres", href: "/carte" },
-    { label: "Publier une offre", href: "/offres" },
     { label: "Comment ça marche", href: "/#how" },
 ];
 
 const PUBLISH_JOB_ROUTE = "/offres";
+const MY_APPLICATIONS_ROUTE = "/candidatures";
 
 export default function Header() {
     const pathname = usePathname();
@@ -32,6 +34,9 @@ export default function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
     const { data: session, isPending } = authClient.useSession();
     const cgu = useCgu();
+    const isJobSeeker = session?.user?.rank === UserRank.JOB_SEEKER;
+    const isOnApplicationsPage = pathname === MY_APPLICATIONS_ROUTE;
+    const router = useRouter();
 
     function openModal() {
         setModalOpen(true);
@@ -46,20 +51,25 @@ export default function Header() {
     }
 
     const isOnPublishPage = pathname === PUBLISH_JOB_ROUTE;
+    const isEmployer = session?.user?.rank === UserRank.EMPLOYER;
+
     async function handleSignOut() {
         await authClient.signOut();
+        router.push("/");
     }
 
     let accountArea = (
-    <Button
-        variant="ghost"
-        onClick={openModal}
-        className="font-heading font-semibold text-primary hover:bg-accent"
-    >
-        Se connecter/S&apos;inscrire
-    </Button>
+        <Button
+            variant="ghost"
+            onClick={openModal}
+            className="font-heading font-semibold text-primary hover:bg-accent"
+        >
+            Se connecter/S&apos;inscrire
+        </Button>
     );
-    
+
+    let applicationsButton: React.ReactNode = null;
+
     if (isPending) {
         accountArea = <Skeleton className="h-9 w-32" />;
     } else if (session) {
@@ -82,18 +92,7 @@ export default function Header() {
         );
     }
 
-    let publishButton: React.ReactNode = (
-        <Button
-            asChild
-            className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
-        >
-            <Link href={PUBLISH_JOB_ROUTE}>Publier une offre</Link>
-        </Button>
-    );
-
-    if (isOnPublishPage) {
-        publishButton = null;
-    }
+    let publishButton: React.ReactNode = null;
 
     if (cgu.ready && !cgu.accepted) {
         accountArea = (
@@ -107,15 +106,17 @@ export default function Header() {
             </Button>
         );
 
-        publishButton = (
-            <Button
-                disabled
-                title="Acceptez les conditions générales pour continuer"
-                className="bg-action font-heading font-semibold text-action-foreground"
-            >
-                Publier une offre
-            </Button>
-        );
+        if (isEmployer && !isOnPublishPage) {
+            publishButton = (
+                <Button
+                    disabled
+                    title="Acceptez les conditions générales pour continuer"
+                    className="bg-action font-heading font-semibold text-action-foreground"
+                >
+                    Publier une offre
+                </Button>
+            );
+        }
     }
 
     return (
@@ -139,11 +140,34 @@ export default function Header() {
                                 </li>
                             );
                         })}
+
+                        {isJobSeeker && (
+                            <li>
+                                <a
+                                    href={MY_APPLICATIONS_ROUTE}
+                                    className="font-heading text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
+                                >
+                                    Mes candidatures
+                                </a>
+                            </li>
+                        )}
+
+                        {isEmployer && (
+                            <li>
+                                <a
+                                    href={PUBLISH_JOB_ROUTE}
+                                    className="font-heading text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
+                                >
+                                    Publier une offre
+                                </a>
+                            </li>
+                        )}
                     </ul>
                 </nav>
 
                 <div className="hidden items-center gap-3 lg:flex">
                     {accountArea}
+                    {applicationsButton}
                     {publishButton}
                 </div>
 
