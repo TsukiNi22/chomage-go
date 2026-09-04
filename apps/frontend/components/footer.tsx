@@ -12,7 +12,37 @@ const sections = [
     },
 ];
 
-export default function Footer() {
+type Props = {
+    compact?: boolean;
+};
+
+export default function Footer(props: Props) {
+    if (props.compact === true) {
+        return (
+            <footer
+                id="about"
+                className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-1 border-t-2 border-primary bg-background px-6 py-2.5"
+            >
+                <span className="font-heading text-sm font-bold tracking-tight text-primary">
+                    ChômageGo
+                </span>
+                <Link
+                    href="/cgu"
+                    className="font-heading text-xs font-medium text-primary underline-offset-4 hover:underline"
+                >
+                    Conditions générales d&apos;utilisation
+                </Link>
+                <p className="font-heading text-[0.7rem] uppercase tracking-[0.1em] text-muted-foreground">
+                    {sections
+                        .map(function (section) {
+                            return section.title;
+                        })
+                        .join(" · ")}
+                </p>
+            </footer>
+        );
+    }
+
     return (
         <footer
             id="about"

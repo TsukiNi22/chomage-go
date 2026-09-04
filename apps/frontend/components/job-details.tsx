@@ -129,6 +129,12 @@ export default function JobDetails(props: Props) {
         applyLabel = "Candidature envoyée";
     }
 
+    const footerMessage = (
+        <p role="status" aria-live="polite" className={footerClass}>
+            {footerText}
+        </p>
+    );
+
     return (
         <Dialog open={props.open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-lg gap-0 p-0">

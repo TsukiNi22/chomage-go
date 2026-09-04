@@ -22,8 +22,8 @@ jobs:
       - name: Write CD env
         run: |
           cp .env.example .env
-          cp apps/backend/.env.example .env
-          cp apps/frontend/.env.local.example .env.local
+          cp apps/backend/.env.example apps/backend/.env
+          cp apps/frontend/.env.local.example apps/frontend/.env.local
 
       - name: Build images
         run: docker compose build

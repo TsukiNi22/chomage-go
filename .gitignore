@@ -13,8 +13,6 @@ node_modules/
 
 # testing
 /coverage
-meta/
-!apps/backend/drizzle/meta/
 
 .next/
 out/
