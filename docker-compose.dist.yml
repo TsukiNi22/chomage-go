@@ -5,6 +5,8 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
 
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -19,19 +21,17 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    ports:
+      - "${PORT_DB}:${PORT_DB}" # public port linked
 
   backend:
-    build:
-      context: .
-      dockerfile: apps/backend/Dockerfile
+    image: chomage-go-backend:latest
     restart: unless-stopped
 
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
-      PORT: ${PORT_BACKEND}
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
-      FRONTEND_URL: ${FRONTEND_URL}
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${PORT_DB}/${DB_NAME}
 
     depends_on:
       db:
@@ -46,17 +46,14 @@ services:
       retries: 3
       start_period: 5s
     ports:
-      - "${PORT_BACKEND}:4000" # appele par le navigateur, doit etre publie
+      - "${PORT_BACKEND}:${PORT_BACKEND}" # public port linked
 
   frontend:
-    build:
-      context: .
-      dockerfile: apps/frontend/Dockerfile
+    image: chomage-go-frontend:latest
     restart: unless-stopped
 
-    environment:
-      BACKEND_URL: http://backend:${PORT_BACKEND}
-      NEXT_PUBLIC_API_URL: http://localhost:${PORT_BACKEND}
+    env_file:
+      - .env
 
     depends_on:
       backend:
@@ -64,11 +61,11 @@ services:
     networks:
       - app-net
     ports:
-      - "${PORT_FRONTEND}:${PORT}" # public port linked
+      - "${PORT_FRONTEND}:${PORT_PUBLIC}" # public port linked
 
 networks:
   db-net:
-    internal: true # only db <-> backend
+    #internal: true # only db <-> backend
   app-net: {} # only backend <-> frontend, can't be acceded from host
 
 volumes:

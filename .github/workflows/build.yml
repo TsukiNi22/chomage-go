@@ -21,31 +21,9 @@ jobs:
 
       - name: Write CD env
         run: |
-          cat <<EOF > .env
-          DB_USER=root
-          DB_PASSWORD=root
-          DB_NAME=chomage-go
-          BETTER_AUTH_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          BETTER_AUTH_URL=http://backend:4000
-          FRONTEND_URL=http://localhost:3000
-          PORT_BACKEND=4000
-          PORT_FRONTEND=3000
-          PORT=3000
-          EOF
-          
-          cat <<EOF > apps/backend.env
-          DB_USER=root
-          DB_PASSWORD=root
-          DB_NAME=chomage-go
-          DB_HOST=localhost
-          BETTER_AUTH_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-          BETTER_AUTH_URL=http://backend:4000
-          PORT=4000
-          EOF
-          
-          cat <<EOF > apps/frontend/.env.local
-          NEXT_PUBLIC_API_URL=http://backend:4000
-          EOF
+          cp .env.example .env
+          cp apps/backend/.env.example apps/backend/.env
+          cp apps/frontend/.env.local.example apps/frontend/.env.local
 
       - name: Build images
         run: docker compose build

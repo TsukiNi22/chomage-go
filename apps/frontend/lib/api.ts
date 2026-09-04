@@ -15,7 +15,6 @@ export type UserProfile = {
     localisation?: boolean;
 };
 
-
 export async function fetchMyProfile(): Promise<UserProfile | null> {
     const response = await fetch(API_URL + "/api/users", {
         credentials: "include",

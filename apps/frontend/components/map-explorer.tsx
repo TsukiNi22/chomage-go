@@ -55,6 +55,7 @@ export default function MapExplorer(props: ExplorerProps) {
     const [geoLoading, setGeoLoading] = useState(false);
     const [place, setPlace] = useState<Place | null>(null);
     const [placeLoading, setPlaceLoading] = useState(false);
+    const [disablingGeo, setDisablingGeo] = useState(false);
 
     useEffect(
         function () {
@@ -88,14 +89,14 @@ export default function MapExplorer(props: ExplorerProps) {
     );
 
     let origin: Position | null = null;
-    if (position !== null) {
-        origin = position;
-    } else if (place !== null) {
+    if (place !== null) {
         origin = { lat: place.lat, lon: place.lon };
+    } else if (position !== null) {
+        origin = position;
     }
 
     let searchRadius = radius;
-    if (searchRadius === null && place !== null && position === null) {
+    if (searchRadius === null && place !== null) {
         searchRadius = 30;
     }
 
@@ -159,14 +160,14 @@ export default function MapExplorer(props: ExplorerProps) {
         targetLat = selectedJob.lat;
         targetLon = selectedJob.lon;
         targetZoom = 14;
-    } else if (position !== null) {
-        targetLat = position.lat;
-        targetLon = position.lon;
-        targetZoom = 12;
     } else if (place !== null) {
         targetLat = place.lat;
         targetLon = place.lon;
         targetZoom = 11;
+    } else if (position !== null) {
+        targetLat = position.lat;
+        targetLon = position.lon;
+        targetZoom = 12;
     } else if (search !== "" && mappableJobs.length > 0) {
         targetLat = mappableJobs[0].lat;
         targetLon = mappableJobs[0].lon;
@@ -289,6 +290,12 @@ export default function MapExplorer(props: ExplorerProps) {
     );
 
 
+    async function disableGeolocation() {
+        setDisablingGeo(true);
+        await authClient.updateUser({ localisation: false });
+        setDisablingGeo(false);
+    }
+
     function resetFilters() {
         setSearch("");
         setLocation("");
@@ -330,12 +337,14 @@ export default function MapExplorer(props: ExplorerProps) {
 
     if (allowed) {
         geoLink = (
-            <Link
-                href="/profil"
-                className="font-heading text-xs font-medium text-primary underline underline-offset-4"
+            <button
+                type="button"
+                onClick={disableGeolocation}
+                disabled={disablingGeo}
+                className="font-heading text-xs font-medium text-primary underline underline-offset-4 disabled:opacity-50"
             >
-                Désactiver dans mon profil
-            </Link>
+                Désactiver la géolocalisation
+            </button>
         );
     }
 

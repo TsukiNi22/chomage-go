@@ -3,10 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Menu } from "lucide-react";
 import MinistryBrand from "@/components/ministry-brand";
 import { Button } from "@/components/ui/button";
 import AuthModal from "./auth-modal";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet";
 import { authClient } from "@/lib/auth-client";
 import { useCgu } from "@/components/cgu-provider";
 
@@ -21,6 +29,7 @@ const PUBLISH_JOB_ROUTE = "/offres";
 export default function Header() {
     const pathname = usePathname();
     const [modalOpen, setModalOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
     const { data: session, isPending } = authClient.useSession();
     const cgu = useCgu();
 
@@ -30,6 +39,10 @@ export default function Header() {
 
     function closeModal() {
         setModalOpen(false);
+    }
+
+    function closeMenu() {
+        setMenuOpen(false);
     }
 
     const isOnPublishPage = pathname === PUBLISH_JOB_ROUTE;
@@ -107,7 +120,7 @@ export default function Header() {
 
     return (
         <>
-            <header className="flex items-center justify-between gap-6 border-b-2 border-primary bg-background px-8 py-4">
+            <header className="flex items-center justify-between gap-4 border-b-2 border-primary bg-background px-4 py-4 sm:px-6 lg:gap-6 lg:px-8">
                 <Link href="/" aria-label="Retour à l'accueil">
                     <MinistryBrand />
                 </Link>
@@ -129,10 +142,57 @@ export default function Header() {
                     </ul>
                 </nav>
 
-                <div className="flex items-center gap-3">
+                <div className="hidden items-center gap-3 lg:flex">
                     {accountArea}
                     {publishButton}
                 </div>
+
+                <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                    <SheetTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Ouvrir le menu"
+                            className="lg:hidden"
+                        >
+                            <Menu className="size-5" />
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-full sm:max-w-sm">
+                        <SheetHeader>
+                            <SheetTitle className="font-heading text-primary">
+                                Menu
+                            </SheetTitle>
+                        </SheetHeader>
+
+                        <div
+                            onClick={closeMenu}
+                            className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 pb-6"
+                        >
+                            <nav aria-label="Navigation principale">
+                                <ul className="flex flex-col gap-4">
+                                    {links.map(function (link) {
+                                        return (
+                                            <li key={link.href}>
+                                                <a
+                                                    href={link.href}
+                                                    className="font-heading text-base font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
+                                                >
+                                                    {link.label}
+                                                </a>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </nav>
+
+                            <div className="flex flex-col gap-3 border-t border-border pt-6">
+                                {accountArea}
+                                {publishButton}
+                            </div>
+                        </div>
+                    </SheetContent>
+                </Sheet>
             </header>
 
             <AuthModal open={modalOpen} onClose={closeModal} />
