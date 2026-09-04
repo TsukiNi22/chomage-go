@@ -4,6 +4,7 @@ import { Spectral } from "next/font/google";
 import AppFrame from "@/components/app-frame";
 import CguGate from "@/components/cgu-gate";
 import CguProvider from "@/components/cgu-provider";
+import { ApplicationsProvider } from "@/lib/applications-context";
 import "./globals.css";
 
 const heading = localFont({
@@ -44,7 +45,9 @@ export default function RootLayout({
                     Aller au contenu principal
                 </a>
                 <CguProvider>
-                    <AppFrame>{children}</AppFrame>
+                    <ApplicationsProvider>
+                        <AppFrame>{children}</AppFrame>
+                    </ApplicationsProvider>
                     <CguGate />
                 </CguProvider>
             </body>
