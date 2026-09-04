@@ -128,6 +128,7 @@ export default function JobDetails(props: Props) {
                 Candidature envoyée à {job.company}.
             </p>
         );
+        applyLabel = "Candidature envoyée";
     }
 
 
