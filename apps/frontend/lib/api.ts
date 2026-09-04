@@ -1,3 +1,5 @@
+import { API_URL } from "./env";
+
 export type UserProfile = {
     id: number;
     firstname: string;
@@ -13,12 +15,8 @@ export type UserProfile = {
     localisation?: boolean;
 };
 
-const base = process.env.NEXT_PUBLIC_API_URL || "";
-if (base == "")
-    console.log("[frontend] NEXT_PUBLIC_API_URL is missing");
-
 export async function fetchMyProfile(): Promise<UserProfile | null> {
-    const response = await fetch(base + "/api/users", {
+    const response = await fetch(API_URL + "/api/users", {
         credentials: "include",
     });
 

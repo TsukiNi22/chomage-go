@@ -23,7 +23,7 @@ export const addresses = pgTable(
         geocodedAt: timestamp("geocoded_at"),
         needsLocationCheck: boolean("needs_location_check").notNull().default(true),
         createdAt: timestamp("created_at").defaultNow(),
-        updatedAt: timestamp("updated_at").defaultNow(),
+        updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
     },
     (t) => [
         index("idx_addresses_city").on(t.city),

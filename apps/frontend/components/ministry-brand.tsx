@@ -22,7 +22,7 @@ export default function MinistryBrand(props: Props) {
                 priority
             />
 
-            <div className="border-r border-border pr-4">
+            <div className="hidden border-r border-border pr-4 sm:block">
                 <p className="font-heading text-[0.62rem] font-bold uppercase leading-[1.2] tracking-[0.1em] text-primary">
                     Ministère
                     <br />

@@ -47,16 +47,19 @@ export default function JobPostingsTable(props: Props) {
                                     {posting.title}
                                 </TableCell>
 
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <p className="cursor-default truncate">
-                                            {posting.description}
-                                        </p>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-xs">
-                                        <p>{posting.description}</p>
-                                    </TooltipContent>
-                                </Tooltip>
+                                <TableCell className="max-w-64">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <p className="cursor-default truncate">
+                                                {posting.description}
+                                            </p>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-xs">
+                                            <p>{posting.description}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TableCell>
+
                                 <TableCell>
                                     <Badge variant="outline" className="font-heading">
                                         {posting.contractType}
