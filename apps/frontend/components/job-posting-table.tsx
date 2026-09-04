@@ -27,15 +27,21 @@ export default function JobPostingsTable(props: Props) {
         <TooltipProvider delayDuration={200}>
         <div className="overflow-x-auto border border-border bg-background">
             <Table>
+                <caption className="sr-only">
+                    Offres publiées par votre établissement : titre, description, type de
+                    contrat, compétences requises, salaire minimum, nombre de candidatures
+                    et action de suppression.
+                </caption>
+
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Titre</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Compétences requises</TableHead>
-                        <TableHead className="text-right">Salaire min.</TableHead>
-                        <TableHead className="text-right">Candidatures</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead scope="col">Titre</TableHead>
+                        <TableHead scope="col">Description</TableHead>
+                        <TableHead scope="col">Type</TableHead>
+                        <TableHead scope="col">Compétences requises</TableHead>
+                        <TableHead scope="col" className="text-right">Salaire min.</TableHead>
+                        <TableHead scope="col" className="text-right">Candidatures</TableHead>
+                        <TableHead scope="col" className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
 
@@ -47,12 +53,19 @@ export default function JobPostingsTable(props: Props) {
                                     {posting.title}
                                 </TableCell>
 
+                                {/* L'infobulle doit rester dans une cellule : hors du
+                                    td, l'analyseur HTML l'extrait du tableau et décale
+                                    toutes les colonnes. Le déclencheur est un bouton
+                                    pour rester atteignable au clavier. */}
                                 <TableCell className="max-w-64">
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <p className="cursor-default truncate">
+                                            <button
+                                                type="button"
+                                                className="block w-full cursor-default truncate text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
+                                            >
                                                 {posting.description}
-                                            </p>
+                                            </button>
                                         </TooltipTrigger>
                                         <TooltipContent className="max-w-xs">
                                             <p>{posting.description}</p>
@@ -85,6 +98,7 @@ export default function JobPostingsTable(props: Props) {
                                 <TableCell className="text-right font-heading font-semibold text-primary">
                                     {posting.applicantsCount}
                                 </TableCell>
+
                                 <TableCell className="text-right">
                                     <Button
                                         type="button"

@@ -25,7 +25,10 @@ const body = Spectral({
 });
 
 export const metadata: Metadata = {
-    title: "ChômageGo",
+    title: {
+        default: "ChômageGo",
+        template: "%s — ChômageGo",
+    },
     description:
         "Trouvez les offres d'emploi autour de vous sur une carte. Ministère du Job et Bonheur.",
 };
@@ -39,7 +42,7 @@ export default function RootLayout({
         <html lang="fr" className={`${heading.variable} ${body.variable}`}>
             <body>
                 <a
-                    href="#jobs"
+                    href="#contenu"
                     className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:border focus:border-primary focus:bg-background focus:px-4 focus:py-2 focus:font-heading focus:text-sm focus:text-primary"
                 >
                     Aller au contenu principal

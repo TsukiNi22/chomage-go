@@ -3,6 +3,7 @@ import CguAcceptBar from "@/components/cgu-accept-bar";
 import { CGU_DATE, CGU_VERSION } from "@/lib/cgu";
 
 export const metadata: Metadata = {
+    title: "Conditions générales d'utilisation",
     description:
         "Conditions générales d'utilisation du service public de l'emploi géolocalisé.",
 };

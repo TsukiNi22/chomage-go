@@ -39,7 +39,7 @@ function JobRow(props: JobRowProps) {
             job.lon,
         );
         distanceBadge = (
-            <span className="font-heading font-semibold text-action">
+            <span className="font-heading font-semibold text-action-text">
                 {formatDistance(km)}
             </span>
         );

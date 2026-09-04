@@ -88,24 +88,23 @@ export default function JobDetails(props: Props) {
         year: "numeric",
     });
 
-    let footerMessage = (
-        <p className="text-xs text-muted-foreground">
-            Votre profil sera transmis à l&apos;employeur.
-        </p>
-    );
+    // La région d'annonce est rendue en permanence : une région live insérée en
+    // même temps que son contenu n'est pas restituée de façon fiable (RGAA 11.10).
+    let footerText = "Votre profil sera transmis à l'employeur.";
+    let footerClass = "text-xs text-muted-foreground";
     let applyLabel = "Postuler";
 
     if (applied) {
-        footerMessage = (
-            <p
-                aria-live="polite"
-                className="font-heading text-sm font-semibold text-success"
-            >
-                Candidature envoyée à {job.company}.
-            </p>
-        );
+        footerText = "Candidature envoyée à " + job.company + ".";
+        footerClass = "font-heading text-sm font-semibold text-success";
         applyLabel = "Candidature envoyée";
     }
+
+    const footerMessage = (
+        <p role="status" aria-live="polite" className={footerClass}>
+            {footerText}
+        </p>
+    );
 
     return (
         <Dialog open={props.open} onOpenChange={handleOpenChange}>
