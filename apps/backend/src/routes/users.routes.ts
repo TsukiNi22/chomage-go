@@ -13,11 +13,15 @@ const router = Router();
  *     parameters:
  *       - in: path
  *         name: id
- *         required: false
+ *         required: true
  *         schema: { type: integer }
  *     responses:
  *       200:
  *         description: User data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/User"
  *       404:
  *         description: User not found
  */
@@ -87,15 +91,37 @@ router.delete("/", requireAuth, usersController.deleteUser);
  *     parameters:
  *       - in: path
  *         name: id
- *         required: false
+ *         required: true
  *         schema: { type: integer }
  *     responses:
  *       200:
  *         description: List of user skills
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Skill"
  *       404:
  *         description: User not found
  */
 router.get("/:id/skills", usersController.getSkill);
+/**
+ * @openapi
+ * /users/skills:
+ *   get:
+ *     summary: List authenticated user's skills
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of user skills
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Skill"
+ *       401:
+ *         description: Missing or invalid auth header
+ */
 router.get("/skills", usersController.getSkill);
 
 /**
@@ -185,15 +211,37 @@ router.delete("/skills/:skillId", requireAuth, usersController.deleteSkill);
  *     parameters:
  *       - in: path
  *         name: id
- *         required: false
+ *         required: true
  *         schema: { type: integer }
  *     responses:
  *       200:
  *         description: List of experience entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Experience"
  *       404:
  *         description: User not found
  */
 router.get("/:id/experience", usersController.getExperience);
+/**
+ * @openapi
+ * /users/experience:
+ *   get:
+ *     summary: List authenticated user's experience entries
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of experience entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Experience"
+ *       401:
+ *         description: Missing or invalid auth header
+ */
 router.get("/experience", usersController.getExperience);
 
 /**
@@ -299,15 +347,37 @@ router.delete("/experience/:experienceId", requireAuth, usersController.deleteEx
  *     parameters:
  *       - in: path
  *         name: id
- *         required: false
+ *         required: true
  *         schema: { type: integer }
  *     responses:
  *       200:
  *         description: List of availability entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Availability"
  *       404:
  *         description: User not found
  */
 router.get("/:id/availability", usersController.getAvailability);
+/**
+ * @openapi
+ * /users/availability:
+ *   get:
+ *     summary: List authenticated user's availability entries
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of availability entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Availability"
+ *       401:
+ *         description: Missing or invalid auth header
+ */
 router.get("/availability", usersController.getAvailability);
 
 /**

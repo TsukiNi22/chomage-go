@@ -1,11 +1,15 @@
-import {pgTable, serial,integer, varchar, text, boolean, timestamp, unique, index, doublePrecision} from "drizzle-orm/pg-core";
+import {pgTable, serial, integer, varchar, text, boolean, timestamp, doublePrecision, unique, index} from "drizzle-orm/pg-core";
 import {relations} from "drizzle-orm";
 
+// ------------------------------------------------------------
+// Adresses (normalisées / géocodées) — partagées par
+// users, companies et jobs
+// ------------------------------------------------------------
 export const addresses = pgTable(
     "addresses",
     {
         id: serial("id").primaryKey(),
-        label: text("label").notNull(), // adresse complete telle que saisie
+        label: text("label").notNull(), // adresse complète telle que saisie
         street: varchar("street", { length: 255 }),
         postalCode: varchar("postal_code", { length: 10 }),
         city: varchar("city", { length: 100 }),
@@ -14,8 +18,8 @@ export const addresses = pgTable(
         longitude: doublePrecision("longitude"),
         lambertX: doublePrecision("lambert_x"), // EPSG:2154
         lambertY: doublePrecision("lambert_y"),
-        geocodingSource: varchar("geocoding_source", { length: 50 }),
-        geocodingScore: doublePrecision("geocoding_score"), // 0 a 1
+        geocodingSource: varchar("geocoding_source", { length: 50 }), // ex: 'api-adresse', 'seed'
+        geocodingScore: doublePrecision("geocoding_score"), // 0 à 1
         geocodedAt: timestamp("geocoded_at"),
         needsLocationCheck: boolean("needs_location_check").notNull().default(true),
         createdAt: timestamp("created_at").defaultNow(),
@@ -28,6 +32,9 @@ export const addresses = pgTable(
     ]
 );
 
+// ------------------------------------------------------------
+// Entreprises
+// ------------------------------------------------------------
 export const companies = pgTable(
     "companies",
     {
@@ -37,11 +44,14 @@ export const companies = pgTable(
         description: text("description"),
         link: varchar("link", { length: 500 }),
         employeeRange: integer("employee_range").notNull(),
-        addressId: integer("address_id").references(() => addresses.id),
+        addressId: integer("address_id").references(() => addresses.id), // adresse du site (le SIRET désigne un établissement)
     },
     (t) => [unique().on(t.name, t.siret)]
 );
 
+// ------------------------------------------------------------
+// Utilisateurs (table pilotée par Better Auth)
+// ------------------------------------------------------------
 export const users = pgTable("users", {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 255 }).notNull(), // better-auth
@@ -52,8 +62,8 @@ export const users = pgTable("users", {
     email: varchar("email", { length: 255 }).notNull().unique(),
     emailContact: varchar("email_contact", { length: 255 }),
     emailVerified: boolean("email_verified").notNull().default(false), // better-auth
-    passwordHash: varchar("password_hash", { length: 255 }), // better-auth stocke le mot de passe dans account
-    address: text("address"), // saisie libre, resolue par address_id une fois geocodee
+    passwordHash: varchar("password_hash", { length: 255 }), // legacy — better-auth stocke le mdp dans account.password
+    address: text("address"), // saisie libre, résolue par addressId une fois géocodée
     addressId: integer("address_id").references(() => addresses.id),
     description: text("description"),
     resume: text("resume"), // base64 blob
@@ -63,6 +73,9 @@ export const users = pgTable("users", {
     updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()), // better-auth
 });
 
+// ------------------------------------------------------------
+// Better Auth — session / account / vérification
+// ------------------------------------------------------------
 export const session = pgTable("session", {
     id: serial("id").primaryKey(),
     userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -99,6 +112,9 @@ export const verification = pgTable("verification", {
     createdAt: timestamp("created_at").defaultNow(),
 });
 
+// ------------------------------------------------------------
+// Profil candidat
+// ------------------------------------------------------------
 export const userSkills = pgTable("user_skills", {
     id: serial("id").primaryKey(),
     userId: integer("user_id").notNull().references(() => users.id),
@@ -128,13 +144,16 @@ export const availability = pgTable("availability", {
     end: timestamp("end"),
 });
 
+// ------------------------------------------------------------
+// Offres d'emploi
+// ------------------------------------------------------------
 export const jobs = pgTable(
     "jobs",
     {
         id: serial("id").primaryKey(),
         companiesId: integer("companies_id").notNull().references(() => companies.id),
-        userId: integer("user_id").notNull().references(() => users.id),
-        addressId: integer("address_id").references(() => addresses.id), // lieu de l'offre, a defaut celui de la company
+        userId: integer("user_id").notNull().references(() => users.id), // employer qui a posté l'offre
+        addressId: integer("address_id").references(() => addresses.id), // lieu de l'offre ; à défaut celui de la company
         title: varchar("title", { length: 255 }).notNull(),
         description: text("description"),
         type: integer("type").notNull(),
@@ -152,15 +171,34 @@ export const jobSkills = pgTable("job_skills", {
     description: text("description"),
 });
 
+// ------------------------------------------------------------
+// Candidatures (table de jonction users <-> jobs)
+// ------------------------------------------------------------
 export const applications = pgTable(
     "applications",
     {
         id: serial("id").primaryKey(),
         jobId: integer("job_id").notNull().references(() => jobs.id),
         userId: integer("user_id").notNull().references(() => users.id),
+        description: text("description"), // lettre de motivation / message du candidat
     },
     (t) => [unique().on(t.jobId, t.userId)]
 );
+
+// ------------------------------------------------------------
+// Relations
+// ------------------------------------------------------------
+export const addressesRelations = relations(addresses, ({ many }) => ({
+    companies: many(companies),
+    users: many(users),
+    jobs: many(jobs),
+}));
+
+export const companiesRelations = relations(companies, ({ one, many }) => ({
+    address: one(addresses, { fields: [companies.addressId], references: [addresses.id] }),
+    employees: many(users),
+    jobs: many(jobs),
+}));
 
 export const usersRelations = relations(users, ({ one, many }) => ({
     company: one(companies, { fields: [users.companiesId], references: [companies.id] }),
@@ -171,22 +209,16 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 }));
 
 export const userSkillsRelations = relations(userSkills, ({ one }) => ({
-  user: one(users, { fields: [userSkills.userId], references: [users.id] }),
+    user: one(users, { fields: [userSkills.userId], references: [users.id] }),
 }));
 
 export const experienceRelations = relations(experience, ({ one }) => ({
-  user: one(users, { fields: [experience.userId], references: [users.id] }),
-  company: one(companies, { fields: [experience.companiesId], references: [companies.id] }),
+    user: one(users, { fields: [experience.userId], references: [users.id] }),
+    company: one(companies, { fields: [experience.companiesId], references: [companies.id] }),
 }));
 
 export const availabilityRelations = relations(availability, ({ one }) => ({
-  user: one(users, { fields: [availability.userId], references: [users.id] }),
-}));
-
-export const companiesRelations = relations(companies, ({ one, many }) => ({
-    address: one(addresses, { fields: [companies.addressId], references: [addresses.id] }),
-    employees: many(users),
-    jobs: many(jobs),
+    user: one(users, { fields: [availability.userId], references: [users.id] }),
 }));
 
 export const jobsRelations = relations(jobs, ({ one, many }) => ({
@@ -198,18 +230,12 @@ export const jobsRelations = relations(jobs, ({ one, many }) => ({
 }));
 
 export const jobSkillsRelations = relations(jobSkills, ({ one }) => ({
-  job: one(jobs, { fields: [jobSkills.jobId], references: [jobs.id] }),
+    job: one(jobs, { fields: [jobSkills.jobId], references: [jobs.id] }),
 }));
 
 export const applicationsRelations = relations(applications, ({ one }) => ({
-  job: one(jobs, { fields: [applications.jobId], references: [jobs.id] }),
-  user: one(users, { fields: [applications.userId], references: [users.id] }),
-}));
-
-export const addressesRelations = relations(addresses, ({ many }) => ({
-    users: many(users),
-    companies: many(companies),
-    jobs: many(jobs),
+    job: one(jobs, { fields: [applications.jobId], references: [jobs.id] }),
+    user: one(users, { fields: [applications.userId], references: [users.id] }),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
