@@ -101,13 +101,15 @@ export default function JobDetails(props: Props) {
 
     const canApply = isJobSeeker && !applied;
 
+    let footerText = "Votre profil sera transmis à l'employeur.";
+    let footerClass = "text-xs text-muted-foreground";
+    let applyLabel = "Postuler";
+
     let footerMessage = (
         <p className="text-xs text-muted-foreground">
             Votre profil sera transmis à l&apos;employeur.
         </p>
     );
-    let applyLabel = "Postuler";
-
     if (restrictionMessage !== null) {
         footerMessage = (
             <p
@@ -129,11 +131,6 @@ export default function JobDetails(props: Props) {
         applyLabel = "Candidature envoyée";
     }
 
-    const footerMessage = (
-        <p role="status" aria-live="polite" className={footerClass}>
-            {footerText}
-        </p>
-    );
 
     return (
         <Dialog open={props.open} onOpenChange={handleOpenChange}>
