@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 import { useCgu } from "@/components/cgu-provider";
 import { UserRank } from "@/lib/user-rank";
+import { useRouter } from "next/navigation";
 
 const links = [
     { label: "Carte des offres", href: "/carte" },
@@ -17,12 +18,16 @@ const links = [
 ];
 
 const PUBLISH_JOB_ROUTE = "/offres";
+const MY_APPLICATIONS_ROUTE = "/candidatures";
 
 export default function Header() {
     const pathname = usePathname();
     const [modalOpen, setModalOpen] = useState(false);
     const { data: session, isPending } = authClient.useSession();
     const cgu = useCgu();
+    const isJobSeeker = session?.user?.rank === UserRank.JOB_SEEKER;
+    const isOnApplicationsPage = pathname === MY_APPLICATIONS_ROUTE;
+    const router = useRouter();
 
     function openModal() {
         setModalOpen(true);
@@ -37,6 +42,7 @@ export default function Header() {
 
     async function handleSignOut() {
         await authClient.signOut();
+        router.push("/");
     }
 
     let accountArea = (
@@ -48,6 +54,8 @@ export default function Header() {
             Se connecter/S&apos;inscrire
         </Button>
     );
+
+    let applicationsButton: React.ReactNode = null;
 
     if (isPending) {
         accountArea = <Skeleton className="h-9 w-32" />;
@@ -72,17 +80,6 @@ export default function Header() {
     }
 
     let publishButton: React.ReactNode = null;
-
-    if (isEmployer && !isOnPublishPage) {
-        publishButton = (
-            <Button
-                asChild
-                className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
-            >
-                <Link href={PUBLISH_JOB_ROUTE}>Publier une offre</Link>
-            </Button>
-        );
-    }
 
     if (cgu.ready && !cgu.accepted) {
         accountArea = (
@@ -120,8 +117,8 @@ export default function Header() {
                     <ul className="flex items-center gap-8">
                         {links.map(function (link) {
                             return (
-                                <li key={link.href}><a
-                                    
+                                <li key={link.href}>
+                                    <a
                                         href={link.href}
                                         className="font-heading text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
                                     >
@@ -131,9 +128,20 @@ export default function Header() {
                             );
                         })}
 
+                        {isJobSeeker && (
+                            <li>
+                                <a
+                                    href={MY_APPLICATIONS_ROUTE}
+                                    className="font-heading text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
+                                >
+                                    Mes candidatures
+                                </a>
+                            </li>
+                        )}
+
                         {isEmployer && (
-                            <li><a
-                                
+                            <li>
+                                <a
                                     href={PUBLISH_JOB_ROUTE}
                                     className="font-heading text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
                                 >
@@ -146,6 +154,7 @@ export default function Header() {
 
                 <div className="flex items-center gap-3">
                     {accountArea}
+                    {applicationsButton}
                     {publishButton}
                 </div>
             </header>
