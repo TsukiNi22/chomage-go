@@ -184,17 +184,19 @@ export default function AuthModal(props: Props) {
         signupLabel = "Création…";
     }
 
-    let errorMessage = null;
+    // Région d'annonce permanente, masquée tant qu'aucune erreur n'est levée
+    // (RGAA 11.10).
+    let errorClass = "sr-only";
     if (error !== null) {
-        errorMessage = (
-            <p
-                aria-live="polite"
-                className="border border-destructive bg-destructive/5 px-3 py-2 text-sm text-destructive"
-            >
-                {error}
-            </p>
-        );
+        errorClass =
+            "border border-destructive bg-destructive/5 px-3 py-2 text-sm text-destructive";
     }
+
+    const errorMessage = (
+        <p role="alert" aria-live="assertive" className={errorClass}>
+            {error}
+        </p>
+    );
 
     return (
         <Dialog open={props.open} onOpenChange={handleOpenChange}>

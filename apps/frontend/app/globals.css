@@ -26,6 +26,9 @@
     --action: #b85433;
     --action-hover: #9c4429;
     --action-foreground: #ffffff;
+    /* Variante lisible de --action pour le texte : 4,5:1 minimum sur
+       --background, --muted et --accent (RGAA 3.2). */
+    --action-text: #9c4429;
 
     --secondary: #eef2f8;
     --secondary-foreground: #1b3a6b;
@@ -59,6 +62,7 @@
     --action: #d06a45;
     --action-hover: #b85433;
     --action-foreground: #0e121b;
+    --action-text: #e59873;
 
     --secondary: #1d2331;
     --secondary-foreground: #cdd8ec;
@@ -89,6 +93,7 @@
     --color-action: var(--action);
     --color-action-hover: var(--action-hover);
     --color-action-foreground: var(--action-foreground);
+    --color-action-text: var(--action-text);
     --color-secondary: var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
     --color-muted: var(--muted);

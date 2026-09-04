@@ -152,7 +152,7 @@ export default function Header() {
                         <Button
                             variant="ghost"
                             size="icon"
-                            aria-label="Ouvrir le menu"
+                            aria-label="Ouvrir le menu de navigation"
                             className="lg:hidden"
                         >
                             <Menu className="size-5" />
@@ -169,7 +169,7 @@ export default function Header() {
                             onClick={closeMenu}
                             className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 pb-6"
                         >
-                            <nav aria-label="Navigation principale">
+                            <nav aria-label="Navigation principale du menu">
                                 <ul className="flex flex-col gap-4">
                                     {links.map(function (link) {
                                         return (

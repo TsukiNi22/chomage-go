@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,8 @@ import type { ContractType, EmployerJobPosting } from "@/lib/employer-jobs";
 
 const contractTypes: ContractType[] = ["CDI", "CDD", "Alternance", "Stage", "Freelance"];
 
+const CONTRACT_ERROR = "Sélectionnez un type de contrat pour publier l'offre.";
+
 type Props = {
     onCreate: (posting: EmployerJobPosting) => void;
 };
@@ -20,27 +22,43 @@ type Props = {
 export default function CreateJobPostingDialog(props: Props) {
     const [open, setOpen] = useState(false);
     const [contractType, setContractType] = useState<ContractType | "">("");
+    const [error, setError] = useState<string | null>(null);
+    const contractRef = useRef<HTMLButtonElement>(null);
 
     function handleOpenChange(nextOpen: boolean) {
         setOpen(nextOpen);
         if (!nextOpen) {
             setContractType("");
+            setError(null);
         }
+    }
+
+    function handleContractChange(value: string) {
+        setContractType(value as ContractType);
+        setError(null);
     }
 
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        const formData = new FormData(event.currentTarget);
+        // Le champ est obligatoire mais n'est pas un contrôle natif : sans ce
+        // traitement, le refus serait silencieux (RGAA 11.10).
+        if (contractType === "") {
+            setError(CONTRACT_ERROR);
+            if (contractRef.current !== null) {
+                contractRef.current.focus();
+            }
+            return;
+        }
+
+        const form = event.currentTarget;
+        const formData = new FormData(form);
 
         const title = String(formData.get("title")).trim();
         const description = String(formData.get("description")).trim();
         const skillsRaw = String(formData.get("skills")).trim();
         const salaryMin = Number(formData.get("salaryMin"));
 
-        if (contractType === "") {
-            return;
-        }
         const requiredSkills = skillsRaw
             .split(",")
             .map(function (skill) {
@@ -60,10 +78,26 @@ export default function CreateJobPostingDialog(props: Props) {
             applicantsCount: 0,
         };
         props.onCreate(newPosting);
-        event.currentTarget.reset();
+        form.reset();
         setContractType("");
+        setError(null);
         setOpen(false);
     }
+
+    // Région d'annonce permanente, masquée tant qu'aucune erreur n'est levée.
+    let errorClass = "sr-only";
+    if (error !== null) {
+        errorClass =
+            "border border-destructive bg-destructive/5 px-3 py-2 text-sm text-destructive";
+    }
+
+    let contractInvalid: boolean | undefined = undefined;
+    let contractDescribedBy: string | undefined = undefined;
+    if (error !== null) {
+        contractInvalid = true;
+        contractDescribedBy = "contractType-error";
+    }
+
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
@@ -80,9 +114,9 @@ export default function CreateJobPostingDialog(props: Props) {
                     </DialogTitle>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">                    <RequiredFieldsNote />
-
+                <form onSubmit={handleSubmit} noValidate={false} className="flex flex-col gap-4">
                     <RequiredFieldsNote />
+
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="title">Titre<RequiredMark /></Label>
                         <Input id="title" name="title" required />
@@ -95,14 +129,14 @@ export default function CreateJobPostingDialog(props: Props) {
 
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="contractType">Type de contrat<RequiredMark /></Label>
-                        <Select
-                            value={contractType}
-                            onValueChange={function (value) {
-                                setContractType(value as ContractType);
-                            }}
-                            required
-                        >
-                            <SelectTrigger id="contractType">
+                        <Select value={contractType} onValueChange={handleContractChange}>
+                            <SelectTrigger
+                                id="contractType"
+                                ref={contractRef}
+                                aria-invalid={contractInvalid}
+                                aria-describedby={contractDescribedBy}
+                                className="w-full"
+                            >
                                 <SelectValue placeholder="Sélectionner un type" />
                             </SelectTrigger>
                             <SelectContent>
@@ -115,6 +149,14 @@ export default function CreateJobPostingDialog(props: Props) {
                                 })}
                             </SelectContent>
                         </Select>
+                        <p
+                            id="contractType-error"
+                            role="alert"
+                            aria-live="assertive"
+                            className={errorClass}
+                        >
+                            {error}
+                        </p>
                     </div>
 
                     <div className="flex flex-col gap-1.5">

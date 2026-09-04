@@ -128,22 +128,23 @@ export default function ProfilPage() {
         );
     }
 
-    let feedbackClass = "border-primary bg-accent text-accent-foreground";
-    if (failed) {
-        feedbackClass = "border-destructive bg-destructive/5 text-destructive";
+    // Région d'annonce présente en permanence dans le document, masquée tant
+    // qu'elle est vide : une région live créée avec son message n'est pas
+    // restituée de façon fiable (RGAA 11.10).
+    let feedbackClass = "sr-only";
+    if (feedback !== null) {
+        let tone = "border-primary bg-accent text-accent-foreground";
+        if (failed) {
+            tone = "border-destructive bg-destructive/5 text-destructive";
+        }
+        feedbackClass = "border px-3 py-2 text-sm " + tone;
     }
 
-    let feedbackBlock = null;
-    if (feedback !== null) {
-        feedbackBlock = (
-            <p
-                aria-live="polite"
-                className={"border px-3 py-2 text-sm " + feedbackClass}
-            >
-                {feedback}
-            </p>
-        );
-    }
+    const feedbackBlock = (
+        <p role="status" aria-live="polite" className={feedbackClass}>
+            {feedback}
+        </p>
+    );
 
     let saveLabel = "Enregistrer";
     if (saving) {
@@ -243,7 +244,7 @@ export default function ProfilPage() {
                             setDescription(event.target.value);
                         }}
                         placeholder="Votre parcours, vos compétences, ce que vous recherchez."
-                        className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                        className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring"
                     />
                 </div>
 
