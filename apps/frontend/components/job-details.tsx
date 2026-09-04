@@ -14,6 +14,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { formatSalary } from "@/components/job-list";
 import { distanceInKm, formatDistance } from "@/lib/distance";
+import { authClient } from "@/lib/auth-client";
+import { UserRank } from "@/lib/user-rank";
 import type { Job } from "@/lib/jobs";
 import { useApplications } from "@/lib/applications-context";
 
@@ -39,6 +41,8 @@ function Field(props: { label: string; value: string }) {
 
 export default function JobDetails(props: Props) {
     const [applied, setApplied] = useState(false);
+    const { data: session } = authClient.useSession();
+    const { addApplication } = useApplications();
     const job = props.job;
     let jobId = 0;
     if (job !== null) {
@@ -51,8 +55,6 @@ export default function JobDetails(props: Props) {
         },
         [jobId],
     );
-
-    const { addApplication } = useApplications();
 
     function handleOpenChange(open: boolean) {
         if (!open) {
@@ -88,6 +90,17 @@ export default function JobDetails(props: Props) {
         year: "numeric",
     });
 
+    const isJobSeeker = session?.user?.rank === UserRank.JOB_SEEKER;
+
+    let restrictionMessage: string | null = null;
+    if (!session) {
+        restrictionMessage = "Connectez-vous pour postuler.";
+    } else if (!isJobSeeker) {
+        restrictionMessage = "Les employeurs ne peuvent pas postuler à une offre.";
+    }
+
+    const canApply = isJobSeeker && !applied;
+
     let footerMessage = (
         <p className="text-xs text-muted-foreground">
             Votre profil sera transmis à l&apos;employeur.
@@ -95,7 +108,16 @@ export default function JobDetails(props: Props) {
     );
     let applyLabel = "Postuler";
 
-    if (applied) {
+    if (restrictionMessage !== null) {
+        footerMessage = (
+            <p
+                role="alert"
+                className="font-heading text-sm font-semibold text-destructive"
+            >
+                {restrictionMessage}
+            </p>
+        );
+    } else if (applied) {
         footerMessage = (
             <p
                 aria-live="polite"
@@ -150,8 +172,8 @@ export default function JobDetails(props: Props) {
                     <Button
                         type="button"
                         onClick={handleApply}
-                        disabled={applied}
-                        className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+                        disabled={!canApply}
+                        className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-action"
                     >
                         {applyLabel}
                     </Button>
