@@ -23,7 +23,8 @@ export async function getUser(req: Request, res: Response, next: NextFunction)
             companiesId: true,
             emailContact: true,
             address: true,
-            description: true,
+            addressId: isSelf,
+            adescription: true,
             resume: true,
             rank: isSelf,
             email: isSelf,
@@ -33,6 +34,9 @@ export async function getUser(req: Request, res: Response, next: NextFunction)
             allowedAt: false,
             createdAt: false,
             updatedAt: false,
+        },
+        with: {
+            address: true,
         },
     });
     if (!user) throw new HttpError(404, "Utilisateur introuvable");

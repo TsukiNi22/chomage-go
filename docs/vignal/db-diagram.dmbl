@@ -1,0 +1,205 @@
+// ============================================================
+// Chômage-Go — Schéma de base de données (PostgreSQL / Drizzle)
+// Généré à partir de src/db/schema.ts
+// Visualiser en ligne : https://dbdiagram.io (coller ce fichier)
+// ============================================================
+
+Project chomage_go {
+  database_type: 'PostgreSQL'
+  Note: 'Plateforme de mise en relation emploi. Auth gérée par Better Auth (users/session/account/verification).'
+}
+
+// ------------------------------------------------------------
+// Entreprises
+// ------------------------------------------------------------
+Table addresses {
+  id                   serial       [pk, increment]
+  label                text         [not null, note: 'adresse complète telle que saisie']
+  street               varchar(255)
+  postal_code          varchar(10)
+  city                 varchar(100)
+  country_code         varchar(2)   [not null, default: 'FR']
+  latitude             double
+  longitude            double
+  lambert_x            double       [note: 'EPSG:2154']
+  lambert_y            double
+  geocoding_source     varchar(50)  [note: "ex: 'api-adresse', 'seed'"]
+  geocoding_score      double       [note: 'score de confiance, 0 à 1']
+  geocoded_at          timestamp
+  needs_location_check boolean      [not null, default: true, note: 'true tant que la position n\'est pas fiable']
+  created_at           timestamp    [default: `now()`]
+  updated_at           timestamp    [default: `now()`]
+
+  indexes {
+    city                    [name: 'idx_addresses_city']
+    postal_code             [name: 'idx_addresses_postal_code']
+    (latitude, longitude)   [name: 'idx_addresses_coords']
+  }
+
+  Note: 'Adresse normalisée et géocodée, partagée par users, companies et jobs. Un seul pipeline de géocodage à maintenir.'
+}
+
+Table companies {
+  id             serial       [pk, increment]
+  name           varchar(255) [not null]
+  siret          varchar(20)  [not null]
+  description    text
+  link           varchar(500)
+  employee_range integer      [not null, note: '0 -> 0-10, 1 -> 11-100, ...']
+  address_id     integer      [ref: > addresses.id, note: 'adresse de l\'établissement (le SIRET désigne un site physique)']
+
+  indexes {
+    (name, siret) [unique, name: 'uq_companies_name_siret']
+  }
+
+  Note: 'Fiche entreprise. Un employeur (users.rank = 1) est rattaché à une company.'
+}
+
+// ------------------------------------------------------------
+// Utilisateurs (table pilotée par Better Auth)
+// ------------------------------------------------------------
+Table users {
+  id             serial        [pk, increment]
+  name           varchar(255)  [not null, note: 'better-auth: nom d\'affichage']
+  rank           integer       [not null, default: 2, note: '0 admin (manuel), 1 employer (vérifié), 2 job-seeker (défaut)']
+  companies_id   integer       [ref: > companies.id, note: 'nullable — uniquement pour les employers']
+  firstname      varchar(100)  [not null]
+  lastname       varchar(100)  [not null]
+  email          varchar(255)  [not null, unique]
+  email_contact  varchar(255)
+  email_verified boolean       [not null, default: false, note: 'better-auth']
+  password_hash  varchar(255)  [note: 'legacy — better-auth stocke le mdp dans account.password']
+  address        text          [note: 'saisie libre, résolue par address_id une fois géocodée']
+  address_id     integer       [ref: > addresses.id]
+  description    text
+  resume         text          [note: 'blob base64']
+  localisation   boolean       [default: false]
+  allowed_at     timestamp     [note: 'date de validation employer']
+  created_at     timestamp     [default: `now()`]
+  updated_at     timestamp     [note: 'better-auth: auto-updated']
+
+  Note: 'Table pivot users/employers/job-seekers, réutilisée comme modèle "user" par Better Auth.'
+}
+
+// ------------------------------------------------------------
+// Better Auth — session / account / vérification
+// ------------------------------------------------------------
+Table session {
+  id         serial       [pk, increment]
+  user_id    integer      [not null, ref: > users.id]
+  token      varchar(512) [not null, unique]
+  expires_at timestamp    [not null]
+  ip_address varchar(45)
+  user_agent text
+  created_at timestamp    [default: `now()`]
+  updated_at timestamp
+
+  Note: 'Session active better-auth. ON DELETE CASCADE depuis users.'
+}
+
+Table account {
+  id                       serial       [pk, increment]
+  user_id                  integer      [not null, ref: > users.id]
+  account_id               varchar(255) [not null]
+  provider_id              varchar(255) [not null]
+  issuer                   text
+  access_token             text
+  refresh_token            text
+  id_token                 text
+  access_token_expires_at  timestamp
+  refresh_token_expires_at timestamp
+  scope                    text
+  password                 text         [note: 'hash du mot de passe (credential provider)']
+  created_at               timestamp    [default: `now()`]
+  updated_at               timestamp
+
+  Note: 'Comptes liés (credentials + futurs providers OAuth). ON DELETE CASCADE depuis users.'
+}
+
+Table verification {
+  id         serial       [pk, increment]
+  identifier varchar(255) [not null]
+  value      text         [not null]
+  expires_at timestamp    [not null]
+  created_at timestamp    [default: `now()`]
+
+  Note: 'Tokens de vérification email / reset mot de passe (better-auth).'
+}
+
+// ------------------------------------------------------------
+// Profil candidat
+// ------------------------------------------------------------
+Table user_skills {
+  id          serial       [pk, increment]
+  user_id     integer      [not null, ref: > users.id]
+  name        varchar(255) [not null]
+  description text
+}
+
+Table experience {
+  id           serial       [pk, increment]
+  user_id      integer      [not null, ref: > users.id]
+  companies_id integer      [not null, ref: > companies.id]
+  name         varchar(255) [not null]
+  description  text
+  type         integer      [not null, note: '0 stage, 1 alternance, ...']
+  part_time    boolean      [default: false]
+  start        timestamp
+  end          timestamp
+
+  Note: 'Historique d\'expérience professionnelle du user, rattaché à une company.'
+}
+
+Table availability {
+  id        serial       [pk, increment]
+  user_id   integer      [not null, ref: > users.id]
+  title     varchar(255)
+  type      integer      [not null, note: '0 stage, 1 alternance, ...']
+  part_time boolean      [default: false]
+  start     timestamp    [not null]
+  end       timestamp
+}
+
+// ------------------------------------------------------------
+// Offres d'emploi
+// ------------------------------------------------------------
+Table jobs {
+  id           serial       [pk, increment]
+  companies_id integer      [not null, ref: > companies.id]
+  user_id      integer      [not null, ref: > users.id, note: 'employer qui a posté l\'offre']
+  address_id   integer      [ref: > addresses.id, note: 'lieu de l\'offre ; à défaut celui de la company']
+  title        varchar(255) [not null]
+  description  text
+  type         integer      [not null, note: '0 stage, 1 alternance, ...']
+  salary_min   integer
+  salary_max   integer
+  created_at   timestamp    [default: `now()`]
+
+  indexes {
+    (title, companies_id) [unique, name: 'uq_jobs_title_company']
+  }
+}
+
+Table job_skills {
+  id          serial       [pk, increment]
+  job_id      integer      [not null, ref: > jobs.id]
+  name        varchar(255) [not null]
+  description text
+}
+
+// ------------------------------------------------------------
+// Candidatures (table de jonction users <-> jobs)
+// ------------------------------------------------------------
+Table applications {
+  id      serial  [pk, increment]
+  job_id  integer [not null, ref: > jobs.id]
+  user_id integer [not null, ref: > users.id]
+  description  text
+
+  indexes {
+    (job_id, user_id) [unique, name: 'uq_applications_job_user']
+  }
+
+  Note: 'Une seule candidature par (job, user) grâce à la contrainte unique.'
+}
+ 

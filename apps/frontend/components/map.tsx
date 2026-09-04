@@ -2,7 +2,15 @@
 
 import { useEffect } from "react";
 import L from "leaflet";
-import { Circle, MapContainer, Marker, TileLayer, Tooltip, useMap } from "react-leaflet";
+import {
+    Circle,
+    MapContainer,
+    Marker,
+    TileLayer,
+    Tooltip,
+    ZoomControl,
+    useMap,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Job } from "@/lib/jobs";
 
@@ -87,6 +95,19 @@ const IGN_WMTS_URL =
     "&STYLE=normal&FORMAT=image/png" +
     "&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}";
 
+function markerLabel(job: Job): string {
+    return (
+        job.title +
+        ", " +
+        job.company +
+        ", " +
+        job.contract +
+        ", " +
+        job.city +
+        ". Ouvrir le détail de l'offre."
+    );
+}
+
 export default function Map(props: Props) {
     let userLat = null;
     let userLon = null;
@@ -100,7 +121,12 @@ export default function Map(props: Props) {
     let userMarker = null;
     if (userLat !== null && userLon !== null) {
         userMarker = (
-            <Marker position={[userLat, userLon]} icon={userIcon}>
+            <Marker
+                position={[userLat, userLon]}
+                icon={userIcon}
+                title="Votre position"
+                keyboard={false}
+            >
                 <Tooltip direction="top" offset={[0, -12]}>
                     Vous êtes ici
                 </Tooltip>
@@ -134,8 +160,15 @@ export default function Map(props: Props) {
             center={[46.7, 2.4]}
             zoom={6}
             scrollWheelZoom={true}
+            zoomControl={false}
             className="h-full w-full"
         >
+            <ZoomControl
+                position="topleft"
+                zoomInTitle="Zoomer"
+                zoomOutTitle="Dézoomer"
+            />
+
             <TileLayer
                 url={IGN_WMTS_URL}
                 attribution='&copy; <a href="https://www.ign.fr/">IGN</a> - Géoplateforme'
@@ -164,8 +197,21 @@ export default function Map(props: Props) {
                         key={job.id}
                         position={[job.lat, job.lon]}
                         icon={icon}
+                        title={markerLabel(job)}
                         eventHandlers={{
                             click: function () {
+                                props.onSelect(job);
+                            },
+                            // Leaflet rend les repères focusables (role="button",
+                            // tabindex="0") mais ne convertit jamais une frappe en
+                            // clic : sans ce gestionnaire, ils sont inactivables au
+                            // clavier (RGAA 7.1 et 12.9).
+                            keydown: function (event) {
+                                const key = event.originalEvent.key;
+                                if (key !== "Enter" && key !== " ") {
+                                    return;
+                                }
+                                event.originalEvent.preventDefault();
                                 props.onSelect(job);
                             },
                         }}

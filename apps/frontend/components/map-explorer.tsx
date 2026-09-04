@@ -55,6 +55,7 @@ export default function MapExplorer(props: ExplorerProps) {
     const [geoLoading, setGeoLoading] = useState(false);
     const [place, setPlace] = useState<Place | null>(null);
     const [placeLoading, setPlaceLoading] = useState(false);
+    const [disablingGeo, setDisablingGeo] = useState(false);
 
     useEffect(
         function () {
@@ -88,14 +89,14 @@ export default function MapExplorer(props: ExplorerProps) {
     );
 
     let origin: Position | null = null;
-    if (position !== null) {
-        origin = position;
-    } else if (place !== null) {
+    if (place !== null) {
         origin = { lat: place.lat, lon: place.lon };
+    } else if (position !== null) {
+        origin = position;
     }
 
     let searchRadius = radius;
-    if (searchRadius === null && place !== null && position === null) {
+    if (searchRadius === null && place !== null) {
         searchRadius = 30;
     }
 
@@ -159,14 +160,14 @@ export default function MapExplorer(props: ExplorerProps) {
         targetLat = selectedJob.lat;
         targetLon = selectedJob.lon;
         targetZoom = 14;
-    } else if (position !== null) {
-        targetLat = position.lat;
-        targetLon = position.lon;
-        targetZoom = 12;
     } else if (place !== null) {
         targetLat = place.lat;
         targetLon = place.lon;
         targetZoom = 11;
+    } else if (position !== null) {
+        targetLat = position.lat;
+        targetLon = position.lon;
+        targetZoom = 12;
     } else if (search !== "" && mappableJobs.length > 0) {
         targetLat = mappableJobs[0].lat;
         targetLon = mappableJobs[0].lon;
@@ -241,7 +242,7 @@ export default function MapExplorer(props: ExplorerProps) {
                         lat: result.coords.latitude,
                         lon: result.coords.longitude,
                     });
-                    setRadius(25);
+                    setRadius(50);
                     setGeoLoading(false);
                     setGeoMessage(
                         "Position calculée sur votre appareil. Elle n'est ni transmise ni enregistrée sur nos serveurs.",
@@ -289,6 +290,12 @@ export default function MapExplorer(props: ExplorerProps) {
     );
 
 
+    async function disableGeolocation() {
+        setDisablingGeo(true);
+        await authClient.updateUser({ localisation: false });
+        setDisablingGeo(false);
+    }
+
     function resetFilters() {
         setSearch("");
         setLocation("");
@@ -330,12 +337,14 @@ export default function MapExplorer(props: ExplorerProps) {
 
     if (allowed) {
         geoLink = (
-            <Link
-                href="/profil"
-                className="font-heading text-xs font-medium text-primary underline underline-offset-4"
+            <button
+                type="button"
+                onClick={disableGeolocation}
+                disabled={disablingGeo}
+                className="font-heading text-xs font-medium text-primary underline underline-offset-4 disabled:opacity-50"
             >
-                Désactiver dans mon profil
-            </Link>
+                Désactiver la géolocalisation
+            </button>
         );
     }
 
@@ -410,8 +419,15 @@ export default function MapExplorer(props: ExplorerProps) {
     let radiusRow = null;
     if (origin !== null) {
         radiusRow = (
-            <div className="flex flex-wrap items-center gap-2">
-                <span className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+            <div
+                role="group"
+                aria-label="Rayon de recherche"
+                className="flex flex-wrap items-center gap-2"
+            >
+                <span
+                    aria-hidden="true"
+                    className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
+                >
                     Rayon
                 </span>
                 {RADIUS_OPTIONS.map(function (value) {
@@ -447,9 +463,28 @@ export default function MapExplorer(props: ExplorerProps) {
             "mx-auto flex h-[38rem] w-full max-w-6xl flex-col border border-border bg-background";
     }
 
+    let heading = (
+        <h1 className="font-heading text-sm font-bold uppercase tracking-[0.08em] text-primary">
+            Carte des offres d&apos;emploi
+        </h1>
+    );
+    if (props.embedded === true) {
+        heading = (
+            <h2 className="font-heading text-sm font-bold uppercase tracking-[0.08em] text-primary">
+                Carte des offres d&apos;emploi
+            </h2>
+        );
+    }
+
     return (
         <div className={shellClass}>
-            <div className="flex flex-col gap-3 border-b border-border bg-background px-6 py-4">
+            <div
+                role="search"
+                aria-label="Rechercher une offre d'emploi"
+                className="flex flex-col gap-3 border-b border-border bg-background px-6 py-4"
+            >
+                {heading}
+
                 <div className="flex flex-col gap-3 lg:flex-row">
                     <Input
                         value={search}
@@ -461,14 +496,19 @@ export default function MapExplorer(props: ExplorerProps) {
                     <Input
                         value={location}
                         onChange={handleLocation}
-                        placeholder="Addresse ou code postal..."
+                        placeholder="Adresse ou code postal…"
                         className="lg:w-72"
                         aria-label="Rechercher une commune ou un code postal"
                     />
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                    {CONTRACTS.map(function (value) {
+                    <div
+                        role="group"
+                        aria-label="Filtrer par type de contrat"
+                        className="flex flex-wrap items-center gap-2"
+                    >
+                        {CONTRACTS.map(function (value) {
                         let style = "border-border bg-background hover:border-primary";
                         if (contract === value) {
                             style = "border-primary bg-accent text-accent-foreground";
@@ -489,10 +529,11 @@ export default function MapExplorer(props: ExplorerProps) {
                             >
                                 {value}
                             </button>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
 
-                    <span className="mx-1 h-5 w-px bg-border" />
+                    <span aria-hidden="true" className="mx-1 h-5 w-px bg-border" />
 
                     {geoStatus}
                     {geoLink}
@@ -505,7 +546,10 @@ export default function MapExplorer(props: ExplorerProps) {
             </div>
 
             <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-                <aside className="order-2 h-full w-full overflow-y-auto border-border lg:order-1 lg:w-[26rem] lg:border-r">
+                <aside
+                    aria-label="Liste des offres"
+                    className="order-2 h-full w-full overflow-y-auto border-border lg:order-1 lg:w-[26rem] lg:border-r"
+                >
                     <JobList
                         jobs={visibleJobs}
                         total={results.length}
