@@ -9,10 +9,10 @@ import AuthModal from "./auth-modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 import { useCgu } from "@/components/cgu-provider";
+import { UserRank } from "@/lib/user-rank";
 
 const links = [
     { label: "Carte des offres", href: "/carte" },
-    { label: "Publier une offre", href: "/offres" },
     { label: "Comment ça marche", href: "/#how" },
 ];
 
@@ -33,20 +33,22 @@ export default function Header() {
     }
 
     const isOnPublishPage = pathname === PUBLISH_JOB_ROUTE;
+    const isEmployer = session?.user?.rank === UserRank.EMPLOYER;
+
     async function handleSignOut() {
         await authClient.signOut();
     }
 
     let accountArea = (
-    <Button
-        variant="ghost"
-        onClick={openModal}
-        className="font-heading font-semibold text-primary hover:bg-accent"
-    >
-        Se connecter/S&apos;inscrire
-    </Button>
+        <Button
+            variant="ghost"
+            onClick={openModal}
+            className="font-heading font-semibold text-primary hover:bg-accent"
+        >
+            Se connecter/S&apos;inscrire
+        </Button>
     );
-    
+
     if (isPending) {
         accountArea = <Skeleton className="h-9 w-32" />;
     } else if (session) {
@@ -69,17 +71,17 @@ export default function Header() {
         );
     }
 
-    let publishButton: React.ReactNode = (
-        <Button
-            asChild
-            className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
-        >
-            <Link href={PUBLISH_JOB_ROUTE}>Publier une offre</Link>
-        </Button>
-    );
+    let publishButton: React.ReactNode = null;
 
-    if (isOnPublishPage) {
-        publishButton = null;
+    if (isEmployer && !isOnPublishPage) {
+        publishButton = (
+            <Button
+                asChild
+                className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+            >
+                <Link href={PUBLISH_JOB_ROUTE}>Publier une offre</Link>
+            </Button>
+        );
     }
 
     if (cgu.ready && !cgu.accepted) {
@@ -94,15 +96,17 @@ export default function Header() {
             </Button>
         );
 
-        publishButton = (
-            <Button
-                disabled
-                title="Acceptez les conditions générales pour continuer"
-                className="bg-action font-heading font-semibold text-action-foreground"
-            >
-                Publier une offre
-            </Button>
-        );
+        if (isEmployer && !isOnPublishPage) {
+            publishButton = (
+                <Button
+                    disabled
+                    title="Acceptez les conditions générales pour continuer"
+                    className="bg-action font-heading font-semibold text-action-foreground"
+                >
+                    Publier une offre
+                </Button>
+            );
+        }
     }
 
     return (
@@ -116,8 +120,8 @@ export default function Header() {
                     <ul className="flex items-center gap-8">
                         {links.map(function (link) {
                             return (
-                                <li key={link.href}>
-                                    <a
+                                <li key={link.href}><a
+                                    
                                         href={link.href}
                                         className="font-heading text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
                                     >
@@ -126,6 +130,17 @@ export default function Header() {
                                 </li>
                             );
                         })}
+
+                        {isEmployer && (
+                            <li><a
+                                
+                                    href={PUBLISH_JOB_ROUTE}
+                                    className="font-heading text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
+                                >
+                                    Publier une offre
+                                </a>
+                            </li>
+                        )}
                     </ul>
                 </nav>
 
