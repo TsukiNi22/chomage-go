@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import {eq} from "drizzle-orm";
 import {betterAuth} from "better-auth";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
 import {db} from "../db/index.ts";
@@ -44,4 +45,16 @@ export const auth = betterAuth({
     secret: process.env.BETTER_AUTH_SECRET!,
     baseURL: process.env.BETTER_AUTH_URL,
     trustedOrigins: [process.env.FRONTEND_URL || "http://localhost:3000"],
+    databaseHooks: {
+        session: {
+            create: {
+                after: async (session) => {
+                    await db
+                        .update(schema.users)
+                        .set({ lastLoginAt: new Date() })
+                        .where(eq(schema.users.id, session.userId));
+                },
+            },
+        },
+    },
 });
