@@ -1,17 +1,21 @@
 import {Request, Response, NextFunction} from "express";
-import {validateJson} from "../utils/validateJson.utils";
-import {HttpError} from "../types/httpError";
-import {db} from "../db";
-import {users} from "../db/schema";
+import {validateJson} from "../utils/validateJson.utils.js";
+import {HttpError} from "../types/httpError.js";
+import {db} from "../db/index.js";
+import {users} from "../db/schema.js";
 import {eq} from "drizzle-orm";
-import * as schemas from "../schemas/users.schema";
+import * as schemas from "../schemas/users.schema.js";
 
 export async function getUser(req: Request, res: Response, next: NextFunction)
 {
+    if (!req.user) {
+        return res.status(401).json({ error: "Non authentifié" });
+    }
+
     // Determine user
     let id = Number(req.params.id);
-    if (isNaN(id)) id = req.user.id;
-    const isSelf = (id == req.user.id);
+    if (isNaN(id)) id = Number(req.user.id);
+    const isSelf = (id === Number(req.user.id));
 
     // Get asked user
     const user = await db.query.users.findFirst({
@@ -24,7 +28,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction)
             emailContact: true,
             address: true,
             addressId: isSelf,
-            adescription: true,
+            description: true,
             resume: true,
             rank: isSelf,
             email: isSelf,

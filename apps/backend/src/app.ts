@@ -1,10 +1,10 @@
 import express, {Express} from "express";
 import swaggerUi from "swagger-ui-express";
 import {toNodeHandler} from "better-auth/node";
-import {router} from "./routes";
-import {errorHandler} from "./middlewares/errorHandler.middleware";
-import {swaggerSpec} from "./config/swagger.config";
-import {auth} from "./lib/auth";
+import {router} from "./routes/index.js";
+import {errorHandler} from "./middlewares/errorHandler.middleware.js";
+import {swaggerSpec} from "./config/swagger.config.js";
+import {auth} from "./lib/auth.js";
 import cors from "cors"
 
 export function createApp(): Express

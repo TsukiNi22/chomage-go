@@ -1,7 +1,7 @@
 import {Request, Response, NextFunction} from "express";
-import {validateJson} from "../utils/validateJson.utils";
-import {HttpError} from "../types/httpError";
-import * as schemas from "../schemas/applications.schema";
+import {validateJson} from "../utils/validateJson.utils.js";
+import {HttpError} from "../types/httpError.js";
+import * as schemas from "../schemas/applications.schema.js";
 
 export function postApplication(req: Request, res: Response, next: NextFunction)
 {

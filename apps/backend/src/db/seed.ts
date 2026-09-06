@@ -1,6 +1,6 @@
-import {auth} from "../lib/auth.ts";
-import {db, client} from "./index.ts";
-import {users, companies, addresses} from "./schema.ts";
+import {auth} from "../lib/auth.js";
+import {db, client} from "./index.js";
+import {users, companies, addresses} from "./schema.js";
 import {eq} from "drizzle-orm";
 
 const DEMO_PASSWORD = "demo1234";

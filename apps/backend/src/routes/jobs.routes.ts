@@ -1,6 +1,6 @@
 import {Router} from "express";
-import {requireAuth} from "../middlewares/requireAuth.middleware.ts"
-import * as jobsController from "../controllers/jobs.controller.ts";
+import {requireAuth} from "../middlewares/requireAuth.middleware.js"
+import * as jobsController from "../controllers/jobs.controller.js";
 
 const router = Router();
 

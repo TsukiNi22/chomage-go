@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import {drizzle} from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import * as schema from "./schema.ts";
+import * as schema from "./schema.js";
 
 const url = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:5432/${process.env.DB_NAME}`;
 

@@ -1,7 +1,7 @@
 import {Request, Response, NextFunction} from "express";
-import {HttpError} from "../types/httpError";
-import {users, addresses, companies, userSkills, experience, availability, applications, jobs, jobSkills} from "../db/schema";
-import {db} from "../db";
+import {HttpError} from "../types/httpError.js";
+import {users, addresses, companies, userSkills, experience, availability, applications, jobs, jobSkills} from "../db/schema.js";
+import {db} from "../db/index.js";
 import {eq} from "drizzle-orm";
 
 export async function extract(req: Request, res: Response, next: NextFunction)
@@ -38,10 +38,10 @@ export async function extract(req: Request, res: Response, next: NextFunction)
 
     const [address, company, skills, experiences, availabilities, userApplications] = await Promise.all([
         user.addressId
-            ? db.select().from(addresses).where(eq(addresses.id, user.addressId)).then((r) => r[0] ?? null)
+            ? db.select().from(addresses).where(eq(addresses.id, user.addressId)).then((r: any) => r[0] ?? null)
             : Promise.resolve(null),
         user.companiesId
-            ? db.select().from(companies).where(eq(companies.id, user.companiesId)).then((r) => r[0] ?? null)
+            ? db.select().from(companies).where(eq(companies.id, user.companiesId)).then((r: any) => r[0] ?? null)
             : Promise.resolve(null),
         db.select().from(userSkills).where(eq(userSkills.userId, userId)),
         db
@@ -78,7 +78,7 @@ export async function extract(req: Request, res: Response, next: NextFunction)
     if (user.rank <= 1) {
         const rawJobs = await db.select().from(jobs).where(eq(jobs.userId, userId));
         postedJobs = await Promise.all(
-            rawJobs.map(async (job) => ({
+            rawJobs.map(async (job: any) => ({
                 ...job,
                 skills: await db.select().from(jobSkills).where(eq(jobSkills.jobId, job.id)),
             }))

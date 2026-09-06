@@ -1,10 +1,10 @@
 import {Router} from "express";
-import authRoutes from "./auth.routes.ts";
-import usersRoutes from "./users.routes.ts";
-import companiesRoutes from "./companies.routes.ts";
-import jobsRoutes from "./jobs.routes.ts";
-import applicationsRoutes from "./applications.routes.ts";
-import specialRoutes from "./special.routes.ts";
+import authRoutes from "./auth.routes.js";
+import usersRoutes from "./users.routes.js";
+import companiesRoutes from "./companies.routes.js";
+import jobsRoutes from "./jobs.routes.js";
+import applicationsRoutes from "./applications.routes.js";
+import specialRoutes from "./special.routes.js";
 
 // Init router
 export const router = Router();

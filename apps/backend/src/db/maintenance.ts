@@ -1,5 +1,5 @@
-import {db} from ".";
-import {users, jobs, jobsArchive, jobSkills, jobSkillsArchive} from "./schema";
+import {db} from "./index.js";
+import {users, jobs, jobsArchive, jobSkills, jobSkillsArchive} from "./schema.js";
 import {lt, sql, eq} from "drizzle-orm";
 
 const TWO_YEARS_MS = 2 * 365 * 24 * 60 * 60 * 1000;
@@ -25,7 +25,7 @@ export async function archiveOldJobs()
     const oldJobs = await db.select().from(jobs).where(lt(jobs.createdAt, cutoff));
 
     for (const job of oldJobs) {
-        await db.transaction(async (tx) => {
+        await db.transaction(async (tx: any) => {
             const [archived] = await tx
                 .insert(jobsArchive)
                 .values({
@@ -45,7 +45,7 @@ export async function archiveOldJobs()
             const skills = await tx.select().from(jobSkills).where(eq(jobSkills.jobId, job.id));
             if (skills.length > 0) {
                 await tx.insert(jobSkillsArchive).values(
-                    skills.map((s) => ({
+                    skills.map((s: any) => ({
                         jobArchiveId: archived.id,
                         name: s.name,
                         description: s.description,

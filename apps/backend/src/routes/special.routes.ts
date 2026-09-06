@@ -1,6 +1,6 @@
 import {Router} from "express";
-import {requireAuth} from "../middlewares/requireAuth.middleware.ts"
-import * as specialController from "../controllers/special.controller.ts";
+import {requireAuth} from "../middlewares/requireAuth.middleware.js"
+import * as specialController from "../controllers/special.controller.js";
 
 const router = Router();
 

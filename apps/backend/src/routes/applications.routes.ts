@@ -1,6 +1,6 @@
 import {Router} from "express";
-import {requireAuth} from "../middlewares/requireAuth.middleware.ts"
-import * as applicationsController from "../controllers/applications.controller.ts";
+import {requireAuth} from "../middlewares/requireAuth.middleware.js"
+import * as applicationsController from "../controllers/applications.controller.js";
 
 const router = Router();
 

@@ -2,8 +2,8 @@ import 'dotenv/config';
 import {eq} from "drizzle-orm";
 import {betterAuth} from "better-auth";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
-import {db} from "../db/index.ts";
-import * as schema from "../db/schema.ts";
+import {db} from "../db/index.js";
+import * as schema from "../db/schema.js";
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
@@ -52,7 +52,7 @@ export const auth = betterAuth({
                     await db
                         .update(schema.users)
                         .set({ lastLoginAt: new Date() })
-                        .where(eq(schema.users.id, session.userId));
+                        .where(eq(schema.users.id, Number(session.userId)));
                 },
             },
         },
