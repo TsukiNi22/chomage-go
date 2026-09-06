@@ -10,8 +10,8 @@
     "lint": "pnpm -r lint"
   },
   "devDependencies": {
-    "autoprefixer": "^10.5.4",
-    "postcss": "^8.5.26",
+    "autoprefixer": "^10.5.5",
+    "postcss": "^8.5.28",
     "tailwindcss": "^4.3.3"
   }
 }

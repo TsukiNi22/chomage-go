@@ -44,7 +44,9 @@ export const companies = pgTable(
         description: text("description"),
         link: varchar("link", { length: 500 }),
         employeeRange: integer("employee_range").notNull(),
-        addressId: integer("address_id").references(() => addresses.id), // adresse du site (le SIRET désigne un établissement)
+        // NOTE: addressId reste optionnel -> on met l'adresse à NULL si elle est supprimée,
+        // on ne veut pas qu'une suppression d'adresse fasse disparaître l'entreprise entière.
+        addressId: integer("address_id").references(() => addresses.id, { onDelete: "set null" }),
     },
     (t) => [unique().on(t.name, t.siret)]
 );
@@ -56,7 +58,9 @@ export const users = pgTable("users", {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 255 }).notNull(), // better-auth
     rank: integer("rank").notNull().default(2), // 0 admin, 1 employer, 2 job-seeker
-    companiesId: integer("companies_id").references(() => companies.id),
+    // NOTE: idem, on ne veut pas supprimer un compte utilisateur parce que
+    // son entreprise a été supprimée -> set null.
+    companiesId: integer("companies_id").references(() => companies.id, { onDelete: "set null" }),
     firstname: varchar("firstname", { length: 100 }).notNull(),
     lastname: varchar("lastname", { length: 100 }).notNull(),
     email: varchar("email", { length: 255 }).notNull().unique(),
@@ -64,11 +68,14 @@ export const users = pgTable("users", {
     emailVerified: boolean("email_verified").notNull().default(false), // better-auth
     passwordHash: varchar("password_hash", { length: 255 }), // legacy — better-auth stocke le mdp dans account.password
     address: text("address"), // saisie libre, résolue par addressId une fois géocodée
-    addressId: integer("address_id").references(() => addresses.id),
+    addressId: integer("address_id").references(() => addresses.id, { onDelete: "set null" }),
     description: text("description"),
     resume: text("resume"), // base64 blob
     localisation: boolean("localisation").default(false),
     allowedAt: timestamp("allowed_at"),
+    // Dernière connexion réelle (mise à jour par un hook better-auth au sign-in),
+    // sert de base au nettoyage "2 ans d'inactivité".
+    lastLoginAt: timestamp("last_login_at").defaultNow(),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()), // better-auth
 });
@@ -117,15 +124,17 @@ export const verification = pgTable("verification", {
 // ------------------------------------------------------------
 export const userSkills = pgTable("user_skills", {
     id: serial("id").primaryKey(),
-    userId: integer("user_id").notNull().references(() => users.id),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     name: varchar("name", { length: 255 }).notNull(),
     description: text("description"),
 });
 
 export const experience = pgTable("experience", {
     id: serial("id").primaryKey(),
-    userId: integer("user_id").notNull().references(() => users.id),
-    companiesId: integer("companies_id").notNull().references(() => companies.id),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    // Ici on cascade réellement : si l'entreprise est supprimée, seule CETTE ligne
+    // d'expérience disparaît (pas tout le profil du candidat).
+    companiesId: integer("companies_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
     name: varchar("name", { length: 255 }).notNull(),
     description: text("description"),
     type: integer("type").notNull(), // 0 stage, 1 alternance, ...
@@ -136,7 +145,7 @@ export const experience = pgTable("experience", {
 
 export const availability = pgTable("availability", {
     id: serial("id").primaryKey(),
-    userId: integer("user_id").notNull().references(() => users.id),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     title: varchar("title", { length: 255 }),
     type: integer("type").notNull(),
     partTime: boolean("part_time").default(false),
@@ -151,9 +160,9 @@ export const jobs = pgTable(
     "jobs",
     {
         id: serial("id").primaryKey(),
-        companiesId: integer("companies_id").notNull().references(() => companies.id),
-        userId: integer("user_id").notNull().references(() => users.id), // employer qui a posté l'offre
-        addressId: integer("address_id").references(() => addresses.id), // lieu de l'offre ; à défaut celui de la company
+        companiesId: integer("companies_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+        userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }), // employer qui a posté l'offre
+        addressId: integer("address_id").references(() => addresses.id, { onDelete: "set null" }), // lieu de l'offre ; à défaut celui de la company
         title: varchar("title", { length: 255 }).notNull(),
         description: text("description"),
         type: integer("type").notNull(),
@@ -166,7 +175,7 @@ export const jobs = pgTable(
 
 export const jobSkills = pgTable("job_skills", {
     id: serial("id").primaryKey(),
-    jobId: integer("job_id").notNull().references(() => jobs.id),
+    jobId: integer("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
     name: varchar("name", { length: 255 }).notNull(),
     description: text("description"),
 });
@@ -178,12 +187,41 @@ export const applications = pgTable(
     "applications",
     {
         id: serial("id").primaryKey(),
-        jobId: integer("job_id").notNull().references(() => jobs.id),
-        userId: integer("user_id").notNull().references(() => users.id),
+        jobId: integer("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
+        userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
         description: text("description"), // lettre de motivation / message du candidat
     },
     (t) => [unique().on(t.jobId, t.userId)]
 );
+
+// ------------------------------------------------------------
+// Archive des offres (> 30 jours) — même contenu que "jobs",
+// purgée après 2 ans passés en archive.
+// ------------------------------------------------------------
+export const jobsArchive = pgTable("jobs_archive", {
+    id: serial("id").primaryKey(),
+    originalJobId: integer("original_job_id").notNull(), // trace l'ancien id, pas de FK (la ligne source n'existe plus)
+    companiesId: integer("companies_id").references(() => companies.id, { onDelete: "set null" }),
+    userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
+    addressId: integer("address_id").references(() => addresses.id, { onDelete: "set null" }),
+    title: varchar("title", { length: 255 }).notNull(),
+    description: text("description"),
+    type: integer("type").notNull(),
+    salaryMin: integer("salary_min"),
+    salaryMax: integer("salary_max"),
+    createdAt: timestamp("created_at"), // date de création d'origine de l'offre
+    archivedAt: timestamp("archived_at").defaultNow().notNull(), // date de bascule en archive -> base du purge à 2 ans
+},
+(t) => [
+    index("idx_jobs_archive_archived_at").on(t.archivedAt),
+]);
+
+export const jobSkillsArchive = pgTable("job_skills_archive", {
+    id: serial("id").primaryKey(),
+    jobArchiveId: integer("job_archive_id").notNull().references(() => jobsArchive.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 255 }).notNull(),
+    description: text("description"),
+});
 
 // ------------------------------------------------------------
 // Relations
@@ -240,4 +278,15 @@ export const applicationsRelations = relations(applications, ({ one }) => ({
 
 export const sessionRelations = relations(session, ({ one }) => ({
     user: one(users, { fields: [session.userId], references: [users.id] }),
+}));
+
+export const jobsArchiveRelations = relations(jobsArchive, ({ one, many }) => ({
+    company: one(companies, { fields: [jobsArchive.companiesId], references: [companies.id] }),
+    poster: one(users, { fields: [jobsArchive.userId], references: [users.id] }),
+    address: one(addresses, { fields: [jobsArchive.addressId], references: [addresses.id] }),
+    skills: many(jobSkillsArchive),
+}));
+
+export const jobSkillsArchiveRelations = relations(jobSkillsArchive, ({ one }) => ({
+    jobArchive: one(jobsArchive, { fields: [jobSkillsArchive.jobArchiveId], references: [jobsArchive.id] }),
 }));
