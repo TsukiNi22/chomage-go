@@ -10,8 +10,12 @@ if (!process.env.NEXT_PUBLIC_API_URL) {
 }
 
 const nextConfig: NextConfig = {
+<<<<<<< Updated upstream
     allowedDevOrigins: ['10.168.145.219', '192.168.1.42'],
     //output: "export"
+=======
+    allowedDevOrigins: ['10.10.255.151', '10.168.145.219', '192.168.1.42'],
+>>>>>>> Stashed changes
 };
 
 export default nextConfig;
