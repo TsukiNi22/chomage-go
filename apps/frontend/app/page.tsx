@@ -8,11 +8,11 @@ export default function Home() {
         <>
             <Hero />
             <KeyFigures />
-            <div id="jobs" className="border-b border-border bg-wash px-6 py-12">
-                <MapExplorer embedded={true} />
-            </div>
             <div id="how">
                 <HowItWorks />
+            </div>
+            <div id="jobs" className="border-b border-border bg-wash px-6 py-12">
+                <MapExplorer embedded={true} />
             </div>
         </>
     );
