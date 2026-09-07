@@ -1,10 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-import { fetchMyProfile } from "@/lib/api";
+import { fetchMyProfile, fetchUserDataExport } from "@/lib/api";
 import type { UserProfile } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +28,7 @@ function Shell(props: { children: React.ReactNode }) {
 }
 
 export default function ProfilPage() {
+    const router = useRouter();
     const { data: session, isPending } = authClient.useSession();
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -33,6 +43,14 @@ export default function ProfilPage() {
     const [saving, setSaving] = useState(false);
     const [feedback, setFeedback] = useState<string | null>(null);
     const [failed, setFailed] = useState(false);
+
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [deletePassword, setDeletePassword] = useState("");
+    const [deleting, setDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
+
+    const [exporting, setExporting] = useState(false);
+    const [exportError, setExportError] = useState<string | null>(null);
 
     useEffect(
         function () {
@@ -88,6 +106,62 @@ export default function ProfilPage() {
         } else {
             setFeedback("Profil enregistré.");
         }
+    }
+
+    async function handleExportData() {
+        setExporting(true);
+        setExportError(null);
+
+        try {
+            const data = await fetchUserDataExport();
+            const blob = new Blob([JSON.stringify(data, null, 2)], {
+                type: "application/json",
+            });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "mes-donnees-geoemploi.json";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch {
+            setExportError("L'export a échoué. Réessayez dans un instant.");
+        } finally {
+            setExporting(false);
+        }
+    }
+
+    function handleDeleteOpenChange(nextOpen: boolean) {
+        setDeleteOpen(nextOpen);
+        if (!nextOpen) {
+            setDeletePassword("");
+            setDeleteError(null);
+        }
+    }
+
+    async function handleDeleteAccount(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setDeleting(true);
+        setDeleteError(null);
+
+        const result = await authClient.deleteUser({
+            password: deletePassword,
+        });
+
+        setDeleting(false);
+
+        if (result.error) {
+            setDeleteError(
+                "Mot de passe incorrect ou suppression impossible. Réessayez.",
+            );
+            return;
+        }
+
+        setDeleteOpen(false);
+        await authClient.signOut();
+        router.push("/");
     }
 
     if (isPending || loadingProfile) {
@@ -282,6 +356,110 @@ export default function ProfilPage() {
                     </Button>
                 </div>
             </form>
+
+            <div className="mt-8 border border-border bg-background p-8">
+                <h2 className="font-heading text-lg font-bold text-primary">
+                    Mes données
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    Téléchargez une copie complète de vos données personnelles
+                    (profil, candidatures, historique) au format JSON.
+                </p>
+
+                <Button
+                    type="button"
+                    onClick={handleExportData}
+                    disabled={exporting}
+                    className="mt-4 bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+                >
+                    {exporting ? "Extraction…" : "Extraire mes données"}
+                </Button>
+
+                {exportError !== null && (
+                    <p
+                        role="status"
+                        aria-live="polite"
+                        className="mt-3 border border-destructive bg-destructive/5 px-3 py-2 text-sm text-destructive"
+                    >
+                        {exportError}
+                    </p>
+                )}
+            </div>
+
+            <div className="mt-8 border border-destructive/40 bg-background p-8">
+                <h2 className="font-heading text-lg font-bold text-destructive">
+                    Zone dangereuse
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    La suppression de votre compte est définitive et supprime
+                    l&apos;ensemble de vos données (candidatures, profil, préférences).
+                </p>
+
+                <Dialog open={deleteOpen} onOpenChange={handleDeleteOpenChange}>
+                    <DialogTrigger asChild>
+                        <Button
+                            type="button"
+                            className="mt-4 border border-destructive bg-transparent font-heading font-semibold text-destructive hover:bg-destructive/10"
+                        >
+                            Supprimer mon compte
+                        </Button>
+                    </DialogTrigger>
+
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="font-heading text-destructive">
+                                Supprimer définitivement votre compte ?
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        <form
+                            onSubmit={handleDeleteAccount}
+                            className="flex flex-col gap-4"
+                        >
+                            <p className="text-sm text-muted-foreground">
+                                Cette action est irréversible. Saisissez votre mot de
+                                passe pour confirmer.
+                            </p>
+
+                            <div className="flex flex-col gap-1.5">
+                                <Label htmlFor="delete-password">Mot de passe</Label>
+                                <Input
+                                    id="delete-password"
+                                    type="password"
+                                    autoComplete="current-password"
+                                    required
+                                    value={deletePassword}
+                                    onChange={function (event) {
+                                        setDeletePassword(event.target.value);
+                                    }}
+                                />
+                            </div>
+
+                            {deleteError !== null && (
+                                <p
+                                    role="status"
+                                    aria-live="polite"
+                                    className="border border-destructive bg-destructive/5 px-3 py-2 text-sm text-destructive"
+                                >
+                                    {deleteError}
+                                </p>
+                            )}
+
+                            <DialogFooter>
+                                <Button
+                                    type="submit"
+                                    disabled={deleting}
+                                    className="bg-destructive font-heading font-semibold text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                    {deleting
+                                        ? "Suppression…"
+                                        : "Supprimer définitivement"}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            </div>
         </Shell>
     );
 }

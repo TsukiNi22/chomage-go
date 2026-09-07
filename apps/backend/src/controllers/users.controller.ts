@@ -24,7 +24,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction)
             emailContact: true,
             address: true,
             addressId: isSelf,
-            adescription: true,
+            description: true,
             resume: true,
             rank: isSelf,
             email: isSelf,
