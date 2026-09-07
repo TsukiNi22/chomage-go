@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Wordmark from "@/components/wordmark";
+import { DEMO_DISCLAIMER } from "@/lib/legal-notice";
 
 const sections = [
     {
@@ -23,9 +25,7 @@ export default function Footer(props: Props) {
                 id="about"
                 className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-1 border-t-2 border-primary bg-background px-6 py-2.5"
             >
-                <span className="font-heading text-sm font-bold tracking-tight text-primary">
-                    ChômageGo
-                </span>
+                <Wordmark compact />
                 <Link
                     href="/cgu"
                     className="font-heading text-xs font-medium text-primary underline-offset-4 hover:underline"
@@ -39,6 +39,9 @@ export default function Footer(props: Props) {
                         })
                         .join(" · ")}
                 </p>
+                <p className="w-full font-heading text-[0.7rem] font-semibold text-action-text">
+                    {DEMO_DISCLAIMER}
+                </p>
             </footer>
         );
     }
@@ -50,9 +53,7 @@ export default function Footer(props: Props) {
         >
             <div className="mx-auto flex max-w-6xl flex-col gap-8 lg:flex-row lg:justify-between">
                 <div className="flex flex-col gap-3">
-                    <span className="font-heading text-base font-bold tracking-tight text-primary">
-                        ChômageGo
-                    </span>
+                    <Wordmark compact />
                     <Link
                         href="/cgu"
                         className="font-heading text-sm font-medium text-primary underline-offset-4 hover:underline"
@@ -71,6 +72,10 @@ export default function Footer(props: Props) {
                     );
                 })}
             </div>
+
+            <p className="mx-auto mt-8 max-w-6xl border-t border-border pt-6 font-heading text-sm font-semibold text-action-text">
+                {DEMO_DISCLAIMER}
+            </p>
         </footer>
     );
 }

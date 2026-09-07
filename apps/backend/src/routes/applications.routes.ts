@@ -29,7 +29,7 @@ const router = Router();
  *       409:
  *         description: Already applied to this job
  */
-router.post("/applications", requireAuth, applicationsController.postApplication);
+router.post("/", requireAuth, applicationsController.postApplication);
 
 /**
  * @openapi
@@ -45,7 +45,7 @@ router.post("/applications", requireAuth, applicationsController.postApplication
  *       401:
  *         description: Missing or invalid auth header
  */
-router.get("/applications", requireAuth, applicationsController.getApplication);
+router.get("/", requireAuth, applicationsController.getApplication);
 
 /**
  * @openapi
@@ -68,6 +68,6 @@ router.get("/applications", requireAuth, applicationsController.getApplication);
  *       404:
  *         description: Application not found
  */
-router.delete("/applications/:id", requireAuth, applicationsController.deleteApplication);
+router.delete("/:id", requireAuth, applicationsController.deleteApplication);
 
 export default router;

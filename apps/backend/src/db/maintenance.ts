@@ -1,5 +1,5 @@
-import {db} from ".";
-import {users, jobs, jobsArchive, jobSkills, jobSkillsArchive} from "./schema";
+import {db} from "./index.ts";
+import {users, jobs, jobsArchive, jobSkills, jobSkillsArchive} from "./schema.ts";
 import {lt, sql, eq} from "drizzle-orm";
 
 const TWO_YEARS_MS = 2 * 365 * 24 * 60 * 60 * 1000;
