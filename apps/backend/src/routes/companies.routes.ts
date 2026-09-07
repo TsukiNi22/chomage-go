@@ -14,7 +14,7 @@ const router = Router();
  *       200:
  *         description: List of companies
  */
-router.get("/companies", companiesController.getCompanies);
+router.get("/", companiesController.getCompanies);
 
 /**
  * @openapi
@@ -33,7 +33,7 @@ router.get("/companies", companiesController.getCompanies);
  *       404:
  *         description: Company not found
  */
-router.get("/companies/:id", companiesController.getCompanie);
+router.get("/:id", companiesController.getCompanie);
 
 /**
  * @openapi
@@ -64,7 +64,7 @@ router.get("/companies/:id", companiesController.getCompanie);
  *       409:
  *         description: Company name already exists
  */
-router.post("/companies", requireAuth, companiesController.postCompanie);
+router.post("/", requireAuth, companiesController.postCompanie);
 
 /**
  * @openapi
@@ -97,7 +97,7 @@ router.post("/companies", requireAuth, companiesController.postCompanie);
  *       404:
  *         description: Company not found
  */
-router.patch("/companies/:id", requireAuth, companiesController.patchCompanie);
+router.patch("/:id", requireAuth, companiesController.patchCompanie);
 
 /**
  * @openapi
@@ -120,6 +120,6 @@ router.patch("/companies/:id", requireAuth, companiesController.patchCompanie);
  *       404:
  *         description: Company not found
  */
-router.delete("/companies/:id", requireAuth, companiesController.deleteCompanie);
+router.delete("/:id", requireAuth, companiesController.deleteCompanie);
 
 export default router;

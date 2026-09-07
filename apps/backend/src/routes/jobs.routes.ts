@@ -14,7 +14,7 @@ const router = Router();
  *       200:
  *         description: List of jobs
  */
-router.get("/jobs", jobsController.getJobs);
+router.get("/", jobsController.getJobs);
 
 /**
  * @openapi
@@ -37,7 +37,7 @@ router.get("/jobs", jobsController.getJobs);
  *       404:
  *         description: Job not found
  */
-router.get("/jobs/:id", jobsController.getJob);
+router.get("/:id", jobsController.getJob);
 
 /**
  * @openapi
@@ -69,7 +69,7 @@ router.get("/jobs/:id", jobsController.getJob);
  *       401:
  *         description: Missing or invalid auth header
  */
-router.post("/jobs", requireAuth, jobsController.postJob);
+router.post("/", requireAuth, jobsController.postJob);
 
 /**
  * @openapi
@@ -104,7 +104,7 @@ router.post("/jobs", requireAuth, jobsController.postJob);
  *       404:
  *         description: Job not found
  */
-router.patch("/jobs/:id", requireAuth, jobsController.patchJob);
+router.patch("/:id", requireAuth, jobsController.patchJob);
 
 /**
  * @openapi
@@ -127,7 +127,7 @@ router.patch("/jobs/:id", requireAuth, jobsController.patchJob);
  *       404:
  *         description: Job not found
  */
-router.delete("/jobs/:id", requireAuth, jobsController.deleteJob);
+router.delete("/:id", requireAuth, jobsController.deleteJob);
 
 /**
  * @openapi
@@ -146,7 +146,7 @@ router.delete("/jobs/:id", requireAuth, jobsController.deleteJob);
  *       404:
  *         description: Job not found
  */
-router.get("/jobs/:id/skills", jobsController.getSkills);
+router.get("/:id/skills", jobsController.getSkills);
 
 /**
  * @openapi
@@ -179,7 +179,7 @@ router.get("/jobs/:id/skills", jobsController.getSkills);
  *       404:
  *         description: Job not found
  */
-router.post("/jobs/:id/skills", requireAuth, jobsController.postSkill);
+router.post("/:id/skills", requireAuth, jobsController.postSkill);
 
 /**
  * @openapi
@@ -215,7 +215,7 @@ router.post("/jobs/:id/skills", requireAuth, jobsController.postSkill);
  *       404:
  *         description: Job or skill not found
  */
-router.patch("/jobs/:id/skills/:skillId", requireAuth, jobsController.patchSkill);
+router.patch("/:id/skills/:skillId", requireAuth, jobsController.patchSkill);
 
 /**
  * @openapi
@@ -242,6 +242,6 @@ router.patch("/jobs/:id/skills/:skillId", requireAuth, jobsController.patchSkill
  *       404:
  *         description: Job or skill not found
  */
-router.delete("/jobs/:id/skills/:skillId", requireAuth, jobsController.deleteSkill);
+router.delete("/:id/skills/:skillId", requireAuth, jobsController.deleteSkill);
 
 export default router;
