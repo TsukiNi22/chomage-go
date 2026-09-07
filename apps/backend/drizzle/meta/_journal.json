@@ -8,6 +8,13 @@
       "when": 1788676536509,
       "tag": "0000_elite_deadpool",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788774460742,
+      "tag": "0001_striped_black_bolt",
+      "breakpoints": true
     }
   ]
 }

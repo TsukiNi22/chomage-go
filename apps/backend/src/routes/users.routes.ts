@@ -401,7 +401,6 @@ router.patch("/availability/:availabilityId", requireAuth, usersController.patch
  */
 router.delete("/availability/:availabilityId", requireAuth, usersController.deleteAvailability);
 
-// Routes dynamiques en dernier : "/:id" capturerait sinon "/skills", "/experience", "/availability".
 /**
  * @openapi
  * /users/{id}:

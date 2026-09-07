@@ -166,6 +166,8 @@ export const jobs = pgTable(
         title: varchar("title", { length: 255 }).notNull(),
         description: text("description"),
         type: integer("type").notNull(),
+        sector: varchar("sector", { length: 100 }),
+        remote: integer("remote").notNull().default(0),
         salaryMin: integer("salary_min"),
         salaryMax: integer("salary_max"),
         createdAt: timestamp("created_at").defaultNow(),

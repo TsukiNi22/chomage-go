@@ -5,6 +5,9 @@ export const postJobSchema = z.object({
     title: z.string(),
     description: z.string().optional(),
     type: z.number().int(),
+    sector: z.string().optional(),
+    remote: z.number().int().min(0).max(2).optional(),
+    address_id: z.number().int().optional(),
     salary_min: z.number().int(),
     salary_max: z.number().int().optional(),
 });

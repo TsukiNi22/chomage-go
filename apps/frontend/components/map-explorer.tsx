@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { distanceInKm } from "@/lib/distance";
 import { normalize, searchPlaces } from "@/lib/geocoding";
 import type { Place } from "@/lib/geocoding";
-import { jobs, locatedJobs } from "@/lib/jobs";
+import { locatedJobs } from "@/lib/jobs";
 import type { Job } from "@/lib/jobs";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +40,7 @@ type Position = { lat: number; lon: number };
 
 type ExplorerProps = {
     embedded?: boolean;
+    jobs: Job[];
 };
 
 export default function MapExplorer(props: ExplorerProps) {
@@ -107,7 +108,7 @@ export default function MapExplorer(props: ExplorerProps) {
         searchRadius = 30;
     }
 
-    const results = jobs.filter(function (job) {
+    const results = props.jobs.filter(function (job) {
         if (contract !== null && job.contract !== contract) {
             return false;
         }
