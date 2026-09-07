@@ -60,6 +60,7 @@ export default function MapExplorer(props: ExplorerProps) {
     const [suggestionsOpen, setSuggestionsOpen] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
     const locationBoxRef = useRef<HTMLDivElement>(null);
+    const [localGeoDisabled, setLocalGeoDisabled] = useState(false);
 
     useEffect(
         function () {
@@ -208,6 +209,12 @@ export default function MapExplorer(props: ExplorerProps) {
         setHighlightedIndex(-1);
     }
 
+    function toggleGeoLocally() {
+        setLocalGeoDisabled(function (previous) {
+            return !previous;
+        });
+    }
+
     function handleLocationKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
         if (!suggestionsOpen || suggestions.length === 0) {
             return;
@@ -264,6 +271,8 @@ export default function MapExplorer(props: ExplorerProps) {
         allowed = true;
     }
 
+    const geoEnabled = allowed && !localGeoDisabled;
+
     useEffect(
         function () {
             function handleClickOutside(event: MouseEvent) {
@@ -297,6 +306,15 @@ export default function MapExplorer(props: ExplorerProps) {
     useEffect(
         function () {
             if (!allowed) {
+                setLocalGeoDisabled(false);
+            }
+        },
+        [allowed],
+    );
+
+    useEffect(
+        function () {
+            if (!geoEnabled) {
                 setPosition(null);
                 setRadius(null);
                 setGeoLoading(false);
@@ -368,9 +386,14 @@ export default function MapExplorer(props: ExplorerProps) {
                 cancelled = true;
             };
         },
-        [allowed],
+        [geoEnabled],
     );
 
+    async function enableGeolocation() {
+        setDisablingGeo(true);
+        await authClient.updateUser({ localisation: true });
+        setDisablingGeo(false);
+    }
 
     async function disableGeolocation() {
         setDisablingGeo(true);
@@ -389,48 +412,84 @@ export default function MapExplorer(props: ExplorerProps) {
         lastSelectedLabelRef.current = null;
     }
 
-    let geoStatus = (
-        <span className="flex items-center gap-1.5 border border-border bg-background px-3.5 py-1.5 font-heading text-xs font-medium text-muted-foreground">
-            <Crosshair className="h-3.5 w-3.5" />
-            Géolocalisation désactivée
-        </span>
-    );
+    let geoToggle: React.ReactNode;
 
-    if (geoLoading) {
-        geoStatus = (
+    if (!session) {
+        geoToggle = (
+            <button
+                type="button"
+                disabled
+                title="Connectez-vous et activez la géolocalisation dans votre profil"
+                className="flex items-center gap-1.5 border border-border bg-background px-3.5 py-1.5 font-heading text-xs font-medium text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                <Crosshair className="h-3.5 w-3.5" />
+                Connexion requise
+            </button>
+        );
+    } else if (!allowed) {
+        geoToggle = (
+            <button
+                type="button"
+                disabled
+                title="Activez la géolocalisation dans votre profil pour l'utiliser ici"
+                className="flex items-center gap-1.5 border border-border bg-background px-3.5 py-1.5 font-heading text-xs font-medium text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                <Crosshair className="h-3.5 w-3.5" />
+                Géolocalisation désactivée
+            </button>
+        );
+    } else if (geoLoading) {
+        geoToggle = (
             <span className="flex items-center gap-1.5 border border-border bg-background px-3.5 py-1.5 font-heading text-xs font-medium text-muted-foreground">
                 <Crosshair className="h-3.5 w-3.5" />
                 Localisation en cours…
             </span>
         );
-    } else if (position !== null) {
-        geoStatus = (
-            <span className="flex items-center gap-1.5 border border-primary bg-accent px-3.5 py-1.5 font-heading text-xs font-medium text-accent-foreground">
+    } else if (geoEnabled) {
+        geoToggle = (
+            <button
+                type="button"
+                onClick={toggleGeoLocally}
+                aria-pressed={true}
+                className="flex items-center gap-1.5 border border-primary bg-accent px-3.5 py-1.5 font-heading text-xs font-medium text-accent-foreground transition-opacity hover:opacity-80"
+            >
                 <Crosshair className="h-3.5 w-3.5" />
-                Offres triées par distance
-            </span>
+                {position !== null ? "Offres triées par distance" : "Localisation activée"}
+            </button>
+        );
+    } else {
+        geoToggle = (
+            <button
+                type="button"
+                onClick={toggleGeoLocally}
+                aria-pressed={false}
+                className="flex items-center gap-1.5 border border-border bg-background px-3.5 py-1.5 font-heading text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            >
+                <Crosshair className="h-3.5 w-3.5" />
+                Localisation mise en pause
+            </button>
         );
     }
 
-    let geoLink = (
-        <Link
-            href="/profil"
-            className="font-heading text-xs font-medium text-primary underline underline-offset-4"
-        >
-            Activer dans mon profil
-        </Link>
-    );
+    let geoProfileLink: React.ReactNode = null;
 
-    if (allowed) {
-        geoLink = (
-            <button
-                type="button"
-                onClick={disableGeolocation}
-                disabled={disablingGeo}
-                className="font-heading text-xs font-medium text-primary underline underline-offset-4 disabled:opacity-50"
+    if (!session) {
+        geoProfileLink = (
+            <Link
+                href="/profil"
+                className="font-heading text-xs font-medium text-primary underline underline-offset-4"
             >
-                Désactiver la géolocalisation
-            </button>
+                Se connecter
+            </Link>
+        );
+    } else if (!allowed && !geoLoading) {
+        geoProfileLink = (
+            <Link
+                href="/profil"
+                className="font-heading text-xs font-medium text-primary underline underline-offset-4"
+            >
+                Activer dans mon profil
+            </Link>
         );
     }
 
@@ -676,8 +735,8 @@ export default function MapExplorer(props: ExplorerProps) {
 
                     <span aria-hidden="true" className="mx-1 h-5 w-px bg-border" />
 
-                    {geoStatus}
-                    {geoLink}
+                    {geoToggle}
+                    {geoProfileLink}
                     {resetButton}
                 </div>
 

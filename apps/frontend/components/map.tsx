@@ -37,7 +37,7 @@ const userIcon = createIcon("#1c6144", 18);
 
 const FRANCE_CENTER: [number, number] = [46.7, 2.4];
 const FRANCE_ZOOM = 6;
-const USER_RECENTER_ZOOM = 13;
+const USER_RECENTER_ZOOM = 12;
 
 function Recenter(props: { lat: number | null; lon: number | null; zoom: number }) {
     const map = useMap();
