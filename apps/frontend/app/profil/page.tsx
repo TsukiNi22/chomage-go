@@ -21,6 +21,7 @@ import { Switch } from "@/components/ui/switch";
 import GeolocationNoticeDialog from "@/components/geolocation-notice-dialog";
 import { hasSeenNotice, saveNoticeSeen } from "@/lib/geolocation-notice";
 import { formatSiret } from "@/lib/siret";
+import AddressAutocomplete from "@/components/address-autocomplete";
 
 function Shell(props: { children: React.ReactNode }) {
     return (
@@ -42,6 +43,14 @@ export default function ProfilPage() {
     const [address, setAddress] = useState("");
     const [description, setDescription] = useState("");
     const [localisation, setLocalisation] = useState(false);
+    const [emailContact, setEmailContact] = useState("");
+    const [resume, setResume] = useState("");
+    const [resumeError, setResumeError] = useState<string | null>(null);
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [changingPassword, setChangingPassword] = useState(false);
+    const [passwordFeedback, setPasswordFeedback] = useState<string | null>(null);
+    const [passwordFailed, setPasswordFailed] = useState(false);
     const [noticeOpen, setNoticeOpen] = useState(false);
     const [noticeAsksConsent, setNoticeAsksConsent] = useState(false);
 
@@ -77,6 +86,8 @@ export default function ProfilPage() {
                     setAddress(data.address || "");
                     setDescription(data.description || "");
                     setLocalisation(data.localisation || false);
+                    setEmailContact(data.emailContact || "");
+                    setResume(data.resume || "");
                 }
                 setLoadingProfile(false);
             });
@@ -87,6 +98,65 @@ export default function ProfilPage() {
         },
         [session],
     );
+
+    const MAX_RESUME_BYTES = 2 * 1024 * 1024;
+
+    function handleResumeChange(event: React.ChangeEvent<HTMLInputElement>) {
+        setResumeError(null);
+
+        const files = event.target.files;
+        if (files === null || files.length === 0) {
+            return;
+        }
+
+        const file = files[0];
+        if (file.size > MAX_RESUME_BYTES) {
+            setResumeError("Le fichier dépasse 2 Mo.");
+            event.target.value = "";
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function () {
+            setResume(String(reader.result));
+        };
+        reader.onerror = function () {
+            setResumeError("La lecture du fichier a échoué.");
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeResume() {
+        setResume("");
+        setResumeError(null);
+    }
+
+    async function handleChangePassword(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setChangingPassword(true);
+        setPasswordFeedback(null);
+        setPasswordFailed(false);
+
+        const result = await authClient.changePassword({
+            currentPassword: currentPassword,
+            newPassword: newPassword,
+            revokeOtherSessions: true,
+        });
+
+        setChangingPassword(false);
+
+        if (result.error) {
+            setPasswordFailed(true);
+            setPasswordFeedback(
+                "Le mot de passe actuel est incorrect, ou le nouveau ne respecte pas les règles.",
+            );
+            return;
+        }
+
+        setCurrentPassword("");
+        setNewPassword("");
+        setPasswordFeedback("Mot de passe modifié. Vos autres sessions ont été déconnectées.");
+    }
 
     function handleLocalisationChange(checked: boolean) {
         if (!checked) {
@@ -112,6 +182,45 @@ export default function ProfilPage() {
         saveNoticeSeen();
         setLocalisation(true);
         setNoticeOpen(false);
+    }
+
+    let passwordFeedbackClass =
+        "border border-success/40 bg-success/5 px-3 py-2 text-sm text-success";
+    if (passwordFailed) {
+        passwordFeedbackClass =
+            "border border-destructive bg-destructive/5 px-3 py-2 text-sm text-destructive";
+    }
+
+    let passwordLabel = "Modifier le mot de passe";
+    if (changingPassword) {
+        passwordLabel = "Modification…";
+    }
+
+    let resumeBlock = (
+        <p className="text-sm text-muted-foreground">Aucun CV enregistré.</p>
+    );
+    if (resume !== "") {
+        resumeBlock = (
+            <div className="flex flex-wrap items-center gap-3">
+                <span className="font-heading text-sm font-semibold text-primary">
+                    CV enregistré
+                </span>
+                <a
+                    href={resume}
+                    download="cv.pdf"
+                    className="font-heading text-sm font-medium text-primary underline underline-offset-4 hover:no-underline"
+                >
+                    Télécharger
+                </a>
+                <button
+                    type="button"
+                    onClick={removeResume}
+                    className="font-heading text-sm font-medium text-destructive underline underline-offset-4 hover:no-underline"
+                >
+                    Retirer
+                </button>
+            </div>
+        );
     }
 
     let companyBlock = null;
@@ -169,6 +278,8 @@ export default function ProfilPage() {
             address: address,
             description: description,
             localisation: localisation,
+            emailContact: emailContact,
+            resume: resume,
         });
 
         setSaving(false);
@@ -369,14 +480,16 @@ export default function ProfilPage() {
                     >
                         Adresse postale
                     </Label>
-                    <Input
+                    <AddressAutocomplete
                         id="profil-address"
                         value={address}
-                        onChange={function (event) {
-                            setAddress(event.target.value);
-                        }}
+                        onChange={setAddress}
                         placeholder="12 rue de la Paix, 35000 Rennes"
                     />
+                    <p className="text-xs text-muted-foreground">
+                        Commencez à saisir votre adresse, puis choisissez une proposition
+                        pour qu&apos;elle soit correctement localisée.
+                    </p>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
@@ -395,6 +508,61 @@ export default function ProfilPage() {
                         placeholder="Votre parcours, vos compétences, ce que vous recherchez."
                         className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring"
                     />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                    <Label
+                        htmlFor="profil-email-contact"
+                        className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
+                    >
+                        Adresse électronique de contact
+                    </Label>
+                    <Input
+                        id="profil-email-contact"
+                        type="email"
+                        value={emailContact}
+                        onChange={function (event) {
+                            setEmailContact(event.target.value);
+                        }}
+                        placeholder="Laissez vide pour utiliser votre adresse de connexion"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        Adresse communiquée aux employeurs, si vous souhaitez qu&apos;elle
+                        diffère de votre adresse de connexion.
+                    </p>
+                </div>
+
+                <div className="flex flex-col gap-2 border-t border-border pt-6">
+                    <Label
+                        htmlFor="profil-resume"
+                        className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
+                    >
+                        CV (PDF)
+                    </Label>
+
+                    {resumeBlock}
+
+                    <input
+                        id="profil-resume"
+                        type="file"
+                        accept="application/pdf"
+                        onChange={handleResumeChange}
+                        className="text-sm file:mr-3 file:cursor-pointer file:rounded-md file:border file:border-input file:bg-transparent file:px-3 file:py-1.5 file:font-heading file:text-sm file:font-semibold file:text-primary"
+                    />
+
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                        Transmis à l&apos;employeur avec vos candidatures. 2 Mo maximum.
+                    </p>
+
+                    {resumeError !== null && (
+                        <p
+                            role="status"
+                            aria-live="polite"
+                            className="border border-destructive bg-destructive/5 px-3 py-2 text-sm text-destructive"
+                        >
+                            {resumeError}
+                        </p>
+                    )}
                 </div>
 
                 <div className="flex flex-col gap-2 border-t border-border pt-6">
@@ -438,6 +606,71 @@ export default function ProfilPage() {
                     </Button>
                 </div>
             </form>
+
+            <div className="mt-8 border border-border bg-background p-8">
+                <h2 className="font-heading text-lg font-bold text-primary">
+                    Mot de passe
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    La modification déconnecte vos autres sessions.
+                </p>
+
+                <form
+                    onSubmit={handleChangePassword}
+                    className="mt-4 flex flex-col gap-4"
+                >
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="profil-current-password">
+                            Mot de passe actuel
+                        </Label>
+                        <Input
+                            id="profil-current-password"
+                            type="password"
+                            autoComplete="current-password"
+                            required
+                            value={currentPassword}
+                            onChange={function (event) {
+                                setCurrentPassword(event.target.value);
+                            }}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="profil-new-password">Nouveau mot de passe</Label>
+                        <Input
+                            id="profil-new-password"
+                            type="password"
+                            autoComplete="new-password"
+                            required
+                            minLength={8}
+                            value={newPassword}
+                            onChange={function (event) {
+                                setNewPassword(event.target.value);
+                            }}
+                        />
+                    </div>
+
+                    {passwordFeedback !== null && (
+                        <p
+                            role="status"
+                            aria-live="polite"
+                            className={passwordFeedbackClass}
+                        >
+                            {passwordFeedback}
+                        </p>
+                    )}
+
+                    <div className="flex justify-end">
+                        <Button
+                            type="submit"
+                            disabled={changingPassword}
+                            className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+                        >
+                            {passwordLabel}
+                        </Button>
+                    </div>
+                </form>
+            </div>
 
             <div className="mt-8 border border-border bg-background p-8">
                 <h2 className="font-heading text-lg font-bold text-primary">
