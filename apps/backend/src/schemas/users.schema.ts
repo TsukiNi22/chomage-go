@@ -6,7 +6,13 @@ export const patchUserSchema = z.object({
     email_contact: z.string().email().optional(),
     address: z.string().optional(),
     description: z.string().optional(),
-    resume: z.string().optional(),
+    resume: z
+        .string()
+        .regex(
+            /^(data:application\/pdf;base64,[A-Za-z0-9+/=]+)?$/,
+            "Le CV doit être un PDF encodé en base64",
+        )
+        .optional(),
     localisation: z.boolean().optional(),
 });
 

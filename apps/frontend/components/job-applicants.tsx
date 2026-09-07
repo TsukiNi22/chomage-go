@@ -15,6 +15,7 @@ import {
     setApplicationStatus,
     type Applicant,
 } from "@/lib/api";
+import { safeResume } from "@/lib/resume";
 
 type Props = {
     jobId: number | null;
@@ -123,10 +124,11 @@ export default function JobApplicants(props: Props) {
                             );
                         }
 
-                        if (user.resume) {
+                        const resumeHref = safeResume(user.resume);
+                        if (resumeHref !== null) {
                             resumeLink = (
                                 <a
-                                    href={user.resume}
+                                    href={resumeHref}
                                     download={"cv-" + user.lastname + ".pdf"}
                                     className="font-heading text-sm font-medium text-primary underline underline-offset-4 hover:no-underline"
                                 >

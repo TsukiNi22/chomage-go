@@ -32,7 +32,7 @@ export type JobApplication = {
 type ApplicationsContextValue = {
     applications: JobApplication[];
     loading: boolean;
-    addApplication: (job: Job, message: string) => Promise<void>;
+    addApplication: (job: Job, message: string) => Promise<string | null>;
     hasApplied: (jobId: number) => boolean;
 };
 
@@ -112,13 +112,16 @@ export function ApplicationsProvider(props: { children: ReactNode }) {
 
     async function addApplication(job: Job, message: string) {
         if (hasApplied(job.id)) {
-            return;
+            return null;
         }
 
-        const ok = await postApplication(job.id, message);
-        if (ok) {
+        const result = await postApplication(job.id, message);
+        if (result.ok) {
             await reload();
+            return null;
         }
+
+        return result.message;
     }
 
     return (

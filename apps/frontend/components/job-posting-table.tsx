@@ -9,6 +9,7 @@ type Props = {
     postings: EmployerJobPosting[];
     onDelete: (id: number) => void;
     onShowApplicants?: (id: number) => void;
+    onEditSkills?: (id: number) => void;
 };
 
 export default function JobPostingsTable(props: Props) {
@@ -81,7 +82,7 @@ export default function JobPostingsTable(props: Props) {
                                 </TableCell>
 
                                 <TableCell className="max-w-56 whitespace-normal">
-                                    <div className="flex flex-wrap gap-1">
+                                    <div className="flex flex-wrap items-center gap-1">
                                         {posting.requiredSkills.map(function (skill) {
                                             return (
                                                 <Badge key={skill} variant="secondary" className="text-xs">
@@ -89,6 +90,20 @@ export default function JobPostingsTable(props: Props) {
                                                 </Badge>
                                             );
                                         })}
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={function () {
+                                                if (props.onEditSkills) {
+                                                    props.onEditSkills(posting.id);
+                                                }
+                                            }}
+                                            aria-label={`Modifier les compétences de ${posting.title}`}
+                                            className="font-heading text-xs font-semibold text-primary hover:bg-accent"
+                                        >
+                                            Modifier
+                                        </Button>
                                     </div>
                                 </TableCell>
 

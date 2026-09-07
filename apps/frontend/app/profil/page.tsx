@@ -21,6 +21,7 @@ import { Switch } from "@/components/ui/switch";
 import GeolocationNoticeDialog from "@/components/geolocation-notice-dialog";
 import { hasSeenNotice, saveNoticeSeen } from "@/lib/geolocation-notice";
 import { formatSiret } from "@/lib/siret";
+import { safeResume } from "@/lib/resume";
 import AddressAutocomplete from "@/components/address-autocomplete";
 
 function Shell(props: { children: React.ReactNode }) {
@@ -199,14 +200,15 @@ export default function ProfilPage() {
     let resumeBlock = (
         <p className="text-sm text-muted-foreground">Aucun CV enregistré.</p>
     );
-    if (resume !== "") {
+    const resumeHref = safeResume(resume);
+    if (resumeHref !== null) {
         resumeBlock = (
             <div className="flex flex-wrap items-center gap-3">
                 <span className="font-heading text-sm font-semibold text-primary">
                     CV enregistré
                 </span>
                 <a
-                    href={resume}
+                    href={resumeHref}
                     download="cv.pdf"
                     className="font-heading text-sm font-medium text-primary underline underline-offset-4 hover:no-underline"
                 >

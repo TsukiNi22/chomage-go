@@ -43,6 +43,7 @@ export default function JobDetails(props: Props) {
     const [applied, setApplied] = useState(false);
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
+    const [applyError, setApplyError] = useState<string | null>(null);
     const { data: session } = authClient.useSession();
     const { addApplication } = useApplications();
     const job = props.job;
@@ -55,6 +56,7 @@ export default function JobDetails(props: Props) {
         function () {
             setApplied(false);
             setMessage("");
+            setApplyError(null);
         },
         [jobId],
     );
@@ -66,11 +68,20 @@ export default function JobDetails(props: Props) {
     }
 
     async function handleApply() {
-        setSending(true);
-        if (job !== null) {
-            await addApplication(job, message.trim());
+        if (job === null) {
+            return;
         }
+
+        setSending(true);
+        setApplyError(null);
+        const problem = await addApplication(job, message.trim());
         setSending(false);
+
+        if (problem !== null) {
+            setApplyError(problem);
+            return;
+        }
+
         setApplied(true);
     }
 
@@ -152,6 +163,15 @@ export default function JobDetails(props: Props) {
                 className="font-heading text-sm font-semibold text-destructive"
             >
                 {restrictionMessage}
+            </p>
+        );
+    } else if (applyError !== null) {
+        footerMessage = (
+            <p
+                role="alert"
+                className="font-heading text-sm font-semibold text-destructive"
+            >
+                {applyError}
             </p>
         );
     } else if (applied) {

@@ -6,7 +6,7 @@ import {getCurrentUser} from "../utils/currentUser.utils.ts";
 import {isUniqueViolation} from "../utils/dbError.utils.ts";
 import {db} from "../db/index.ts";
 import {applications, jobs} from "../db/schema.ts";
-import {eq} from "drizzle-orm";
+import {count, eq} from "drizzle-orm";
 
 export async function postApplication(req: Request, res: Response, next: NextFunction)
 {
@@ -21,6 +21,16 @@ export async function postApplication(req: Request, res: Response, next: NextFun
     });
     if (!job) {
         throw new HttpError(404, "Offre introuvable");
+    }
+
+    if (job.maxApplicants !== null) {
+        const rows = await db.select({total: count()})
+            .from(applications)
+            .where(eq(applications.jobId, job.id));
+
+        if (rows[0].total >= job.maxApplicants) {
+            throw new HttpError(409, "Cette offre a atteint son nombre maximum de candidatures");
+        }
     }
 
     let created;

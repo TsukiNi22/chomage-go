@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import JobPostingsTable from "@/components/job-posting-table";
 import CreateJobPostingDialog from "@/components/job-posting-add";
 import JobApplicants from "@/components/job-applicants";
+import JobSkillsEditor from "@/components/job-skills-editor";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -56,6 +57,9 @@ export default function EmployerJobsPage() {
 
     const [applicantsJob, setApplicantsJob] = useState<EmployerJob | null>(null);
     const [applicantsOpen, setApplicantsOpen] = useState(false);
+
+    const [skillsJob, setSkillsJob] = useState<EmployerJob | null>(null);
+    const [skillsOpen, setSkillsOpen] = useState(false);
 
     const reload = useCallback(async function (id: number) {
         const rows = await fetchCompanyJobs(id);
@@ -138,6 +142,16 @@ export default function EmployerJobsPage() {
         }
     }
 
+    function openSkills(id: number) {
+        const job = jobs.find(function (item) {
+            return item.id === id;
+        });
+        if (job !== undefined) {
+            setSkillsJob(job);
+            setSkillsOpen(true);
+        }
+    }
+
     async function handleCreated() {
         if (companiesId !== null) {
             await reload(companiesId);
@@ -183,6 +197,13 @@ export default function EmployerJobsPage() {
         applicantsId = applicantsJob.id;
     }
 
+    let skillsTitle = "";
+    let skillsId: number | null = null;
+    if (skillsJob !== null) {
+        skillsTitle = skillsJob.title;
+        skillsId = skillsJob.id;
+    }
+
     let deleteTitle = "";
     if (toDelete !== null) {
         deleteTitle = toDelete.title;
@@ -208,6 +229,7 @@ export default function EmployerJobsPage() {
                 postings={postings}
                 onDelete={askDelete}
                 onShowApplicants={openApplicants}
+                onEditSkills={openSkills}
             />
 
             <div className="mt-6 flex justify-end">
@@ -257,6 +279,16 @@ export default function EmployerJobsPage() {
                 onClose={function () {
                     setApplicantsOpen(false);
                 }}
+            />
+
+            <JobSkillsEditor
+                jobId={skillsId}
+                jobTitle={skillsTitle}
+                open={skillsOpen}
+                onClose={function () {
+                    setSkillsOpen(false);
+                }}
+                onChanged={handleCreated}
             />
         </div>
     );

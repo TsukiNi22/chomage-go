@@ -187,10 +187,15 @@ export async function fetchApplications(): Promise<ApiApplication[]> {
     return await response.json();
 }
 
+export type ApplyResult = {
+    ok: boolean;
+    message: string | null;
+};
+
 export async function postApplication(
     jobId: number,
     description: string,
-): Promise<boolean> {
+): Promise<ApplyResult> {
     const payload: { job_id: number; description?: string } = { job_id: jobId };
     if (description !== "") {
         payload.description = description;
@@ -205,14 +210,28 @@ export async function postApplication(
             body: JSON.stringify(payload),
         });
     } catch {
-        return false;
+        return { ok: false, message: "Le service ne répond pas. Réessayez." };
     }
 
-    if (response.status === 409) {
-        return true;
+    if (response.ok) {
+        return { ok: true, message: null };
     }
 
-    return response.ok;
+    let message = "La candidature n'a pas pu être envoyée.";
+    try {
+        const body = await response.json();
+        if (body && typeof body.error === "string") {
+            message = body.error;
+        }
+    } catch {
+        message = "La candidature n'a pas pu être envoyée.";
+    }
+
+    if (message.includes("déjà postulé")) {
+        return { ok: true, message: null };
+    }
+
+    return { ok: false, message: message };
 }
 
 export async function deleteApplication(id: number): Promise<boolean> {
@@ -417,4 +436,44 @@ export async function fetchJobSkills(
     }
 
     return await response.json();
+}
+
+export async function patchJobSkill(
+    jobId: number,
+    skillId: number,
+    name: string,
+): Promise<boolean> {
+    let response;
+    try {
+        response = await fetch(
+            API_URL + "/api/jobs/" + jobId + "/skills/" + skillId,
+            {
+                method: "PATCH",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name }),
+            },
+        );
+    } catch {
+        return false;
+    }
+
+    return response.ok;
+}
+
+export async function deleteJobSkill(
+    jobId: number,
+    skillId: number,
+): Promise<boolean> {
+    let response;
+    try {
+        response = await fetch(
+            API_URL + "/api/jobs/" + jobId + "/skills/" + skillId,
+            { method: "DELETE", credentials: "include" },
+        );
+    } catch {
+        return false;
+    }
+
+    return response.ok;
 }
