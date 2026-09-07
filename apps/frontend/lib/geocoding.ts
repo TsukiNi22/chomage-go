@@ -16,30 +16,41 @@ export function normalize(text: string): string {
 }
 
 export async function searchPlace(query: string): Promise<Place | null> {
-    const url = ENDPOINT + "?q=" + encodeURIComponent(query) + "&limit=1";
+    const results = await searchPlaces(query, 1);
+    if (results.length === 0) {
+        return null;
+    }
+    return results[0];
+}
+
+export async function searchPlaces(query: string, limit: number = 5): Promise<Place[]> {
+    const url = ENDPOINT + "?q=" + encodeURIComponent(query) + "&limit=" + limit;
 
     let response;
     try {
         response = await fetch(url);
     } catch {
-        return null;
+        return [];
     }
 
     if (!response.ok) {
-        return null;
+        return [];
     }
 
     const data = await response.json();
-    if (!data.features || data.features.length === 0) {
-        return null;
+    if (!data.features) {
+        return [];
     }
 
-    const feature = data.features[0];
-
-    return {
-        label: feature.properties.label,
-        lat: feature.geometry.coordinates[1],
-        lon: feature.geometry.coordinates[0],
-        score: feature.properties.score,
-    };
+    return data.features.map(function (feature: {
+        properties: { label: string; score: number };
+        geometry: { coordinates: [number, number] };
+    }) {
+        return {
+            label: feature.properties.label,
+            lat: feature.geometry.coordinates[1],
+            lon: feature.geometry.coordinates[0],
+            score: feature.properties.score,
+        };
+    });
 }
