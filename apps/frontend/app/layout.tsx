@@ -30,7 +30,7 @@ export const metadata: Metadata = {
         template: "%s — ChômageGo",
     },
     description:
-        "Trouvez les offres d'emploi autour de vous sur une carte. Ministère du Job et Bonheur.",
+        "Trouvez les offres d'emploi autour de vous sur une carte.",
 };
 
 export default function RootLayout({
