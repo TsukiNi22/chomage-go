@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
-import MinistryBrand from "@/components/ministry-brand";
+import Wordmark from "@/components/wordmark";
 import { Button } from "@/components/ui/button";
 import AuthModal from "./auth-modal";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -123,7 +123,7 @@ export default function Header() {
         <>
             <header className="flex items-center justify-between gap-4 border-b-2 border-primary bg-background px-4 py-4 sm:px-6 lg:gap-6 lg:px-8">
                 <Link href="/" aria-label="Retour à l'accueil">
-                    <MinistryBrand />
+                    <Wordmark />
                 </Link>
 
                 <nav aria-label="Navigation principale" className="hidden lg:block">
