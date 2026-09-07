@@ -12,6 +12,7 @@ import {
     useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { Crosshair } from "lucide-react";
 import type { Job } from "@/lib/jobs";
 
 function createIcon(color: string, size: number) {
@@ -33,6 +34,10 @@ function createIcon(color: string, size: number) {
 const jobIcon = createIcon("#1b3a6b", 14);
 const activeJobIcon = createIcon("#b85433", 22);
 const userIcon = createIcon("#1c6144", 18);
+
+const FRANCE_CENTER: [number, number] = [46.7, 2.4];
+const FRANCE_ZOOM = 6;
+const USER_RECENTER_ZOOM = 13;
 
 function Recenter(props: { lat: number | null; lon: number | null; zoom: number }) {
     const map = useMap();
@@ -74,6 +79,37 @@ function ResizeHandler() {
     );
 
     return null;
+}
+
+function RecenterButton(props: { userLat: number | null; userLon: number | null }) {
+    const map = useMap();
+    const hasPosition = props.userLat !== null && props.userLon !== null;
+
+    function handleClick() {
+        if (props.userLat !== null && props.userLon !== null) {
+            map.flyTo([props.userLat, props.userLon], USER_RECENTER_ZOOM, {
+                duration: 0.8,
+            });
+        } else {
+            map.flyTo(FRANCE_CENTER, FRANCE_ZOOM, { duration: 0.8 });
+        }
+    }
+
+    const label = hasPosition
+        ? "Recentrer sur ma position"
+        : "Recentrer sur la France";
+
+    return (
+        <button
+            type="button"
+            onClick={handleClick}
+            aria-label={label}
+            title={label}
+            className="absolute bottom-6 right-3 z-[1000] flex h-9 w-9 items-center justify-center border border-border bg-background text-primary shadow-sm transition-colors hover:bg-accent"
+        >
+            <Crosshair className="h-4 w-4" />
+        </button>
+    );
 }
 
 type Props = {
@@ -202,10 +238,6 @@ export default function Map(props: Props) {
                             click: function () {
                                 props.onSelect(job);
                             },
-                            // Leaflet rend les repères focusables (role="button",
-                            // tabindex="0") mais ne convertit jamais une frappe en
-                            // clic : sans ce gestionnaire, ils sont inactivables au
-                            // clavier (RGAA 7.1 et 12.9).
                             keydown: function (event) {
                                 const key = event.originalEvent.key;
                                 if (key !== "Enter" && key !== " ") {
@@ -230,6 +262,8 @@ export default function Map(props: Props) {
                     </Marker>
                 );
             })}
+
+            <RecenterButton userLat={userLat} userLon={userLon} />
 
             <ResizeHandler />
         </MapContainer>
