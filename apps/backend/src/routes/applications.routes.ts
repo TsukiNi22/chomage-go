@@ -68,6 +68,22 @@ router.get("/", requireAuth, applicationsController.getApplication);
  *       404:
  *         description: Application not found
  */
+/**
+ * @openapi
+ * /applications/received:
+ *   get:
+ *     summary: Count applications received by the authenticated employer's company
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Pending and total counts
+ *       401:
+ *         description: Missing or invalid auth header
+ */
+router.get("/received", requireAuth, applicationsController.getReceived);
+
 router.delete("/:id", requireAuth, applicationsController.deleteApplication);
 
 /**

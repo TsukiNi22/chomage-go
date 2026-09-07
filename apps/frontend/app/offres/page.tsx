@@ -26,6 +26,19 @@ import type { EmployerJobPosting } from "@/lib/employer-jobs";
 
 const CONTRACTS = ["CDI", "CDD", "Alternance", "Stage", "Freelance"];
 
+function Figure(props: { value: number; label: string }) {
+    return (
+        <div className="flex flex-col items-center gap-1 border border-border bg-background p-4 text-center">
+            <span className="font-heading text-2xl font-bold text-primary">
+                {props.value}
+            </span>
+            <span className="font-heading text-[0.6rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                {props.label}
+            </span>
+        </div>
+    );
+}
+
 function toPosting(job: EmployerJob, applicants: number): EmployerJobPosting {
     let contract = CONTRACTS[job.type];
     if (contract === undefined) {
@@ -50,6 +63,7 @@ export default function EmployerJobsPage() {
     const [companiesId, setCompaniesId] = useState<number | null>(null);
     const [jobs, setJobs] = useState<EmployerJob[]>([]);
     const [counts, setCounts] = useState<Record<number, number>>({});
+    const [stats, setStats] = useState({ total: 0, pending: 0, accepted: 0, refused: 0 });
     const [loading, setLoading] = useState(true);
 
     const [toDelete, setToDelete] = useState<EmployerJob | null>(null);
@@ -66,11 +80,27 @@ export default function EmployerJobsPage() {
         setJobs(rows);
 
         const next: Record<number, number> = {};
+        let total = 0;
+        let pending = 0;
+        let accepted = 0;
+        let refused = 0;
+
         for (const row of rows) {
             const applicants = await fetchJobApplicants(row.id);
             next[row.id] = applicants.length;
+            total = total + applicants.length;
+            for (const applicant of applicants) {
+                if (applicant.status === 1) {
+                    accepted = accepted + 1;
+                } else if (applicant.status === 2) {
+                    refused = refused + 1;
+                } else {
+                    pending = pending + 1;
+                }
+            }
         }
         setCounts(next);
+        setStats({ total, pending, accepted, refused });
 
         setLoading(false);
     }, []);
@@ -223,6 +253,14 @@ export default function EmployerJobsPage() {
                 <p className="text-sm text-muted-foreground">
                     {postings.length} offre(s)
                 </p>
+            </div>
+
+            <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-5">
+                <Figure value={postings.length} label="offres en ligne" />
+                <Figure value={stats.total} label="candidatures reçues" />
+                <Figure value={stats.pending} label="en attente" />
+                <Figure value={stats.accepted} label="acceptées" />
+                <Figure value={stats.refused} label="refusées" />
             </div>
 
             <JobPostingsTable

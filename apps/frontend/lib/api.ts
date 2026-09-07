@@ -477,3 +477,124 @@ export async function deleteJobSkill(
 
     return response.ok;
 }
+
+export type AdminMetrics = {
+    users: number;
+    companies: number;
+    jobs: number;
+    applications: number;
+    suspended: number;
+    banned: number;
+    byRank: { rank: number; total: number }[];
+    byApplicationStatus: { status: number; total: number }[];
+    topCities: { city: string | null; total: number }[];
+    topSectors: { sector: string | null; total: number }[];
+};
+
+export type AdminUser = {
+    id: number;
+    firstname: string;
+    lastname: string;
+    email: string;
+    rank: number;
+    companiesId: number | null;
+    suspendedAt: string | null;
+    bannedAt: string | null;
+    moderationReason: string | null;
+    createdAt: string | null;
+    lastLoginAt: string | null;
+    company: { name: string } | null;
+};
+
+export async function fetchAdminMetrics(): Promise<AdminMetrics | null> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/admin/metrics", {
+            credentials: "include",
+        });
+    } catch {
+        return null;
+    }
+
+    if (!response.ok) {
+        return null;
+    }
+
+    return await response.json();
+}
+
+export async function fetchAdminUsers(): Promise<AdminUser[]> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/admin/users", {
+            credentials: "include",
+        });
+    } catch {
+        return [];
+    }
+
+    if (!response.ok) {
+        return [];
+    }
+
+    return await response.json();
+}
+
+export async function moderateUser(
+    id: number,
+    action: "suspend" | "reactivate" | "ban",
+    reason: string,
+): Promise<boolean> {
+    const payload: { action: string; reason?: string } = { action };
+    if (reason !== "") {
+        payload.reason = reason;
+    }
+
+    let response;
+    try {
+        response = await fetch(
+            API_URL + "/api/admin/users/" + id + "/moderation",
+            {
+                method: "PATCH",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            },
+        );
+    } catch {
+        return false;
+    }
+
+    return response.ok;
+}
+
+export async function adminDeleteJob(id: number): Promise<boolean> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/admin/jobs/" + id, {
+            method: "DELETE",
+            credentials: "include",
+        });
+    } catch {
+        return false;
+    }
+
+    return response.ok;
+}
+
+export async function fetchReceivedCount(): Promise<{ pending: number; total: number }> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/applications/received", {
+            credentials: "include",
+        });
+    } catch {
+        return { pending: 0, total: 0 };
+    }
+
+    if (!response.ok) {
+        return { pending: 0, total: 0 };
+    }
+
+    return await response.json();
+}

@@ -22,5 +22,13 @@ export async function getCurrentUser(req: Request)
         throw new HttpError(401, "Non authentifié");
     }
 
+    if (user.bannedAt !== null) {
+        throw new HttpError(403, "Ce compte a été banni de la plateforme");
+    }
+
+    if (user.suspendedAt !== null) {
+        throw new HttpError(403, "Ce compte est suspendu");
+    }
+
     return user;
 }

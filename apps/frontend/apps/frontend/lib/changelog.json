@@ -1,9 +1,17 @@
 {
-  "generatedAt": "2026-09-07T14:00:00.972Z",
+  "generatedAt": "2026-09-07T14:04:39.350Z",
   "days": [
     {
       "date": "2026-09-07",
       "entries": [
+        {
+          "hash": "dde3e91",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Renommage geoemploi, infos service, changelog et email pro employeur"
+        },
         {
           "hash": "ec03490",
           "date": "2026-09-07",

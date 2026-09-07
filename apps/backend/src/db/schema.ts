@@ -73,6 +73,9 @@ export const users = pgTable("users", {
     resume: text("resume"), // base64 blob
     localisation: boolean("localisation").default(false),
     allowedAt: timestamp("allowed_at"),
+    suspendedAt: timestamp("suspended_at"),
+    bannedAt: timestamp("banned_at"),
+    moderationReason: text("moderation_reason"),
     // Dernière connexion réelle (mise à jour par un hook better-auth au sign-in),
     // sert de base au nettoyage "2 ans d'inactivité".
     lastLoginAt: timestamp("last_login_at").defaultNow(),

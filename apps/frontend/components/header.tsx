@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
@@ -16,6 +16,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import { authClient } from "@/lib/auth-client";
+import { fetchReceivedCount } from "@/lib/api";
 import { useCgu } from "@/components/cgu-provider";
 import { UserRank } from "@/lib/user-rank";
 import { useRouter } from "next/navigation";
@@ -27,6 +28,7 @@ const links = [
 
 const PUBLISH_JOB_ROUTE = "/offres";
 const MY_APPLICATIONS_ROUTE = "/candidatures";
+const ADMIN_ROUTE = "/admin";
 
 export default function Header() {
     const pathname = usePathname();
@@ -52,6 +54,39 @@ export default function Header() {
 
     const isOnPublishPage = pathname === PUBLISH_JOB_ROUTE;
     const isEmployer = session?.user?.rank === UserRank.EMPLOYER;
+    const isAdmin = session?.user?.rank === UserRank.ADMIN;
+    const [pending, setPending] = useState(0);
+
+    useEffect(
+        function () {
+            if (!isEmployer) {
+                setPending(0);
+                return;
+            }
+
+            let cancelled = false;
+
+            fetchReceivedCount().then(function (result) {
+                if (!cancelled) {
+                    setPending(result.pending);
+                }
+            });
+
+            return function () {
+                cancelled = true;
+            };
+        },
+        [isEmployer],
+    );
+
+    let pendingBadge = null;
+    if (pending > 0) {
+        pendingBadge = (
+            <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-action px-1.5 py-0.5 font-heading text-[0.65rem] font-bold text-action-foreground">
+                {pending}
+            </span>
+        );
+    }
 
     async function handleSignOut() {
         await authClient.signOut();
@@ -162,6 +197,18 @@ export default function Header() {
                                     className="font-heading text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
                                 >
                                     Publier une offre
+                                    {pendingBadge}
+                                </a>
+                            </li>
+                        )}
+
+                        {isAdmin && (
+                            <li>
+                                <a
+                                    href={ADMIN_ROUTE}
+                                    className="font-heading text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
+                                >
+                                    Administration
                                 </a>
                             </li>
                         )}

@@ -5,8 +5,9 @@ import * as schemas from "../schemas/applications.schema.ts";
 import {getCurrentUser} from "../utils/currentUser.utils.ts";
 import {isUniqueViolation} from "../utils/dbError.utils.ts";
 import {db} from "../db/index.ts";
-import {applications, jobs} from "../db/schema.ts";
-import {count, eq} from "drizzle-orm";
+import {applications, jobs, users} from "../db/schema.ts";
+import {and, count, eq, isNull} from "drizzle-orm";
+import {sendNewApplicationMail} from "../utils/notify.utils.ts";
 
 export async function postApplication(req: Request, res: Response, next: NextFunction)
 {
@@ -48,7 +49,65 @@ export async function postApplication(req: Request, res: Response, next: NextFun
         throw error;
     }
 
+    const poster = await db.query.users.findFirst({
+        where: eq(users.id, job.userId),
+        with: {
+            company: true,
+        },
+    });
+
+    if (poster) {
+        let to = poster.email;
+        if (poster.emailContact) {
+            to = poster.emailContact;
+        }
+
+        let companyName = "votre entreprise";
+        if (poster.company) {
+            companyName = poster.company.name;
+        }
+
+        let message = null;
+        if (req.body.description) {
+            message = req.body.description;
+        }
+
+        sendNewApplicationMail({
+            to: to,
+            employerName: poster.firstname,
+            jobTitle: job.title,
+            companyName: companyName,
+            candidateName: user.firstname + " " + user.lastname,
+            message: message,
+        });
+    }
+
     res.status(201).json(created);
+
+    next();
+}
+
+export async function getReceived(req: Request, res: Response, next: NextFunction)
+{
+    const user = await getCurrentUser(req);
+
+    if (user.companiesId === null) {
+        res.json({pending: 0, total: 0});
+        next();
+        return;
+    }
+
+    const [total] = await db.select({total: count()})
+        .from(applications)
+        .innerJoin(jobs, eq(applications.jobId, jobs.id))
+        .where(eq(jobs.companiesId, user.companiesId));
+
+    const [pending] = await db.select({total: count()})
+        .from(applications)
+        .innerJoin(jobs, eq(applications.jobId, jobs.id))
+        .where(and(eq(jobs.companiesId, user.companiesId), eq(applications.status, 0)));
+
+    res.json({pending: pending.total, total: total.total});
 
     next();
 }
