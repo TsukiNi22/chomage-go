@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Crosshair, X } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import JobDetails from "@/components/job-details";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { distanceInKm } from "@/lib/distance";
-import { normalize, searchPlace } from "@/lib/geocoding";
+import { normalize, searchPlaces } from "@/lib/geocoding";
 import type { Place } from "@/lib/geocoding";
 import { jobs, locatedJobs } from "@/lib/jobs";
 import type { Job } from "@/lib/jobs";
@@ -56,13 +56,18 @@ export default function MapExplorer(props: ExplorerProps) {
     const [place, setPlace] = useState<Place | null>(null);
     const [placeLoading, setPlaceLoading] = useState(false);
     const [disablingGeo, setDisablingGeo] = useState(false);
+    const [suggestions, setSuggestions] = useState<Place[]>([]);
+    const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+    const [highlightedIndex, setHighlightedIndex] = useState(-1);
+    const locationBoxRef = useRef<HTMLDivElement>(null);
 
     useEffect(
         function () {
             const query = location.trim();
 
-            if (query.length < 2) {
-                setPlace(null);
+            if (query.length < 2 || query === lastSelectedLabelRef.current) {
+                setSuggestions([]);
+                setSuggestionsOpen(false);
                 setPlaceLoading(false);
                 return;
             }
@@ -71,11 +76,13 @@ export default function MapExplorer(props: ExplorerProps) {
             setPlaceLoading(true);
 
             const timer = setTimeout(function () {
-                searchPlace(query).then(function (found) {
+                searchPlaces(query, 5).then(function (found) {
                     if (cancelled) {
                         return;
                     }
-                    setPlace(found);
+                    setSuggestions(found);
+                    setSuggestionsOpen(found.length > 0);
+                    setHighlightedIndex(-1);
                     setPlaceLoading(false);
                 });
             }, 400);
@@ -151,6 +158,7 @@ export default function MapExplorer(props: ExplorerProps) {
 
     const visibleJobs = results.slice(0, DISPLAY_LIMIT);
     const mappableJobs = locatedJobs(visibleJobs);
+    const lastSelectedLabelRef = useRef<string | null>(null);
 
     let targetLat = FRANCE_LAT;
     let targetLon = FRANCE_LON;
@@ -191,6 +199,50 @@ export default function MapExplorer(props: ExplorerProps) {
         setLocation(event.target.value);
     }
 
+    function selectPlace(selected: Place) {
+        lastSelectedLabelRef.current = selected.label;
+        setLocation(selected.label);
+        setPlace(selected);
+        setSuggestions([]);
+        setSuggestionsOpen(false);
+        setHighlightedIndex(-1);
+    }
+
+    function handleLocationKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+        if (!suggestionsOpen || suggestions.length === 0) {
+            return;
+        }
+
+        if (event.key === "ArrowDown") {
+            event.preventDefault();
+            setHighlightedIndex(function (previous) {
+                return (previous + 1) % suggestions.length;
+            });
+            return;
+        }
+
+        if (event.key === "ArrowUp") {
+            event.preventDefault();
+            setHighlightedIndex(function (previous) {
+                return (previous - 1 + suggestions.length) % suggestions.length;
+            });
+            return;
+        }
+
+        if (event.key === "Enter") {
+            if (highlightedIndex >= 0) {
+                event.preventDefault();
+                selectPlace(suggestions[highlightedIndex]);
+            }
+            return;
+        }
+
+        if (event.key === "Escape") {
+            setSuggestionsOpen(false);
+            setHighlightedIndex(-1);
+        }
+    }
+
     function toggleContract(value: string) {
         if (contract === value) {
             setContract(null);
@@ -210,6 +262,36 @@ export default function MapExplorer(props: ExplorerProps) {
     let allowed = false;
     if (session && session.user.localisation === true) {
         allowed = true;
+    }
+
+    useEffect(
+        function () {
+            function handleClickOutside(event: MouseEvent) {
+                if (
+                    locationBoxRef.current &&
+                    !locationBoxRef.current.contains(event.target as Node)
+                ) {
+                    setSuggestionsOpen(false);
+                }
+            }
+
+            document.addEventListener("mousedown", handleClickOutside);
+            return function () {
+                document.removeEventListener("mousedown", handleClickOutside);
+            };
+        },
+        [],
+    );
+
+    function handleLocationBoxBlur() {
+        requestAnimationFrame(function () {
+            if (
+                locationBoxRef.current &&
+                !locationBoxRef.current.contains(document.activeElement)
+            ) {
+                setSuggestionsOpen(false);
+            }
+        });
     }
 
     useEffect(
@@ -301,6 +383,10 @@ export default function MapExplorer(props: ExplorerProps) {
         setLocation("");
         setContract(null);
         setRadius(null);
+        setPlace(null);
+        setSuggestions([]);
+        setSuggestionsOpen(false);
+        lastSelectedLabelRef.current = null;
     }
 
     let geoStatus = (
@@ -493,13 +579,68 @@ export default function MapExplorer(props: ExplorerProps) {
                         className="lg:flex-1"
                         aria-label="Rechercher un métier"
                     />
+                    <div ref={locationBoxRef} className="relative lg:w-72" onBlur={handleLocationBoxBlur}>
                     <Input
                         value={location}
                         onChange={handleLocation}
+                        onKeyDown={handleLocationKeyDown}
+                        onFocus={function () {
+                            if (suggestions.length > 0) {
+                                setSuggestionsOpen(true);
+                            }
+                        }}
                         placeholder="Adresse ou code postal…"
-                        className="lg:w-72"
                         aria-label="Rechercher une commune ou un code postal"
+                        role="combobox"
+                        aria-expanded={suggestionsOpen}
+                        aria-controls="location-listbox"
+                        aria-autocomplete="list"
+                        aria-activedescendant={
+                            highlightedIndex >= 0 ? `location-option-${highlightedIndex}` : undefined
+                        }
                     />
+
+                    {suggestionsOpen && suggestions.length > 0 && (
+                        <ul
+                            id="location-listbox"
+                            role="listbox"
+                            aria-label="Suggestions de communes"
+                            className="absolute z-20 mt-1 w-full border border-border bg-background shadow-md"
+                        >
+                            {suggestions.map(function (suggestion, index) {
+                                let optionStyle = "hover:bg-accent";
+                                if (index === highlightedIndex) {
+                                    optionStyle = "bg-accent text-accent-foreground";
+                                }
+
+                                return (
+                                    <li
+                                        key={index}
+                                        id={`location-option-${index}`}
+                                        role="option"
+                                        aria-selected={index === highlightedIndex}
+                                    >
+                                        <button
+                                            type="button"
+                                            onClick={function () {
+                                                selectPlace(suggestion);
+                                            }}
+                                            onMouseEnter={function () {
+                                                setHighlightedIndex(index);
+                                            }}
+                                            className={cn(
+                                                "w-full px-3 py-2 text-left font-heading text-sm",
+                                                optionStyle,
+                                            )}
+                                        >
+                                            {suggestion.label}
+                                        </button>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    )}
+                </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
