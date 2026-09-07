@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import {runDailyMaintenance} from "./db/maintenance";
+import {runDailyMaintenance} from "./db/maintenance.ts";
 
 // minute hour day-month month day-week
 cron.schedule("0 0 * * *", async () => {

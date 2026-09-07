@@ -1,7 +1,7 @@
 import {Request, Response, NextFunction} from "express";
-import {HttpError} from "../types/httpError";
-import {users, addresses, companies, userSkills, experience, availability, applications, jobs, jobSkills} from "../db/schema";
-import {db} from "../db";
+import {HttpError} from "../types/httpError.ts";
+import {users, addresses, companies, userSkills, experience, availability, applications, jobs, jobSkills} from "../db/schema.ts";
+import {db} from "../db/index.ts";
 import {eq} from "drizzle-orm";
 
 export async function extract(req: Request, res: Response, next: NextFunction)

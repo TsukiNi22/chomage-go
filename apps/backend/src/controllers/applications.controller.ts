@@ -1,11 +1,11 @@
 import {Request, Response, NextFunction} from "express";
-import {validateJson} from "../utils/validateJson.utils";
-import {HttpError} from "../types/httpError";
-import * as schemas from "../schemas/applications.schema";
-import {getCurrentUser} from "../utils/currentUser.utils";
-import {isUniqueViolation} from "../utils/dbError.utils";
-import {db} from "../db";
-import {applications, jobs} from "../db/schema";
+import {validateJson} from "../utils/validateJson.utils.ts";
+import {HttpError} from "../types/httpError.ts";
+import * as schemas from "../schemas/applications.schema.ts";
+import {getCurrentUser} from "../utils/currentUser.utils.ts";
+import {isUniqueViolation} from "../utils/dbError.utils.ts";
+import {db} from "../db/index.ts";
+import {applications, jobs} from "../db/schema.ts";
 import {eq} from "drizzle-orm";
 
 export async function postApplication(req: Request, res: Response, next: NextFunction)
@@ -28,6 +28,7 @@ export async function postApplication(req: Request, res: Response, next: NextFun
         const rows = await db.insert(applications).values({
             jobId: req.body.job_id,
             userId: user.id,
+            description: req.body.description,
         }).returning();
         created = rows[0];
     } catch (error) {

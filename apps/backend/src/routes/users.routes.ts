@@ -6,15 +6,12 @@ const router = Router();
 
 /**
  * @openapi
- * /users/{id}:
+ * /users/:
  *   get:
- *     summary: Get a user by ID
+ *     summary: Get the authenticated user
  *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: User data
@@ -22,10 +19,9 @@ const router = Router();
  *           application/json:
  *             schema:
  *               $ref: "#/components/schemas/User"
- *       404:
- *         description: User not found
+ *       401:
+ *         description: Missing or invalid auth header
  */
-router.get("/:id", requireAuth, usersController.getUser);
 router.get("/", requireAuth, usersController.getUser);
 
 /**
@@ -84,28 +80,6 @@ router.delete("/", requireAuth, usersController.deleteUser);
 
 /**
  * @openapi
- * /users/{id}/skills:
- *   get:
- *     summary: List a user's skills
- *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
- *     responses:
- *       200:
- *         description: List of user skills
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/Skill"
- *       404:
- *         description: User not found
- */
-router.get("/:id/skills", usersController.getSkill);
-/**
- * @openapi
  * /users/skills:
  *   get:
  *     summary: List authenticated user's skills
@@ -122,7 +96,7 @@ router.get("/:id/skills", usersController.getSkill);
  *       401:
  *         description: Missing or invalid auth header
  */
-router.get("/skills", usersController.getSkill);
+router.get("/skills", requireAuth, usersController.getSkill);
 
 /**
  * @openapi
@@ -204,28 +178,6 @@ router.delete("/skills/:skillId", requireAuth, usersController.deleteSkill);
 
 /**
  * @openapi
- * /users/{id}/experience:
- *   get:
- *     summary: List a user's experience entries
- *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
- *     responses:
- *       200:
- *         description: List of experience entries
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/Experience"
- *       404:
- *         description: User not found
- */
-router.get("/:id/experience", usersController.getExperience);
-/**
- * @openapi
  * /users/experience:
  *   get:
  *     summary: List authenticated user's experience entries
@@ -242,7 +194,7 @@ router.get("/:id/experience", usersController.getExperience);
  *       401:
  *         description: Missing or invalid auth header
  */
-router.get("/experience", usersController.getExperience);
+router.get("/experience", requireAuth, usersController.getExperience);
 
 /**
  * @openapi
@@ -340,28 +292,6 @@ router.delete("/experience/:experienceId", requireAuth, usersController.deleteEx
 
 /**
  * @openapi
- * /users/{id}/availability:
- *   get:
- *     summary: List a user's availability entries
- *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: integer }
- *     responses:
- *       200:
- *         description: List of availability entries
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/Availability"
- *       404:
- *         description: User not found
- */
-router.get("/:id/availability", usersController.getAvailability);
-/**
- * @openapi
  * /users/availability:
  *   get:
  *     summary: List authenticated user's availability entries
@@ -378,7 +308,7 @@ router.get("/:id/availability", usersController.getAvailability);
  *       401:
  *         description: Missing or invalid auth header
  */
-router.get("/availability", usersController.getAvailability);
+router.get("/availability", requireAuth, usersController.getAvailability);
 
 /**
  * @openapi
@@ -470,5 +400,98 @@ router.patch("/availability/:availabilityId", requireAuth, usersController.patch
  *         description: User or availability entry not found
  */
 router.delete("/availability/:availabilityId", requireAuth, usersController.deleteAvailability);
+
+// Routes dynamiques en dernier : "/:id" capturerait sinon "/skills", "/experience", "/availability".
+/**
+ * @openapi
+ * /users/{id}:
+ *   get:
+ *     summary: Get a user by ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: User data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/User"
+ *       404:
+ *         description: User not found
+ */
+router.get("/:id", requireAuth, usersController.getUser);
+
+/**
+ * @openapi
+ * /users/{id}/skills:
+ *   get:
+ *     summary: List a user's skills
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: List of user skills
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Skill"
+ *       404:
+ *         description: User not found
+ */
+router.get("/:id/skills", usersController.getSkill);
+
+/**
+ * @openapi
+ * /users/{id}/experience:
+ *   get:
+ *     summary: List a user's experience entries
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: List of experience entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Experience"
+ *       404:
+ *         description: User not found
+ */
+router.get("/:id/experience", usersController.getExperience);
+
+/**
+ * @openapi
+ * /users/{id}/availability:
+ *   get:
+ *     summary: List a user's availability entries
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: List of availability entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Availability"
+ *       404:
+ *         description: User not found
+ */
+router.get("/:id/availability", usersController.getAvailability);
 
 export default router;
