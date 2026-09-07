@@ -92,3 +92,42 @@ export async function deleteApplication(req: Request, res: Response, next: NextF
 
     next();
 }
+
+export async function patchApplication(req: Request, res: Response, next: NextFunction)
+{
+    const user = await getCurrentUser(req);
+
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+        throw new HttpError(400, "Identifiant de candidature invalide");
+    }
+
+    if (!validateJson(schemas.patchApplicationSchema, req, res)) {
+        return;
+    }
+
+    const application = await db.query.applications.findFirst({
+        where: eq(applications.id, id),
+        with: {
+            job: true,
+        },
+    });
+    if (!application) {
+        throw new HttpError(404, "Candidature introuvable");
+    }
+
+    if (user.rank !== 0) {
+        if (!application.job || application.job.companiesId !== user.companiesId) {
+            throw new HttpError(403, "Cette candidature ne concerne pas votre entreprise");
+        }
+    }
+
+    const rows = await db.update(applications)
+        .set({status: req.body.status})
+        .where(eq(applications.id, id))
+        .returning();
+
+    res.json(rows[0]);
+
+    next();
+}

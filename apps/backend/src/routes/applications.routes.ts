@@ -70,4 +70,40 @@ router.get("/", requireAuth, applicationsController.getApplication);
  */
 router.delete("/:id", requireAuth, applicationsController.deleteApplication);
 
+/**
+ * @openapi
+ * /applications/{id}:
+ *   patch:
+ *     summary: Update an application status (employer of the owning company only)
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: integer
+ *                 description: "0 en attente, 1 acceptee, 2 refusee"
+ *     responses:
+ *       200:
+ *         description: Application updated
+ *       401:
+ *         description: Missing or invalid auth header
+ *       403:
+ *         description: Application does not concern your company
+ *       404:
+ *         description: Application not found
+ */
+router.patch("/:id", requireAuth, applicationsController.patchApplication);
+
 export default router;

@@ -244,4 +244,29 @@ router.patch("/:id/skills/:skillId", requireAuth, jobsController.patchSkill);
  */
 router.delete("/:id/skills/:skillId", requireAuth, jobsController.deleteSkill);
 
+/**
+ * @openapi
+ * /jobs/{id}/applications:
+ *   get:
+ *     summary: List applicants for a job (employer of the owning company only)
+ *     tags: [Jobs]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: List of applications with applicant profiles
+ *       401:
+ *         description: Missing or invalid auth header
+ *       403:
+ *         description: Job does not belong to your company
+ *       404:
+ *         description: Job not found
+ */
+router.get("/:id/applications", requireAuth, jobsController.getJobApplications);
+
 export default router;

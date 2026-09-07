@@ -5,7 +5,7 @@ import * as schemas from "../schemas/jobs.schema.ts";
 import {getCurrentUser} from "../utils/currentUser.utils.ts";
 import {isUniqueViolation} from "../utils/dbError.utils.ts";
 import {db} from "../db/index.ts";
-import {companies, jobs, jobSkills} from "../db/schema.ts";
+import {applications, companies, jobs, jobSkills} from "../db/schema.ts";
 import {eq} from "drizzle-orm";
 
 type JobValues = {
@@ -15,6 +15,7 @@ type JobValues = {
     sector?: string;
     remote?: number;
     addressId?: number;
+    maxApplicants?: number;
     salaryMin?: number;
     salaryMax?: number;
 };
@@ -41,6 +42,7 @@ export async function getJobs(req: Request, res: Response, next: NextFunction)
         with: {
             company: true,
             address: true,
+            skills: true,
         },
     });
 
@@ -101,6 +103,7 @@ export async function postJob(req: Request, res: Response, next: NextFunction)
             sector: req.body.sector,
             remote: req.body.remote,
             addressId: req.body.address_id,
+            maxApplicants: req.body.max_applicants,
             salaryMin: req.body.salary_min,
             salaryMax: req.body.salary_max,
         }).returning();
@@ -152,6 +155,8 @@ export async function patchJob(req: Request, res: Response, next: NextFunction)
         values.remote = req.body.remote;
     if (req.body.address_id !== undefined)
         values.addressId = req.body.address_id;
+    if (req.body.max_applicants !== undefined)
+        values.maxApplicants = req.body.max_applicants;
     if (req.body.salary_min !== undefined)
         values.salaryMin = req.body.salary_min;
     if (req.body.salary_max !== undefined)
@@ -350,6 +355,50 @@ export async function deleteSkill(req: Request, res: Response, next: NextFunctio
     await db.delete(jobSkills).where(eq(jobSkills.id, skillId));
 
     res.json({message: "Compétence supprimée"});
+
+    next();
+}
+
+export async function getJobApplications(req: Request, res: Response, next: NextFunction)
+{
+    const user = await getCurrentUser(req);
+
+    const jobId = Number(req.params.id);
+    if (isNaN(jobId)) {
+        throw new HttpError(400, "Identifiant d'offre invalide");
+    }
+
+    const job = await db.query.jobs.findFirst({
+        where: eq(jobs.id, jobId),
+    });
+    if (!job) {
+        throw new HttpError(404, "Offre introuvable");
+    }
+
+    checkCompanyAccess(user.rank, user.companiesId, job.companiesId);
+
+    const list = await db.query.applications.findMany({
+        where: eq(applications.jobId, jobId),
+        with: {
+            user: {
+                columns: {
+                    id: true,
+                    firstname: true,
+                    lastname: true,
+                    email: true,
+                    emailContact: true,
+                    description: true,
+                    resume: true,
+                    address: true,
+                },
+                with: {
+                    skills: true,
+                },
+            },
+        },
+    });
+
+    res.json(list);
 
     next();
 }

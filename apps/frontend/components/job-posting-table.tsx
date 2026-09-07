@@ -8,6 +8,7 @@ import type { EmployerJobPosting } from "@/lib/employer-jobs";
 type Props = {
     postings: EmployerJobPosting[];
     onDelete: (id: number) => void;
+    onShowApplicants?: (id: number) => void;
 };
 
 export default function JobPostingsTable(props: Props) {
@@ -95,8 +96,19 @@ export default function JobPostingsTable(props: Props) {
                                     {posting.salaryMin.toLocaleString("fr-FR")} € brut/an
                                 </TableCell>
 
-                                <TableCell className="text-right font-heading font-semibold text-primary">
-                                    {posting.applicantsCount}
+                                <TableCell className="text-right">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={function () {
+                                            if (props.onShowApplicants) {
+                                                props.onShowApplicants(posting.id);
+                                            }
+                                        }}
+                                        className="font-heading font-semibold text-primary hover:bg-accent"
+                                    >
+                                        {posting.applicantsCount} · Voir
+                                    </Button>
                                 </TableCell>
 
                                 <TableCell className="text-right">

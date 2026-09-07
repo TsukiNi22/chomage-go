@@ -252,3 +252,169 @@ export async function fetchUserDataExport(): Promise<unknown> {
 
     return await response.json();
 }
+export type EmployerJob = {
+    id: number;
+    title: string;
+    description: string | null;
+    type: number;
+    sector: string | null;
+    remote: number;
+    salaryMin: number | null;
+    salaryMax: number | null;
+    maxApplicants: number | null;
+    companiesId: number;
+    skills?: { id: number; name: string }[];
+};
+
+export type Applicant = {
+    id: number;
+    jobId: number;
+    description: string | null;
+    status: number;
+    createdAt: string | null;
+    user: {
+        id: number;
+        firstname: string;
+        lastname: string;
+        email: string;
+        emailContact: string | null;
+        description: string | null;
+        resume: string | null;
+        address: string | null;
+        skills: { id: number; name: string }[];
+    } | null;
+};
+
+export async function fetchCompanyJobs(companiesId: number): Promise<EmployerJob[]> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/jobs", { credentials: "include" });
+    } catch {
+        return [];
+    }
+
+    if (!response.ok) {
+        return [];
+    }
+
+    const rows = (await response.json()) as EmployerJob[];
+
+    return rows.filter(function (row) {
+        return row.companiesId === companiesId;
+    });
+}
+
+export async function fetchJobApplicants(jobId: number): Promise<Applicant[]> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/jobs/" + jobId + "/applications", {
+            credentials: "include",
+        });
+    } catch {
+        return [];
+    }
+
+    if (!response.ok) {
+        return [];
+    }
+
+    return await response.json();
+}
+
+export async function setApplicationStatus(
+    id: number,
+    status: number,
+): Promise<boolean> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/applications/" + id, {
+            method: "PATCH",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status }),
+        });
+    } catch {
+        return false;
+    }
+
+    return response.ok;
+}
+
+export type NewJobInput = {
+    companies_id: number;
+    title: string;
+    description?: string;
+    type: number;
+    sector?: string;
+    remote?: number;
+    salary_min: number;
+    salary_max?: number;
+    max_applicants?: number;
+};
+
+export async function postJob(input: NewJobInput): Promise<EmployerJob | null> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/jobs", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(input),
+        });
+    } catch {
+        return null;
+    }
+
+    if (!response.ok) {
+        return null;
+    }
+
+    return await response.json();
+}
+
+export async function deleteJob(id: number): Promise<boolean> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/jobs/" + id, {
+            method: "DELETE",
+            credentials: "include",
+        });
+    } catch {
+        return false;
+    }
+
+    return response.ok;
+}
+
+export async function postJobSkill(jobId: number, name: string): Promise<boolean> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/jobs/" + jobId + "/skills", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name }),
+        });
+    } catch {
+        return false;
+    }
+
+    return response.ok;
+}
+
+export async function fetchJobSkills(
+    jobId: number,
+): Promise<{ id: number; name: string }[]> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/jobs/" + jobId + "/skills");
+    } catch {
+        return [];
+    }
+
+    if (!response.ok) {
+        return [];
+    }
+
+    return await response.json();
+}
