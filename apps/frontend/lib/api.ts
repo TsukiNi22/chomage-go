@@ -109,6 +109,38 @@ export async function fetchJobs(): Promise<Job[]> {
     return rows.map(toJob);
 }
 
+export type CompanySummary = {
+    id: number;
+    name: string;
+    siret: string;
+    description: string | null;
+    link: string | null;
+    employeeRange: number;
+};
+
+export async function postCompany(
+    name: string,
+    siret: string,
+): Promise<CompanySummary | null> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/companies", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, siret, employee_range: 0 }),
+        });
+    } catch {
+        return null;
+    }
+
+    if (!response.ok) {
+        return null;
+    }
+
+    return await response.json();
+}
+
 export type UserProfile = {
     id: number;
     firstname: string;
@@ -122,6 +154,7 @@ export type UserProfile = {
     email?: string;
     emailVerified?: boolean;
     localisation?: boolean;
+    company?: CompanySummary | null;
 };
 
 export type ApiApplication = {

@@ -126,7 +126,7 @@ export const userSkills = pgTable("user_skills", {
     id: serial("id").primaryKey(),
     userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     name: varchar("name", { length: 255 }).notNull(),
-    description: text("description"),
+    description: text("description"), // legacy — non exposé, conservé pour compatibilité
 });
 
 export const experience = pgTable("experience", {
@@ -179,7 +179,7 @@ export const jobSkills = pgTable("job_skills", {
     id: serial("id").primaryKey(),
     jobId: integer("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
     name: varchar("name", { length: 255 }).notNull(),
-    description: text("description"),
+    description: text("description"), // legacy — non exposé, conservé pour compatibilité
 });
 
 // ------------------------------------------------------------

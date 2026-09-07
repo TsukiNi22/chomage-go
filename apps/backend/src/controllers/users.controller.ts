@@ -111,6 +111,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction)
         },
         with: {
             address: true,
+            company: true,
         },
     });
     if (!user) {

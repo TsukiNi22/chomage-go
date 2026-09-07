@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, User } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { postCompany } from "@/lib/api";
+import { normalizeSiret, siretError } from "@/lib/siret";
 
 type Props = {
     open: boolean;
@@ -106,6 +108,12 @@ export default function AuthModal(props: Props) {
     const [signupFirstname, setSignupFirstname] = useState("");
     const [signupEmail, setSignupEmail] = useState("");
     const [signupPassword, setSignupPassword] = useState("");
+    const [employerLastname, setEmployerLastname] = useState("");
+    const [employerFirstname, setEmployerFirstname] = useState("");
+    const [employerEmail, setEmployerEmail] = useState("");
+    const [employerCompany, setEmployerCompany] = useState("");
+    const [employerSiret, setEmployerSiret] = useState("");
+    const [employerPassword, setEmployerPassword] = useState("");
 
     function handleOpenChange(open: boolean) {
         if (!open) {
@@ -157,6 +165,49 @@ export default function AuthModal(props: Props) {
         } else {
             props.onClose();
         }
+    }
+
+    async function handleEmployerSignup(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setError(null);
+
+        const siretProblem = siretError(employerSiret);
+        if (siretProblem !== null) {
+            setError(siretProblem);
+            return;
+        }
+
+        setLoading(true);
+
+        const created = await authClient.signUp.email({
+            email: employerEmail,
+            password: employerPassword,
+            name: employerFirstname + " " + employerLastname,
+            firstname: employerFirstname,
+            lastname: employerLastname,
+        });
+
+        if (created.error) {
+            setLoading(false);
+            setError(created.error.message || "Création du compte impossible.");
+            return;
+        }
+
+        const company = await postCompany(
+            employerCompany,
+            normalizeSiret(employerSiret),
+        );
+
+        setLoading(false);
+
+        if (company === null) {
+            setError(
+                "Le compte est créé, mais l'entreprise n'a pas pu être enregistrée. Réessayez depuis votre profil.",
+            );
+            return;
+        }
+
+        props.onClose();
     }
 
     function backToChoice() {
@@ -325,25 +376,48 @@ export default function AuthModal(props: Props) {
                             </form>
                             )}
                             {signupType === "employer" && (
-                                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                                <form onSubmit={handleEmployerSignup} className="flex flex-col gap-4">
                                     <RequiredFieldsNote />
+                                    {errorMessage}
                                     <Field
                                         id="employer-lastname"
                                         label="Nom"
                                         type="text"
                                         autoComplete="family-name"
+                                        value={employerLastname}
+                                        onChange={function (event) {
+                                            setEmployerLastname(event.target.value);
+                                        }}
                                     />
                                     <Field
                                         id="employer-firstname"
                                         label="Prénom"
                                         type="text"
                                         autoComplete="given-name"
+                                        value={employerFirstname}
+                                        onChange={function (event) {
+                                            setEmployerFirstname(event.target.value);
+                                        }}
                                     />
                                     <Field
                                         id="employer-email"
                                         label="Adresse électronique"
                                         type="email"
                                         autoComplete="email"
+                                        value={employerEmail}
+                                        onChange={function (event) {
+                                            setEmployerEmail(event.target.value);
+                                        }}
+                                    />
+                                    <Field
+                                        id="employer-company"
+                                        label="Nom de l'entreprise"
+                                        type="text"
+                                        autoComplete="organization"
+                                        value={employerCompany}
+                                        onChange={function (event) {
+                                            setEmployerCompany(event.target.value);
+                                        }}
                                     />
                                     <Field
                                         id="employer-siret"
@@ -351,12 +425,20 @@ export default function AuthModal(props: Props) {
                                         type="text"
                                         placeholder="14 chiffres"
                                         autoComplete="off"
+                                        value={employerSiret}
+                                        onChange={function (event) {
+                                            setEmployerSiret(event.target.value);
+                                        }}
                                     />
                                     <Field
                                         id="employer-password"
                                         label="Mot de passe"
                                         type="password"
                                         autoComplete="new-password"
+                                        value={employerPassword}
+                                        onChange={function (event) {
+                                            setEmployerPassword(event.target.value);
+                                        }}
                                     />
                                     <div className="flex gap-3">
                                         <Button
@@ -369,9 +451,10 @@ export default function AuthModal(props: Props) {
                                         </Button>
                                         <Button
                                             type="submit"
+                                            disabled={loading}
                                             className="flex-1 bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
                                         >
-                                            Créer mon compte employeur
+                                            {signupLabel}
                                         </Button>
                                     </div>
                                 </form>

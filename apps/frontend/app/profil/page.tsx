@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import GeolocationNoticeDialog from "@/components/geolocation-notice-dialog";
 import { hasSeenNotice, saveNoticeSeen } from "@/lib/geolocation-notice";
+import { formatSiret } from "@/lib/siret";
 
 function Shell(props: { children: React.ReactNode }) {
     return (
@@ -111,6 +112,43 @@ export default function ProfilPage() {
         saveNoticeSeen();
         setLocalisation(true);
         setNoticeOpen(false);
+    }
+
+    let companyBlock = null;
+    if (profile !== null && profile.company) {
+        const company = profile.company;
+        companyBlock = (
+            <div className="flex flex-col gap-4 border-t border-border pt-6">
+                <div className="flex flex-col gap-1.5">
+                    <Label
+                        htmlFor="profil-company"
+                        className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
+                    >
+                        Entreprise
+                    </Label>
+                    <Input id="profil-company" value={company.name} disabled />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                    <Label
+                        htmlFor="profil-siret"
+                        className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
+                    >
+                        Numéro de SIRET
+                    </Label>
+                    <Input
+                        id="profil-siret"
+                        value={formatSiret(company.siret)}
+                        disabled
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        Le SIRET identifie légalement votre établissement et ne peut pas
+                        être modifié depuis le profil. Contactez l&apos;assistance en cas
+                        d&apos;erreur.
+                    </p>
+                </div>
+            </div>
+        );
     }
 
     let noticeAcceptHandler: (() => void) | undefined = undefined;
@@ -321,6 +359,8 @@ export default function ProfilPage() {
                         vérification. Contactez l&apos;assistance.
                     </p>
                 </div>
+
+                {companyBlock}
 
                 <div className="flex flex-col gap-1.5">
                     <Label
