@@ -127,6 +127,7 @@ export type UserProfile = {
 export type ApiApplication = {
     id: number;
     jobId: number;
+    description: string | null;
     createdAt: string | null;
     job: {
         title: string;
@@ -153,14 +154,22 @@ export async function fetchApplications(): Promise<ApiApplication[]> {
     return await response.json();
 }
 
-export async function postApplication(jobId: number): Promise<boolean> {
+export async function postApplication(
+    jobId: number,
+    description: string,
+): Promise<boolean> {
+    const payload: { job_id: number; description?: string } = { job_id: jobId };
+    if (description !== "") {
+        payload.description = description;
+    }
+
     let response;
     try {
         response = await fetch(API_URL + "/api/applications", {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ job_id: jobId }),
+            body: JSON.stringify(payload),
         });
     } catch {
         return false;

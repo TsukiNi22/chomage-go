@@ -11,6 +11,7 @@ import type { JobApplication } from "@/lib/applications-context";
 
 type Props = {
     applications: JobApplication[];
+    onSelect?: (application: JobApplication) => void;
 };
 
 export default function ApplicationsTable(props: Props) {
@@ -37,6 +38,7 @@ export default function ApplicationsTable(props: Props) {
                         <TableHead>Ville</TableHead>
                         <TableHead>Type</TableHead>
                         <TableHead className="text-right">Date de candidature</TableHead>
+                        <TableHead className="w-px" />
                     </TableRow>
                 </TableHeader>
 
@@ -48,7 +50,15 @@ export default function ApplicationsTable(props: Props) {
                         );
 
                         return (
-                            <TableRow key={application.id}>
+                            <TableRow
+                                key={application.id}
+                                onClick={function () {
+                                    if (props.onSelect) {
+                                        props.onSelect(application);
+                                    }
+                                }}
+                                className="cursor-pointer"
+                            >
                                 <TableCell className="font-heading font-semibold text-primary">
                                     {application.title}
                                 </TableCell>
@@ -63,6 +73,11 @@ export default function ApplicationsTable(props: Props) {
                                 </TableCell>
                                 <TableCell className="text-right text-sm text-muted-foreground">
                                     {appliedDate}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <span className="font-heading text-sm font-medium text-primary underline underline-offset-4">
+                                        Voir
+                                    </span>
                                 </TableCell>
                             </TableRow>
                         );

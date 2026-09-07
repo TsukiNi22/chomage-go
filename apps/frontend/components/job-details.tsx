@@ -41,6 +41,8 @@ function Field(props: { label: string; value: string }) {
 
 export default function JobDetails(props: Props) {
     const [applied, setApplied] = useState(false);
+    const [message, setMessage] = useState("");
+    const [sending, setSending] = useState(false);
     const { data: session } = authClient.useSession();
     const { addApplication } = useApplications();
     const job = props.job;
@@ -52,6 +54,7 @@ export default function JobDetails(props: Props) {
     useEffect(
         function () {
             setApplied(false);
+            setMessage("");
         },
         [jobId],
     );
@@ -63,9 +66,11 @@ export default function JobDetails(props: Props) {
     }
 
     async function handleApply() {
+        setSending(true);
         if (job !== null) {
-            await addApplication(job);
+            await addApplication(job, message.trim());
         }
+        setSending(false);
         setApplied(true);
     }
 
@@ -104,6 +109,36 @@ export default function JobDetails(props: Props) {
     let footerText = "Votre profil sera transmis à l'employeur.";
     let footerClass = "text-xs text-muted-foreground";
     let applyLabel = "Postuler";
+    if (sending) {
+        applyLabel = "Envoi…";
+    }
+
+    let messageBlock = null;
+    if (canApply) {
+        messageBlock = (
+            <div className="flex flex-col gap-1.5">
+                <label
+                    htmlFor="candidature-message"
+                    className="font-heading text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
+                >
+                    Votre message (facultatif)
+                </label>
+                <textarea
+                    id="candidature-message"
+                    value={message}
+                    onChange={function (event) {
+                        setMessage(event.target.value);
+                    }}
+                    maxLength={1000}
+                    placeholder="Expliquez en quelques lignes pourquoi cette offre vous intéresse."
+                    className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring"
+                />
+                <span className="text-xs text-muted-foreground">
+                    {message.length} / 1000 caractères
+                </span>
+            </div>
+        );
+    }
 
     let footerMessage = (
         <p className="text-xs text-muted-foreground">
@@ -167,6 +202,8 @@ export default function JobDetails(props: Props) {
                         <Field label="Publiée le" value={publishedAt} />
                         {distanceField}
                     </div>
+
+                    {messageBlock}
                 </div>
 
                 <DialogFooter className="border-t border-border bg-muted p-6 sm:justify-between">
@@ -175,7 +212,7 @@ export default function JobDetails(props: Props) {
                     <Button
                         type="button"
                         onClick={handleApply}
-                        disabled={!canApply}
+                        disabled={!canApply || sending}
                         className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-action"
                     >
                         {applyLabel}

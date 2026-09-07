@@ -26,12 +26,13 @@ export type JobApplication = {
     city: string;
     contractType: string;
     appliedAt: string;
+    message: string;
 };
 
 type ApplicationsContextValue = {
     applications: JobApplication[];
     loading: boolean;
-    addApplication: (job: Job) => Promise<void>;
+    addApplication: (job: Job, message: string) => Promise<void>;
     hasApplied: (jobId: number) => boolean;
 };
 
@@ -63,6 +64,11 @@ function toApplication(row: ApiApplication): JobApplication {
         appliedAt = row.createdAt;
     }
 
+    let message = "";
+    if (row.description !== null) {
+        message = row.description;
+    }
+
     return {
         id: row.id,
         jobId: row.jobId,
@@ -71,6 +77,7 @@ function toApplication(row: ApiApplication): JobApplication {
         city: city,
         contractType: contractType,
         appliedAt: appliedAt,
+        message: message,
     };
 }
 
@@ -103,12 +110,12 @@ export function ApplicationsProvider(props: { children: ReactNode }) {
         });
     }
 
-    async function addApplication(job: Job) {
+    async function addApplication(job: Job, message: string) {
         if (hasApplied(job.id)) {
             return;
         }
 
-        const ok = await postApplication(job.id);
+        const ok = await postApplication(job.id, message);
         if (ok) {
             await reload();
         }
