@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-import { fetchMyProfile } from "@/lib/api";
+import { fetchMyProfile, fetchUserDataExport } from "@/lib/api";
 import type { UserProfile } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,6 +48,9 @@ export default function ProfilPage() {
     const [deletePassword, setDeletePassword] = useState("");
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
+
+    const [exporting, setExporting] = useState(false);
+    const [exportError, setExportError] = useState<string | null>(null);
 
     useEffect(
         function () {
@@ -102,6 +105,31 @@ export default function ProfilPage() {
             setFeedback("L'enregistrement a échoué. Réessayez.");
         } else {
             setFeedback("Profil enregistré.");
+        }
+    }
+
+    async function handleExportData() {
+        setExporting(true);
+        setExportError(null);
+
+        try {
+            const data = await fetchUserDataExport();
+            const blob = new Blob([JSON.stringify(data, null, 2)], {
+                type: "application/json",
+            });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "mes-donnees-geoemploi.json";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch {
+            setExportError("L'export a échoué. Réessayez dans un instant.");
+        } finally {
+            setExporting(false);
         }
     }
 
@@ -328,6 +356,35 @@ export default function ProfilPage() {
                     </Button>
                 </div>
             </form>
+
+            <div className="mt-8 border border-border bg-background p-8">
+                <h2 className="font-heading text-lg font-bold text-primary">
+                    Mes données
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    Téléchargez une copie complète de vos données personnelles
+                    (profil, candidatures, historique) au format JSON.
+                </p>
+
+                <Button
+                    type="button"
+                    onClick={handleExportData}
+                    disabled={exporting}
+                    className="mt-4 bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+                >
+                    {exporting ? "Extraction…" : "Extraire mes données"}
+                </Button>
+
+                {exportError !== null && (
+                    <p
+                        role="status"
+                        aria-live="polite"
+                        className="mt-3 border border-destructive bg-destructive/5 px-3 py-2 text-sm text-destructive"
+                    >
+                        {exportError}
+                    </p>
+                )}
+            </div>
 
             <div className="mt-8 border border-destructive/40 bg-background p-8">
                 <h2 className="font-heading text-lg font-bold text-destructive">
