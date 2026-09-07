@@ -371,6 +371,11 @@ export default function MapExplorer(props: ExplorerProps) {
         [allowed],
     );
 
+    async function enableGeolocation() {
+        setDisablingGeo(true);
+        await authClient.updateUser({ localisation: true });
+        setDisablingGeo(false);
+    }
 
     async function disableGeolocation() {
         setDisablingGeo(true);
@@ -389,47 +394,49 @@ export default function MapExplorer(props: ExplorerProps) {
         lastSelectedLabelRef.current = null;
     }
 
-    let geoStatus = (
-        <span className="flex items-center gap-1.5 border border-border bg-background px-3.5 py-1.5 font-heading text-xs font-medium text-muted-foreground">
-            <Crosshair className="h-3.5 w-3.5" />
-            Géolocalisation désactivée
-        </span>
-    );
+    let geoToggle: React.ReactNode;
 
-    if (geoLoading) {
-        geoStatus = (
+    if (!session) {
+        geoToggle = (
+            <Link
+                href="/profil"
+                className="flex items-center gap-1.5 border border-border bg-background px-3.5 py-1.5 font-heading text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            >
+                <Crosshair className="h-3.5 w-3.5" />
+                Connectez-vous pour activer la localisation
+            </Link>
+        );
+    } else if (geoLoading) {
+        geoToggle = (
             <span className="flex items-center gap-1.5 border border-border bg-background px-3.5 py-1.5 font-heading text-xs font-medium text-muted-foreground">
                 <Crosshair className="h-3.5 w-3.5" />
                 Localisation en cours…
             </span>
         );
-    } else if (position !== null) {
-        geoStatus = (
-            <span className="flex items-center gap-1.5 border border-primary bg-accent px-3.5 py-1.5 font-heading text-xs font-medium text-accent-foreground">
-                <Crosshair className="h-3.5 w-3.5" />
-                Offres triées par distance
-            </span>
-        );
-    }
-
-    let geoLink = (
-        <Link
-            href="/profil"
-            className="font-heading text-xs font-medium text-primary underline underline-offset-4"
-        >
-            Activer dans mon profil
-        </Link>
-    );
-
-    if (allowed) {
-        geoLink = (
+    } else if (allowed) {
+        geoToggle = (
             <button
                 type="button"
                 onClick={disableGeolocation}
                 disabled={disablingGeo}
-                className="font-heading text-xs font-medium text-primary underline underline-offset-4 disabled:opacity-50"
+                aria-pressed={true}
+                className="flex items-center gap-1.5 border border-primary bg-accent px-3.5 py-1.5 font-heading text-xs font-medium text-accent-foreground transition-opacity hover:opacity-80 disabled:opacity-50"
             >
-                Désactiver la géolocalisation
+                <Crosshair className="h-3.5 w-3.5" />
+                {position !== null ? "Offres triées par distance" : "Localisation activée"}
+            </button>
+        );
+    } else {
+        geoToggle = (
+            <button
+                type="button"
+                onClick={enableGeolocation}
+                disabled={disablingGeo}
+                aria-pressed={false}
+                className="flex items-center gap-1.5 border border-border bg-background px-3.5 py-1.5 font-heading text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
+            >
+                <Crosshair className="h-3.5 w-3.5" />
+                Géolocalisation désactivée
             </button>
         );
     }
@@ -676,8 +683,7 @@ export default function MapExplorer(props: ExplorerProps) {
 
                     <span aria-hidden="true" className="mx-1 h-5 w-px bg-border" />
 
-                    {geoStatus}
-                    {geoLink}
+                    {geoToggle}
                     {resetButton}
                 </div>
 
