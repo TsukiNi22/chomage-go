@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -14,11 +15,13 @@ import {
 import { useCgu } from "@/components/cgu-provider";
 import { CGU_DATE, CGU_VERSION } from "@/lib/cgu";
 
-const EXEMPT_PATHS = ["/cgu"];
+const EXEMPT_PATHS = ["/cgu", "/registre", "/risques"];
 
 export default function CguGate() {
     const pathname = usePathname();
     const cgu = useCgu();
+    const [acceptedCgu, setAcceptedCgu] = useState(false);
+    const [acceptedData, setAcceptedData] = useState(false);
 
     let open = false;
     if (cgu.ready && !cgu.accepted && !EXEMPT_PATHS.includes(pathname)) {
@@ -82,21 +85,68 @@ export default function CguGate() {
                         d&apos;un consentement distinct, que vous pouvez retirer à tout
                         moment.
                     </p>
-                    <p>
+                    <p className="flex flex-col gap-1">
                         <Link
                             href="/cgu"
                             className="font-heading font-semibold text-primary underline underline-offset-4"
                         >
                             Lire les conditions générales dans leur intégralité
                         </Link>
+                        <Link
+                            href="/registre"
+                            className="font-heading font-semibold text-primary underline underline-offset-4"
+                        >
+                            Consulter la fiche de registre des données collectées
+                        </Link>
                     </p>
+
+                    <div className="flex flex-col gap-3 border-t border-border pt-4">
+                        <label
+                            htmlFor="cgu-accept"
+                            className="flex cursor-pointer items-start gap-3"
+                        >
+                            <input
+                                id="cgu-accept"
+                                type="checkbox"
+                                checked={acceptedCgu}
+                                onChange={function (event) {
+                                    setAcceptedCgu(event.target.checked);
+                                }}
+                                className="mt-0.5 size-4 shrink-0 accent-[var(--action)]"
+                            />
+                            <span className="text-sm text-foreground">
+                                J&apos;ai lu et j&apos;accepte les conditions générales
+                                d&apos;utilisation.
+                            </span>
+                        </label>
+
+                        <label
+                            htmlFor="data-accept"
+                            className="flex cursor-pointer items-start gap-3"
+                        >
+                            <input
+                                id="data-accept"
+                                type="checkbox"
+                                checked={acceptedData}
+                                onChange={function (event) {
+                                    setAcceptedData(event.target.checked);
+                                }}
+                                className="mt-0.5 size-4 shrink-0 accent-[var(--action)]"
+                            />
+                            <span className="text-sm text-foreground">
+                                J&apos;ai pris connaissance des données utilisées et
+                                stockées.
+                            </span>
+                        </label>
+                    </div>
                 </div>
 
                 <DialogFooter className="border-t border-border bg-muted p-6">
                     <Button
                         type="button"
                         onClick={cgu.accept}
-                        className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+                        disabled={!acceptedCgu || !acceptedData}
+                        className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-action"
                     >
                         J&apos;accepte les conditions générales
                     </Button>

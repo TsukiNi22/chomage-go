@@ -156,7 +156,7 @@ export default function ProfilPage() {
 
             const link = document.createElement("a");
             link.href = url;
-            link.download = "mes-donnees-geoemploi.json";
+            link.download = "export-chomage-go.json";
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);

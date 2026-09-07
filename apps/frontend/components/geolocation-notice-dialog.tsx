@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -101,8 +102,14 @@ export default function GeolocationNoticeDialog(props: Props) {
 
                     <p className="font-heading text-xs text-muted-foreground">
                         Version {GEO_NOTICE_VERSION} du {GEO_NOTICE_DATE}. Contenu
-                        identique à la fiche de registre des activités de traitement du
-                        service.
+                        identique à la{" "}
+                        <Link
+                            href="/registre"
+                            className="font-semibold text-primary underline underline-offset-4 hover:no-underline"
+                        >
+                            fiche de registre des activités de traitement
+                        </Link>
+                        .
                     </p>
                 </div>
 

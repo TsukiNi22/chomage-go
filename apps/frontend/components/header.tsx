@@ -21,8 +21,8 @@ import { UserRank } from "@/lib/user-rank";
 import { useRouter } from "next/navigation";
 
 const links = [
-    { label: "Carte des offres", href: "/carte" },
     { label: "Comment ça marche", href: "/#how" },
+    { label: "Carte des offres", href: "/carte" },
 ];
 
 const PUBLISH_JOB_ROUTE = "/offres";
@@ -121,8 +121,8 @@ export default function Header() {
 
     return (
         <>
-            <header className="grid grid-cols-[auto_1fr_auto] items-center gap-4 border-b-2 border-primary bg-background px-4 py-4 sm:px-6 lg:gap-6 lg:px-8">
-                <Link href="/" aria-label="Retour à l'accueil">
+            <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 border-b-2 border-primary bg-background px-4 py-4 sm:px-6 lg:gap-6 lg:px-8">
+                <Link href="/" aria-label="Retour à l'accueil" className="justify-self-start">
                     <Wordmark />
                 </Link>
 
