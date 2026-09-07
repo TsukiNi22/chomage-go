@@ -26,3 +26,15 @@ export async function fetchMyProfile(): Promise<UserProfile | null> {
 
     return await response.json();
 }
+
+export async function fetchUserDataExport(): Promise<unknown> {
+    const response = await fetch(API_URL + "/api/extract", {
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        throw new Error("L'export a échoué (statut " + response.status + ")");
+    }
+
+    return await response.json();
+}

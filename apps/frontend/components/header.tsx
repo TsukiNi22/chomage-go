@@ -121,12 +121,15 @@ export default function Header() {
 
     return (
         <>
-            <header className="flex items-center justify-between gap-4 border-b-2 border-primary bg-background px-4 py-4 sm:px-6 lg:gap-6 lg:px-8">
+            <header className="grid grid-cols-[auto_1fr_auto] items-center gap-4 border-b-2 border-primary bg-background px-4 py-4 sm:px-6 lg:gap-6 lg:px-8">
                 <Link href="/" aria-label="Retour à l'accueil">
                     <Wordmark />
                 </Link>
 
-                <nav aria-label="Navigation principale" className="hidden lg:block">
+                <nav
+                    aria-label="Navigation principale"
+                    className="hidden justify-self-center lg:block"
+                >
                     <ul className="flex items-center gap-8">
                         {links.map(function (link) {
                             return (
@@ -165,7 +168,7 @@ export default function Header() {
                     </ul>
                 </nav>
 
-                <div className="hidden items-center gap-3 lg:flex">
+                <div className="hidden items-center justify-self-end gap-3 lg:flex">
                     {accountArea}
                     {applicationsButton}
                     {publishButton}
@@ -177,7 +180,7 @@ export default function Header() {
                             variant="ghost"
                             size="icon"
                             aria-label="Ouvrir le menu de navigation"
-                            className="lg:hidden"
+                            className="justify-self-end lg:hidden"
                         >
                             <Menu className="size-5" />
                         </Button>
