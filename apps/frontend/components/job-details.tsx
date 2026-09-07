@@ -62,9 +62,9 @@ export default function JobDetails(props: Props) {
         }
     }
 
-    function handleApply() {
+    async function handleApply() {
         if (job !== null) {
-            addApplication(job);
+            await addApplication(job);
         }
         setApplied(true);
     }

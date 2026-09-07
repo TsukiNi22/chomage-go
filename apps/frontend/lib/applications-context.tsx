@@ -1,7 +1,22 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useState,
+    type ReactNode,
+} from "react";
 import type { Job } from "@/lib/jobs";
+import { authClient } from "@/lib/auth-client";
+import {
+    fetchApplications,
+    postApplication,
+    type ApiApplication,
+} from "@/lib/api";
+
+const CONTRACTS = ["CDI", "CDD", "Alternance", "Stage", "Freelance"];
 
 export type JobApplication = {
     id: number;
@@ -10,12 +25,13 @@ export type JobApplication = {
     company: string;
     city: string;
     contractType: string;
-    appliedAt: string; // ISO date
+    appliedAt: string;
 };
 
 type ApplicationsContextValue = {
     applications: JobApplication[];
-    addApplication: (job: Job) => void;
+    loading: boolean;
+    addApplication: (job: Job) => Promise<void>;
     hasApplied: (jobId: number) => boolean;
 };
 
@@ -23,8 +39,63 @@ const ApplicationsContext = createContext<ApplicationsContextValue | undefined>(
     undefined,
 );
 
+function toApplication(row: ApiApplication): JobApplication {
+    const job = row.job;
+
+    let title = "Offre retirée";
+    let company = "";
+    let city = "";
+    let contractType = "";
+
+    if (job !== null) {
+        title = job.title;
+        contractType = CONTRACTS[job.type] || "";
+        if (job.company !== null) {
+            company = job.company.name;
+        }
+        if (job.address !== null && job.address.city !== null) {
+            city = job.address.city;
+        }
+    }
+
+    let appliedAt = "";
+    if (row.createdAt !== null) {
+        appliedAt = row.createdAt;
+    }
+
+    return {
+        id: row.id,
+        jobId: row.jobId,
+        title: title,
+        company: company,
+        city: city,
+        contractType: contractType,
+        appliedAt: appliedAt,
+    };
+}
+
 export function ApplicationsProvider(props: { children: ReactNode }) {
+    const { data: session } = authClient.useSession();
     const [applications, setApplications] = useState<JobApplication[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const reload = useCallback(async function () {
+        const rows = await fetchApplications();
+        setApplications(rows.map(toApplication));
+        setLoading(false);
+    }, []);
+
+    useEffect(
+        function () {
+            if (!session) {
+                setApplications([]);
+                setLoading(false);
+                return;
+            }
+            reload();
+        },
+        [session, reload],
+    );
 
     function hasApplied(jobId: number) {
         return applications.some(function (application) {
@@ -32,29 +103,20 @@ export function ApplicationsProvider(props: { children: ReactNode }) {
         });
     }
 
-    function addApplication(job: Job) {
+    async function addApplication(job: Job) {
         if (hasApplied(job.id)) {
             return;
         }
 
-        const newApplication: JobApplication = {
-            id: Date.now(),
-            jobId: job.id,
-            title: job.title,
-            company: job.company,
-            city: job.city,
-            contractType: job.contract,
-            appliedAt: new Date().toISOString(),
-        };
-
-        setApplications(function (previous) {
-            return [...previous, newApplication];
-        });
+        const ok = await postApplication(job.id);
+        if (ok) {
+            await reload();
+        }
     }
 
     return (
         <ApplicationsContext.Provider
-            value={{ applications, addApplication, hasApplied }}
+            value={{ applications, loading, addApplication, hasApplied }}
         >
             {props.children}
         </ApplicationsContext.Provider>

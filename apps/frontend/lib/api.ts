@@ -124,6 +124,69 @@ export type UserProfile = {
     localisation?: boolean;
 };
 
+export type ApiApplication = {
+    id: number;
+    jobId: number;
+    createdAt: string | null;
+    job: {
+        title: string;
+        type: number;
+        company: { name: string } | null;
+        address: { city: string | null } | null;
+    } | null;
+};
+
+export async function fetchApplications(): Promise<ApiApplication[]> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/applications", {
+            credentials: "include",
+        });
+    } catch {
+        return [];
+    }
+
+    if (!response.ok) {
+        return [];
+    }
+
+    return await response.json();
+}
+
+export async function postApplication(jobId: number): Promise<boolean> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/applications", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ job_id: jobId }),
+        });
+    } catch {
+        return false;
+    }
+
+    if (response.status === 409) {
+        return true;
+    }
+
+    return response.ok;
+}
+
+export async function deleteApplication(id: number): Promise<boolean> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/applications/" + id, {
+            method: "DELETE",
+            credentials: "include",
+        });
+    } catch {
+        return false;
+    }
+
+    return response.ok;
+}
+
 export async function fetchMyProfile(): Promise<UserProfile | null> {
     const response = await fetch(API_URL + "/api/users", {
         credentials: "include",

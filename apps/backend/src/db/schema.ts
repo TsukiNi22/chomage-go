@@ -192,6 +192,7 @@ export const applications = pgTable(
         jobId: integer("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
         userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
         description: text("description"), // lettre de motivation / message du candidat
+        createdAt: timestamp("created_at").defaultNow(),
     },
     (t) => [unique().on(t.jobId, t.userId)]
 );

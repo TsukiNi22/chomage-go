@@ -50,7 +50,12 @@ export async function getApplication(req: Request, res: Response, next: NextFunc
     const list = await db.query.applications.findMany({
         where: eq(applications.userId, user.id),
         with: {
-            job: true,
+            job: {
+                with: {
+                    company: true,
+                    address: true,
+                },
+            },
         },
     });
 

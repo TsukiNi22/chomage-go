@@ -15,6 +15,13 @@
       "when": 1788774460742,
       "tag": "0001_striped_black_bolt",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788775131632,
+      "tag": "0002_broad_iron_man",
+      "breakpoints": true
     }
   ]
 }
