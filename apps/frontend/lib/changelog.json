@@ -1,9 +1,25 @@
 {
-  "generatedAt": "2026-09-07T13:59:04.894Z",
+  "generatedAt": "2026-09-07T14:07:53.872Z",
   "days": [
     {
       "date": "2026-09-07",
       "entries": [
+        {
+          "hash": "b1bfd6e",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Tableaux de bord admin et employeur, moderation, notification de candidature"
+        },
+        {
+          "hash": "dde3e91",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Renommage geoemploi, infos service, changelog et email pro employeur"
+        },
         {
           "hash": "ec03490",
           "date": "2026-09-07",
@@ -53,6 +69,14 @@
           "title": "Postuler avec un message et consulter le detail d'une candidature"
         },
         {
+          "hash": "12d80d6",
+          "date": "2026-09-07",
+          "author": "thomas2_0",
+          "type": "Divers",
+          "scope": null,
+          "title": "Fix : the botton only work if we are connected and we accept the geolocalisation"
+        },
+        {
           "hash": "18bb8c1",
           "date": "2026-09-07",
           "author": "Mateo Ciavaldini",
@@ -77,6 +101,14 @@
           "title": "Branche le front sur l'API jobs et seed les offres en base"
         },
         {
+          "hash": "43767fc",
+          "date": "2026-09-07",
+          "author": "thomas2_0",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Button fore recenter or decenter"
+        },
+        {
           "hash": "f96b7d5",
           "date": "2026-09-07",
           "author": "Mateo Ciavaldini",
@@ -99,6 +131,14 @@
           "type": "Nouveauté",
           "scope": null,
           "title": "Mention demonstrateur technique sur toutes les pages publiques et d'erreur"
+        },
+        {
+          "hash": "e595c61",
+          "date": "2026-09-07",
+          "author": "thomas2_0",
+          "type": "Divers",
+          "scope": null,
+          "title": "Fix : resize location"
         },
         {
           "hash": "d44cf3e",

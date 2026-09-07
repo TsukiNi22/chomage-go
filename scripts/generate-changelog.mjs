@@ -1,8 +1,10 @@
 import { execSync } from "child_process";
 import { writeFileSync, mkdirSync } from "fs";
-import { dirname } from "path";
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
 
-const OUT = "apps/frontend/lib/changelog.json";
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const OUT = resolve(ROOT, "apps/frontend/lib/changelog.json");
 
 const TYPES = {
     feat: "Nouveauté",
@@ -21,7 +23,7 @@ function readLog() {
     try {
         return execSync(
             'git log --pretty=format:%h%x1f%ad%x1f%an%x1f%s --date=short --no-merges -200',
-            { encoding: "utf8" },
+            { encoding: "utf8", cwd: ROOT },
         );
     } catch {
         return "";
