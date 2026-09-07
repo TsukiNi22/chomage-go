@@ -1,9 +1,134 @@
 import {auth} from "../lib/auth.ts";
 import {db, client} from "./index.ts";
-import {users, companies, addresses} from "./schema.ts";
+import {users, companies, addresses, jobs} from "./schema.ts";
 import {eq} from "drizzle-orm";
+import jobsData from "./jobs.seed.json" with {type: "json"};
 
 const DEMO_PASSWORD = "demo1234";
+
+const CONTRACT_TYPES: Record<string, number> = {
+    "CDI": 0,
+    "CDD": 1,
+    "Alternance": 2,
+    "Stage": 3,
+    "Freelance": 4,
+};
+
+const REMOTE_LEVELS: Record<string, number> = {
+    "Aucun": 0,
+    "Partiel": 1,
+    "Total": 2,
+};
+
+type SeedJob = {
+    title: string;
+    company: string;
+    sector: string;
+    contract: string;
+    city: string;
+    postalCode: string;
+    address: string;
+    lat: number;
+    lon: number;
+    lambertX: number | null;
+    lambertY: number | null;
+    geocodingSource: string | null;
+    geocodingScore: number | null;
+    geocodedAt: string | null;
+    needsLocationCheck: boolean;
+    salaryMin: number;
+    salaryMax: number | null;
+    remote: string;
+    publishedAt: string;
+    description: string;
+};
+
+function fakeSiret(name: string): string
+{
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = (hash * 31 + name.charCodeAt(i)) % 100000000000000;
+    }
+    return String(hash).padStart(14, "0");
+}
+
+async function seedJobs(posterId: number)
+{
+    const existing = await db.query.jobs.findFirst();
+    if (existing) {
+        console.log("[seed] jobs already present, skipping");
+        return;
+    }
+
+    const list = jobsData as SeedJob[];
+    const companyIds = new Map<string, number>();
+    let created = 0;
+
+    for (const item of list) {
+        let companyId = companyIds.get(item.company);
+
+        if (companyId === undefined) {
+            const siret = fakeSiret(item.company);
+            const found = await db.query.companies.findFirst({
+                where: eq(companies.siret, siret),
+            });
+
+            if (found) {
+                companyId = found.id;
+            } else {
+                const [row] = await db.insert(companies).values({
+                    name: item.company,
+                    siret: siret,
+                    employeeRange: 1,
+                }).returning();
+                companyId = row.id;
+            }
+
+            companyIds.set(item.company, companyId);
+        }
+
+        let geocodedAt = null;
+        if (item.geocodedAt !== null) {
+            geocodedAt = new Date(item.geocodedAt);
+        }
+
+        const [address] = await db.insert(addresses).values({
+            label: item.address + ", " + item.postalCode + " " + item.city,
+            street: item.address,
+            postalCode: item.postalCode,
+            city: item.city,
+            latitude: item.lat,
+            longitude: item.lon,
+            lambertX: item.lambertX,
+            lambertY: item.lambertY,
+            geocodingSource: item.geocodingSource,
+            geocodingScore: item.geocodingScore,
+            geocodedAt: geocodedAt,
+            needsLocationCheck: item.needsLocationCheck,
+        }).returning();
+
+        try {
+            await db.insert(jobs).values({
+                companiesId: companyId,
+                userId: posterId,
+                addressId: address.id,
+                title: item.title,
+                description: item.description,
+                type: CONTRACT_TYPES[item.contract] ?? 0,
+                sector: item.sector,
+                remote: REMOTE_LEVELS[item.remote] ?? 0,
+                salaryMin: item.salaryMin,
+                salaryMax: item.salaryMax,
+                createdAt: new Date(item.publishedAt),
+            });
+            created++;
+        } catch {
+            await db.delete(addresses).where(eq(addresses.id, address.id));
+        }
+    }
+
+    console.log(`[seed] created ${created} jobs across ${companyIds.size} companies`);
+}
 
 async function ensureUser(
     email: string, name: string, firstname: string, lastname: string,
@@ -57,6 +182,13 @@ async function main()
     await ensureUser("admin@demo.local", "Admin Demo", "Admin", "Demo", 0);
     await ensureUser("employer@demo.local", "Employeur Demo", "Employeur", "Demo", 1, companyId);
     await ensureUser("candidate@demo.local", "Candidat Demo", "Candidat", "Demo", 2);
+
+    const poster = await db.query.users.findFirst({
+        where: eq(users.email, "employer@demo.local"),
+    });
+    if (poster) {
+        await seedJobs(poster.id);
+    }
 
     console.log("[seed] done");
     await client.end();

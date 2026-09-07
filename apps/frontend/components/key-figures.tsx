@@ -1,6 +1,11 @@
-import { jobs } from "@/lib/jobs";
+import type { Job } from "@/lib/jobs";
 
-export default function KeyFigures() {
+type Props = {
+    jobs: Job[];
+};
+
+export default function KeyFigures(props: Props) {
+    const jobs = props.jobs;
     const cities: string[] = [];
     const sectors: string[] = [];
 

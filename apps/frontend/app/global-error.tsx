@@ -7,9 +7,6 @@ type Props = {
     retry: () => void;
 };
 
-// global-error remplace le layout racine : il ne reçoit ni globals.css ni les
-// polices, d'où les styles inlinés. C'est aussi pour ça que la mention doit
-// être répétée ici et pas seulement dans le pied de page.
 export default function GlobalError(props: Props) {
     let digestLine = null;
     if (props.error.digest !== undefined) {

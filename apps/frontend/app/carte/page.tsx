@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import MapExplorer from "@/components/map-explorer";
+import { fetchJobs } from "@/lib/api";
 
 export const metadata: Metadata = {
     title: "Carte des offres",
@@ -7,6 +8,8 @@ export const metadata: Metadata = {
         "Explorez les offres d'emploi sur la carte, filtrez par contrat et trouvez celles autour de vous.",
 };
 
-export default function CartePage() {
-    return <MapExplorer />;
+export default async function CartePage() {
+    const jobs = await fetchJobs();
+
+    return <MapExplorer jobs={jobs} />;
 }

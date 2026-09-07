@@ -1,10 +1,26 @@
 "use client";
 
+import { useState } from "react";
 import ApplicationsTable from "@/components/applications-table";
-import { useApplications } from "@/lib/applications-context";
+import ApplicationDetails from "@/components/application-details";
+import {
+    useApplications,
+    type JobApplication,
+} from "@/lib/applications-context";
 
 export default function MyApplicationsPage() {
     const { applications } = useApplications();
+    const [selected, setSelected] = useState<JobApplication | null>(null);
+    const [detailsOpen, setDetailsOpen] = useState(false);
+
+    function openDetails(application: JobApplication) {
+        setSelected(application);
+        setDetailsOpen(true);
+    }
+
+    function closeDetails() {
+        setDetailsOpen(false);
+    }
 
     return (
         <div className="mx-auto max-w-6xl px-6 py-10">
@@ -17,7 +33,16 @@ export default function MyApplicationsPage() {
                 </p>
             </div>
 
-            <ApplicationsTable applications={applications} />
+            <ApplicationsTable
+                applications={applications}
+                onSelect={openDetails}
+            />
+
+            <ApplicationDetails
+                application={selected}
+                open={detailsOpen}
+                onClose={closeDetails}
+            />
         </div>
     );
 }

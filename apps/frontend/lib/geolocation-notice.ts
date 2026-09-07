@@ -1,11 +1,3 @@
-// Source unique de la mention d'information relative à la géolocalisation.
-//
-// Le contenu ci-dessous DOIT rester identique à la fiche de registre des
-// activités de traitement : docs/pontaillac/fiche-de-traitement.md
-// (mêmes données collectées, même maille, même durée de conservation).
-// Toute modification ici doit être répercutée dans la fiche, et inversement :
-// c'est la divergence entre les deux qui est opposable, pas l'omission.
-
 export const GEO_NOTICE_VERSION = "1.0";
 export const GEO_NOTICE_DATE = "07/09/2026";
 export const GEO_NOTICE_REGISTER = "docs/pontaillac/fiche-de-traitement.md";

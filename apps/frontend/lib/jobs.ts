@@ -1,5 +1,3 @@
-import data from "./jobs.json";
-
 export type Job = {
     id: number;
     title: string;
@@ -23,8 +21,6 @@ export type Job = {
     publishedAt: string;
     description: string;
 };
-
-export const jobs = data as Job[];
 
 export function locatedJobs(list: Job[]): Job[] {
     return list.filter(function (job) {

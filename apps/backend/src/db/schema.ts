@@ -166,6 +166,8 @@ export const jobs = pgTable(
         title: varchar("title", { length: 255 }).notNull(),
         description: text("description"),
         type: integer("type").notNull(),
+        sector: varchar("sector", { length: 100 }),
+        remote: integer("remote").notNull().default(0),
         salaryMin: integer("salary_min"),
         salaryMax: integer("salary_max"),
         createdAt: timestamp("created_at").defaultNow(),
@@ -190,6 +192,7 @@ export const applications = pgTable(
         jobId: integer("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
         userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
         description: text("description"), // lettre de motivation / message du candidat
+        createdAt: timestamp("created_at").defaultNow(),
     },
     (t) => [unique().on(t.jobId, t.userId)]
 );

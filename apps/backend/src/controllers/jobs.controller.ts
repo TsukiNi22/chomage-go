@@ -12,6 +12,9 @@ type JobValues = {
     title?: string;
     description?: string;
     type?: number;
+    sector?: string;
+    remote?: number;
+    addressId?: number;
     salaryMin?: number;
     salaryMax?: number;
 };
@@ -37,6 +40,7 @@ export async function getJobs(req: Request, res: Response, next: NextFunction)
     const list = await db.query.jobs.findMany({
         with: {
             company: true,
+            address: true,
         },
     });
 
@@ -56,6 +60,7 @@ export async function getJob(req: Request, res: Response, next: NextFunction)
         where: eq(jobs.id, id),
         with: {
             company: true,
+            address: true,
             skills: true,
         },
     });
@@ -93,6 +98,9 @@ export async function postJob(req: Request, res: Response, next: NextFunction)
             title: req.body.title,
             description: req.body.description,
             type: req.body.type,
+            sector: req.body.sector,
+            remote: req.body.remote,
+            addressId: req.body.address_id,
             salaryMin: req.body.salary_min,
             salaryMax: req.body.salary_max,
         }).returning();
@@ -138,6 +146,12 @@ export async function patchJob(req: Request, res: Response, next: NextFunction)
         values.description = req.body.description;
     if (req.body.type !== undefined)
         values.type = req.body.type;
+    if (req.body.sector !== undefined)
+        values.sector = req.body.sector;
+    if (req.body.remote !== undefined)
+        values.remote = req.body.remote;
+    if (req.body.address_id !== undefined)
+        values.addressId = req.body.address_id;
     if (req.body.salary_min !== undefined)
         values.salaryMin = req.body.salary_min;
     if (req.body.salary_max !== undefined)
