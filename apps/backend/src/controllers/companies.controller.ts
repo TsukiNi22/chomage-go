@@ -1,11 +1,11 @@
 import {Request, Response, NextFunction} from "express";
-import {validateJson} from "../utils/validateJson.utils";
-import {HttpError} from "../types/httpError";
-import * as schemas from "../schemas/companies.schema";
-import {getCurrentUser} from "../utils/currentUser.utils";
-import {isUniqueViolation} from "../utils/dbError.utils";
-import {db} from "../db";
-import {companies, users} from "../db/schema";
+import {validateJson} from "../utils/validateJson.utils.ts";
+import {HttpError} from "../types/httpError.ts";
+import * as schemas from "../schemas/companies.schema.ts";
+import {getCurrentUser} from "../utils/currentUser.utils.ts";
+import {isUniqueViolation} from "../utils/dbError.utils.ts";
+import {db} from "../db/index.ts";
+import {companies, users} from "../db/schema.ts";
 import {eq} from "drizzle-orm";
 
 type CompanyValues = {

@@ -1,25 +1,21 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { Spectral } from "next/font/google";
+import { Manrope } from "next/font/google";
 import AppFrame from "@/components/app-frame";
 import CguGate from "@/components/cgu-gate";
 import CguProvider from "@/components/cgu-provider";
 import { ApplicationsProvider } from "@/lib/applications-context";
 import "./globals.css";
 
-const heading = localFont({
-    src: [
-        { path: "./fonts/Marianne-Regular.woff2", weight: "400", style: "normal" },
-        { path: "./fonts/Marianne-Medium.woff2", weight: "500", style: "normal" },
-        { path: "./fonts/Marianne-Bold.woff2", weight: "700", style: "normal" },
-    ],
+const heading = Manrope({
+    subsets: ["latin"],
+    weight: ["400", "500", "700", "800"],
     variable: "--heading-font",
     display: "swap",
 });
 
-const body = Spectral({
+const body = Manrope({
     subsets: ["latin"],
-    weight: ["300", "400", "600", "700"],
+    weight: ["400", "500", "700"],
     variable: "--body-font",
     display: "swap",
 });
@@ -30,7 +26,7 @@ export const metadata: Metadata = {
         template: "%s — ChômageGo",
     },
     description:
-        "Trouvez les offres d'emploi autour de vous sur une carte. Ministère du Job et Bonheur.",
+        "Trouvez les offres d'emploi autour de vous sur une carte.",
 };
 
 export default function RootLayout({

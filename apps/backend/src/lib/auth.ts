@@ -52,7 +52,7 @@ export const auth = betterAuth({
                     await db
                         .update(schema.users)
                         .set({ lastLoginAt: new Date() })
-                        .where(eq(schema.users.id, session.userId));
+                        .where(eq(schema.users.id, Number(session.userId)));
                 },
             },
         },

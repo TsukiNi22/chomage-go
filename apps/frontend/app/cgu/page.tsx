@@ -5,7 +5,7 @@ import { CGU_DATE, CGU_VERSION } from "@/lib/cgu";
 export const metadata: Metadata = {
     title: "Conditions générales d'utilisation",
     description:
-        "Conditions générales d'utilisation du service public de l'emploi géolocalisé.",
+        "Conditions générales d'utilisation de ChômageGo, démonstrateur technique de recherche d'emploi géolocalisée.",
 };
 
 const articles = [
@@ -62,13 +62,13 @@ const articles = [
         title: "Article 7. Propriété intellectuelle",
         blocks: [
             "L'Application, son code source, son design, ses marques et ses contenus, hors offres d'emploi, sont la propriété exclusive de l'Équipe de développement jusqu'à la finalisation du contrat.",
-            "À la finalisation du contrat, la propriété intellectuelle de l'Application sera transférée au Ministère du Job et Bonheur. Toute reproduction, modification ou distribution non autorisée est interdite.",
+            "À la finalisation du contrat, la propriété intellectuelle de l'Application sera transférée au client. Toute reproduction, modification ou distribution non autorisée est interdite.",
         ],
     },
     {
         title: "Article 8. Modification des conditions",
         blocks: [
-            "Les présentes conditions sont modifiées et publiées par le Ministère du Job et Bonheur.",
+            "Les présentes conditions sont modifiées et publiées par le client.",
             "Toute nouvelle version devra être présentée et validée par l'utilisateur avant son entrée en vigueur, comme lors de la première utilisation de l'Application. Les utilisateurs sont informés des modifications notables par une notification dans l'Application. L'utilisation de l'Application après validation vaut acceptation des nouvelles conditions.",
         ],
     },
@@ -82,7 +82,7 @@ const articles = [
         title: "Article 10. Contact",
         blocks: [
             "Pour toute question relative aux présentes conditions, à la protection des données ou à l'utilisation de l'Application, vous pouvez contacter l'Équipe de développement à equipedev@chomagego.fr. Ce contact est valable jusqu'à la finalisation du contrat et au transfert de la propriété intellectuelle.",
-            "Après la finalisation du contrat et le transfert de la propriété intellectuelle, le contact est celui du Ministère du Job et Bonheur, à contact@ministere-job-bonheur.fr.",
+            "Après la finalisation du contrat et le transfert de la propriété intellectuelle, le contact est celui du client, à contact@client.fr.",
         ],
     },
 ];
@@ -100,7 +100,7 @@ export default function CguPage() {
                 </h1>
 
                 <p className="mt-3 text-muted-foreground">
-                    Document soumis à la validation du cabinet du Ministre. Éditeur :
+                    Document soumis à la validation du client. Éditeur :
                     Équipe de développement.
                 </p>
 

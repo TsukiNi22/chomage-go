@@ -1,7 +1,7 @@
 import {Request} from "express";
-import {HttpError} from "../types/httpError";
-import {db} from "../db";
-import {users} from "../db/schema";
+import {HttpError} from "../types/httpError.ts";
+import {db} from "../db/index.ts";
+import {users} from "../db/schema.ts";
 import {eq} from "drizzle-orm";
 
 export async function getCurrentUser(req: Request)

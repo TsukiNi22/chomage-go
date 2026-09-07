@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import GeolocationNoticeDialog from "@/components/geolocation-notice-dialog";
+import { hasSeenNotice, saveNoticeSeen } from "@/lib/geolocation-notice";
 
 function Shell(props: { children: React.ReactNode }) {
     return (
@@ -39,6 +41,8 @@ export default function ProfilPage() {
     const [address, setAddress] = useState("");
     const [description, setDescription] = useState("");
     const [localisation, setLocalisation] = useState(false);
+    const [noticeOpen, setNoticeOpen] = useState(false);
+    const [noticeAsksConsent, setNoticeAsksConsent] = useState(false);
 
     const [saving, setSaving] = useState(false);
     const [feedback, setFeedback] = useState<string | null>(null);
@@ -82,6 +86,37 @@ export default function ProfilPage() {
         },
         [session],
     );
+
+    function handleLocalisationChange(checked: boolean) {
+        if (!checked) {
+            setLocalisation(false);
+            return;
+        }
+
+        if (hasSeenNotice()) {
+            setLocalisation(true);
+            return;
+        }
+
+        setNoticeAsksConsent(true);
+        setNoticeOpen(true);
+    }
+
+    function openNoticeForReading() {
+        setNoticeAsksConsent(false);
+        setNoticeOpen(true);
+    }
+
+    function acceptNotice() {
+        saveNoticeSeen();
+        setLocalisation(true);
+        setNoticeOpen(false);
+    }
+
+    let noticeAcceptHandler: (() => void) | undefined = undefined;
+    if (noticeAsksConsent) {
+        noticeAcceptHandler = acceptNotice;
+    }
 
     async function handleSave(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -327,7 +362,7 @@ export default function ProfilPage() {
                         <Switch
                             id="profil-localisation"
                             checked={localisation}
-                            onCheckedChange={setLocalisation}
+                            onCheckedChange={handleLocalisationChange}
                         />
                         <Label
                             htmlFor="profil-localisation"
@@ -342,6 +377,13 @@ export default function ProfilPage() {
                         sur nos serveurs. ChômageGo reste pleinement utilisable sans
                         cette option.
                     </p>
+                    <button
+                        type="button"
+                        onClick={openNoticeForReading}
+                        className="self-start font-heading text-xs font-medium text-primary underline underline-offset-4 hover:no-underline"
+                    >
+                        Consulter la mention d&apos;information sur la géolocalisation
+                    </button>
                 </div>
 
                 {feedbackBlock}
@@ -460,6 +502,12 @@ export default function ProfilPage() {
                     </DialogContent>
                 </Dialog>
             </div>
+
+            <GeolocationNoticeDialog
+                open={noticeOpen}
+                onOpenChange={setNoticeOpen}
+                onAccept={noticeAcceptHandler}
+            />
         </Shell>
     );
 }
