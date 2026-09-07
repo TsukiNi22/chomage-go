@@ -5,7 +5,7 @@ import { CGU_DATE, CGU_VERSION } from "@/lib/cgu";
 export const metadata: Metadata = {
     title: "Conditions générales d'utilisation",
     description:
-        "Conditions générales d'utilisation de ChômageGo, démonstrateur technique de recherche d'emploi géolocalisée.",
+        "Conditions générales d'utilisation de GéoEmploi, démonstrateur technique de recherche d'emploi géolocalisée.",
 };
 
 const articles = [

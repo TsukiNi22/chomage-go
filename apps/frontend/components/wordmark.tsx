@@ -14,8 +14,8 @@ export default function Wordmark(props: Props) {
                 "font-heading font-extrabold tracking-tight text-primary " + sizeClass
             }
         >
-            Chômage
-            <span className="text-action-text">Go</span>
+            Géo
+            <span className="text-action-text">Emploi</span>
         </span>
     );
 }

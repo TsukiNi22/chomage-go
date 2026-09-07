@@ -22,8 +22,8 @@ const body = Manrope({
 
 export const metadata: Metadata = {
     title: {
-        default: "ChômageGo",
-        template: "%s — ChômageGo",
+        default: "GéoEmploi",
+        template: "%s — GéoEmploi",
     },
     description:
         "Trouvez les offres d'emploi autour de vous sur une carte.",

@@ -34,7 +34,7 @@ export default function CguGate() {
 
     let title = "Conditions générales d'utilisation";
     let intro =
-        "Avant d'utiliser ChômageGo, vous devez prendre connaissance des conditions générales d'utilisation et les accepter.";
+        "Avant d'utiliser GéoEmploi, vous devez prendre connaissance des conditions générales d'utilisation et les accepter.";
 
     if (cgu.previousVersion !== null) {
         title = "Les conditions générales ont changé";

@@ -1,0 +1,968 @@
+{
+  "generatedAt": "2026-09-07T14:00:00.972Z",
+  "days": [
+    {
+      "date": "2026-09-07",
+      "entries": [
+        {
+          "hash": "ec03490",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Plafond de candidatures, edition des competences, validation du cv"
+        },
+        {
+          "hash": "30ac878",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Espace employeur branche sur l'api, candidats et statuts"
+        },
+        {
+          "hash": "696303d",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Profil complet avec cv, email de contact, mot de passe et autosuggestion d'adresse"
+        },
+        {
+          "hash": "2936cdb",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Inscription employeur avec controle du siret, affichage en lecture seule"
+        },
+        {
+          "hash": "47c8a40",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Pages registre et risques, cases de consentement, en-tete et pied de page"
+        },
+        {
+          "hash": "eb9faeb",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Postuler avec un message et consulter le detail d'une candidature"
+        },
+        {
+          "hash": "18bb8c1",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Correction",
+          "scope": null,
+          "title": "Les candidatures sont enregistrees en base au lieu de l'etat React"
+        },
+        {
+          "hash": "6ca2b80",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Correction",
+          "scope": null,
+          "title": "Le frontend conteneurise doit joindre le backend par son nom de service"
+        },
+        {
+          "hash": "3466256",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Branche le front sur l'API jobs et seed les offres en base"
+        },
+        {
+          "hash": "f96b7d5",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Correction",
+          "scope": null,
+          "title": "Retire la revendication de service public de l'accueil et des CGU"
+        },
+        {
+          "hash": "d84628d",
+          "date": "2026-09-07",
+          "author": "Tsukini",
+          "type": "Documentation",
+          "scope": "AIPD",
+          "title": "Add ~AIPD version"
+        },
+        {
+          "hash": "86b5810",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Mention demonstrateur technique sur toutes les pages publiques et d'erreur"
+        },
+        {
+          "hash": "d44cf3e",
+          "date": "2026-09-07",
+          "author": "thomas2_0",
+          "type": "Divers",
+          "scope": null,
+          "title": "Fix : this is not the ministere"
+        },
+        {
+          "hash": "e0369cf",
+          "date": "2026-09-07",
+          "author": "Salah-Eddine Ghellab",
+          "type": "Nouveauté",
+          "scope": "user",
+          "title": "Extracting the user data in the profile section"
+        },
+        {
+          "hash": "a579416",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Identite neutre, mot-symbole typographique et palette hors charte Etat"
+        },
+        {
+          "hash": "ae42cb9",
+          "date": "2026-09-07",
+          "author": "Salah-Eddine Ghellab",
+          "type": "Nouveauté",
+          "scope": "delete button",
+          "title": "Delete button added"
+        },
+        {
+          "hash": "cca1d9e",
+          "date": "2026-09-07",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Add the android apk sync in gitignore"
+        },
+        {
+          "hash": "0bd670c",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Mention d'information geolocalisation avant activation et consultable dans le profil"
+        },
+        {
+          "hash": "c688ada",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Endpoints users, skills, experience, availability + corrections backend"
+        },
+        {
+          "hash": "8d0c21f",
+          "date": "2026-09-07",
+          "author": "Tsukini",
+          "type": "Correction",
+          "scope": null,
+          "title": "Invalid vraiblke name"
+        },
+        {
+          "hash": "d0f5d5e",
+          "date": "2026-09-07",
+          "author": "thomas2_0",
+          "type": "Divers",
+          "scope": null,
+          "title": "Feat : suggestion for the city filter"
+        },
+        {
+          "hash": "faf6e61",
+          "date": "2026-09-07",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Endpoints companies, jobs et applications"
+        },
+        {
+          "hash": "fb14736",
+          "date": "2026-09-07",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Add the android apk sync in gitignore"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-06",
+      "entries": [
+        {
+          "hash": "a139518",
+          "date": "2026-09-06",
+          "author": "thomas2_0",
+          "type": "Divers",
+          "scope": null,
+          "title": "Feat : add a button for recenter to the user or the france"
+        },
+        {
+          "hash": "96f45d9",
+          "date": "2026-09-06",
+          "author": "thomas2_0",
+          "type": "Correction",
+          "scope": null,
+          "title": "Inverse the map with the explain"
+        },
+        {
+          "hash": "bc645d8",
+          "date": "2026-09-06",
+          "author": "thomas2_0",
+          "type": "Divers",
+          "scope": null,
+          "title": "Feat : add a button for recenter to the user or the france"
+        },
+        {
+          "hash": "26ed178",
+          "date": "2026-09-06",
+          "author": "thomas2_0",
+          "type": "Correction",
+          "scope": null,
+          "title": "Inverse the map with the explain"
+        },
+        {
+          "hash": "671baf5",
+          "date": "2026-09-06",
+          "author": "Salah-Eddine",
+          "type": "Correction",
+          "scope": "header",
+          "title": "Text put in the center"
+        },
+        {
+          "hash": "ae12b20",
+          "date": "2026-09-06",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "extract",
+          "title": "Add extract endpoint for user"
+        },
+        {
+          "hash": "afb6bd9",
+          "date": "2026-09-06",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "cron",
+          "title": "Add auto cron action for users data deletion and offers archive"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-04",
+      "entries": [
+        {
+          "hash": "573f0cf",
+          "date": "2026-09-04",
+          "author": "thomas2_0",
+          "type": "Correction",
+          "scope": null,
+          "title": "Only the candidat can postule to a post"
+        },
+        {
+          "hash": "6883e4f",
+          "date": "2026-09-04",
+          "author": "Tsukini",
+          "type": "Documentation",
+          "scope": null,
+          "title": "Add files for friday 12h&17h"
+        },
+        {
+          "hash": "547db0d",
+          "date": "2026-09-04",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Rgaa conforme"
+        },
+        {
+          "hash": "24f7772",
+          "date": "2026-09-04",
+          "author": "thomas2_0",
+          "type": "Divers",
+          "scope": null,
+          "title": "Feat/ add a table for the postulation"
+        },
+        {
+          "hash": "f21a70a",
+          "date": "2026-09-04",
+          "author": "Mateo Ciavaldini",
+          "type": "Correction",
+          "scope": "db",
+          "title": "Regenerate drizzle metadata/schema"
+        },
+        {
+          "hash": "c83f515",
+          "date": "2026-09-04",
+          "author": "Salah-Eddine",
+          "type": "Correction",
+          "scope": null,
+          "title": "Duplicate text removed in the add a job offer"
+        },
+        {
+          "hash": "7e8adb9",
+          "date": "2026-09-04",
+          "author": "thomas2_0",
+          "type": "Correction",
+          "scope": null,
+          "title": "Only the employer avec the bouton for add a publication"
+        },
+        {
+          "hash": "c99c903",
+          "date": "2026-09-04",
+          "author": "Tsukini",
+          "type": "Correction",
+          "scope": "db",
+          "title": "Regenerate db from new schema"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-03",
+      "entries": [
+        {
+          "hash": "c37d7f9",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Documentation",
+          "scope": "api",
+          "title": "Fix documentation, missing endpoint doc and some invalid due to other changement"
+        },
+        {
+          "hash": "9aef482",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "env",
+          "title": "Remove env.d"
+        },
+        {
+          "hash": "855ad44",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "env",
+          "title": "Remove env.d"
+        },
+        {
+          "hash": "d9d1c82",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "rgpd",
+          "title": "Ad pdf/md for the rgpd article 30"
+        },
+        {
+          "hash": "b37c7f9",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Documentation",
+          "scope": null,
+          "title": "Update db diagrame"
+        },
+        {
+          "hash": "8e9a612",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "schema-db",
+          "title": "Regenerate the schema for the db after adding missing column"
+        },
+        {
+          "hash": "1bdbed3",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Correction",
+          "scope": null,
+          "title": "Env example"
+        },
+        {
+          "hash": "ce30dd4",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Correction",
+          "scope": "db",
+          "title": "Regenerate db due to miss error interpretation"
+        },
+        {
+          "hash": "e29fcef",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "workflow",
+          "title": "Copy env example and not rewrite them from nothing"
+        },
+        {
+          "hash": "07d7b74",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Correction",
+          "scope": null,
+          "title": "Fix different url from internal to localhost (need to change this at deployment)"
+        },
+        {
+          "hash": "5581728",
+          "date": "2026-09-03",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Added error if missing env"
+        },
+        {
+          "hash": "a5948f1",
+          "date": "2026-09-03",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": "db",
+          "title": "Table addresses partagee par users, companies et jobs"
+        },
+        {
+          "hash": "294cdd5",
+          "date": "2026-09-03",
+          "author": "Mateo Ciavaldini",
+          "type": "Correction",
+          "scope": "offres",
+          "title": "Cellule manquante dans le tableau des offres employeur"
+        },
+        {
+          "hash": "ae87ac7",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "workflow",
+          "title": "Add auto inclusion of .env docker file  (try: 8)"
+        },
+        {
+          "hash": "df475b2",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Correction",
+          "scope": "workflow",
+          "title": "Fix url setup (try: 5)"
+        },
+        {
+          "hash": "a78a2fb",
+          "date": "2026-09-03",
+          "author": "Mateo Ciavaldini",
+          "type": "Correction",
+          "scope": "dist",
+          "title": "Rendre le backend joignable par le navigateur dans le bundle"
+        },
+        {
+          "hash": "248d2dc",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Correction",
+          "scope": "workflow",
+          "title": "Fix missing env files and invalid docker-compse pasted (try: 4)"
+        },
+        {
+          "hash": "e4a3415",
+          "date": "2026-09-03",
+          "author": "Mateo Ciavaldini",
+          "type": "Correction",
+          "scope": "ci",
+          "title": "Reparer la chaine migrate/seed et le nommage des images"
+        },
+        {
+          "hash": "aec3d8d",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Correction",
+          "scope": "workflow",
+          "title": "Fix env files setup (try: 3)"
+        },
+        {
+          "hash": "ffa3dc7",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Correction",
+          "scope": "workflow",
+          "title": "Fix env files setup (try: 2)"
+        },
+        {
+          "hash": "9f267e9",
+          "date": "2026-09-03",
+          "author": "thomas2_0",
+          "type": "Correction",
+          "scope": null,
+          "title": "Del the second impôrt link"
+        },
+        {
+          "hash": "62e4822",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "workflow",
+          "title": "Add building worklofw (try: 1)"
+        },
+        {
+          "hash": "959ee1a",
+          "date": "2026-09-03",
+          "author": "thomas2_0",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "RGAA doc"
+        },
+        {
+          "hash": "bedfa1f",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "db",
+          "title": "Auto setup of demo account and entrepise in the db"
+        },
+        {
+          "hash": "cf3ae97",
+          "date": "2026-09-03",
+          "author": "thomas2_0",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "RGAA required *"
+        },
+        {
+          "hash": "319c73f",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "db",
+          "title": "Add test data"
+        },
+        {
+          "hash": "a59022c",
+          "date": "2026-09-03",
+          "author": "Mateo Ciavaldini",
+          "type": "Correction",
+          "scope": "header",
+          "title": "Import Link manquant et blocage des actions tant que les CGU ne sont pas acceptees"
+        },
+        {
+          "hash": "bbdcaeb",
+          "date": "2026-09-03",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Added logo"
+        },
+        {
+          "hash": "839cbae",
+          "date": "2026-09-03",
+          "author": "Tsukini",
+          "type": "Maintenance",
+          "scope": null,
+          "title": "Db schema diagram and env.example"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-02",
+      "entries": [
+        {
+          "hash": "6fc5ac6",
+          "date": "2026-09-02",
+          "author": "thomas2_0",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "We can delete publication and the second bouton publication is deleted"
+        },
+        {
+          "hash": "82c4a2a",
+          "date": "2026-09-02",
+          "author": "Mateo Ciavaldini",
+          "type": "Divers",
+          "scope": null,
+          "title": "Issue with offers"
+        },
+        {
+          "hash": "7babfa9",
+          "date": "2026-09-02",
+          "author": "Mateo Ciavaldini",
+          "type": "Divers",
+          "scope": null,
+          "title": "Issue with the map not being whole screen"
+        },
+        {
+          "hash": "d87f974",
+          "date": "2026-09-02",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": "front",
+          "title": "Added the carte page and geolocalisation aswell as cgu"
+        },
+        {
+          "hash": "08ca54d",
+          "date": "2026-09-02",
+          "author": "thomas2_0",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "A tabel for the job offer and a bouton to add offer"
+        },
+        {
+          "hash": "908bbc0",
+          "date": "2026-09-02",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Added auth"
+        },
+        {
+          "hash": "3f9e30d",
+          "date": "2026-09-02",
+          "author": "Tsukini",
+          "type": "Maintenance",
+          "scope": null,
+          "title": "Workflow + ssh & codeowner setup with main rule"
+        },
+        {
+          "hash": "bd102cc",
+          "date": "2026-09-02",
+          "author": "Mateo Ciavaldini",
+          "type": "Correction",
+          "scope": "auth",
+          "title": "Better-auth operationnel (schema name/account, ids serial, DATABASE_URL, CORS env) + profil front"
+        },
+        {
+          "hash": "ff4b906",
+          "date": "2026-09-02",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "/users/:id?",
+          "title": "Add endpoint for user information getting"
+        },
+        {
+          "hash": "d1825ef",
+          "date": "2026-09-02",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Remove usless file"
+        },
+        {
+          "hash": "bcaf334",
+          "date": "2026-09-02",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "better-auth",
+          "title": "Replace api endpoint on auth with better-auth"
+        },
+        {
+          "hash": "15e6798",
+          "date": "2026-09-02",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Reprise du geocodage via API Adresse, tracabilite et etat localisation a verifier"
+        },
+        {
+          "hash": "50cf25e",
+          "date": "2026-09-02",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "workflow",
+          "title": "Setup mirror url"
+        },
+        {
+          "hash": "335f557",
+          "date": "2026-09-02",
+          "author": "Tsukini",
+          "type": "Divers",
+          "scope": null,
+          "title": "Fix/merge: feature/backend-auth -> main"
+        },
+        {
+          "hash": "bbfbadd",
+          "date": "2026-09-02",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Added filtering"
+        },
+        {
+          "hash": "d3eb5c0",
+          "date": "2026-09-02",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "env",
+          "title": "Add env exemple"
+        },
+        {
+          "hash": "780aa40",
+          "date": "2026-09-02",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "db",
+          "title": "Add db table setup using drizzle (public accecible using drizzle port:5432)"
+        },
+        {
+          "hash": "bd8ad71",
+          "date": "2026-09-02",
+          "author": "thomas2_0",
+          "type": "Divers",
+          "scope": null,
+          "title": "Feat/ during the inscription you can now chose to be a employeur or a particulier"
+        },
+        {
+          "hash": "6d1cd54",
+          "date": "2026-09-02",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": "front",
+          "title": "Marqueurs sur la carte, infobulles a la charte, police Marianne et bloc-marque"
+        },
+        {
+          "hash": "f818d1c",
+          "date": "2026-09-02",
+          "author": "thomas2_0",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Change the map to IGN and add a resize button for the map"
+        },
+        {
+          "hash": "f57a89c",
+          "date": "2026-09-02",
+          "author": "Salah-Eddine",
+          "type": "Nouveauté",
+          "scope": "middleware",
+          "title": "Error handling int he middleware with new error messages and cases that throw status"
+        },
+        {
+          "hash": "02fd43c",
+          "date": "2026-09-02",
+          "author": "Salah-Eddine",
+          "type": "Nouveauté",
+          "scope": "controller",
+          "title": "Controller updated in order to throw errors in case. waiting for the database to be done"
+        },
+        {
+          "hash": "f8378f7",
+          "date": "2026-09-02",
+          "author": "Salah-Eddine",
+          "type": "Correction",
+          "scope": "routes",
+          "title": "Modified routes with coherent names"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-01",
+      "entries": [
+        {
+          "hash": "07d7e22",
+          "date": "2026-09-01",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "docker",
+          "title": "Add docker-compose setup (auto build & run)"
+        },
+        {
+          "hash": "1240e5b",
+          "date": "2026-09-01",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Add swagger on the api call (handle doc)"
+        },
+        {
+          "hash": "4f66987",
+          "date": "2026-09-01",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Added a massive base with the main page being almost done"
+        },
+        {
+          "hash": "6dbd47f",
+          "date": "2026-09-01",
+          "author": "Mateo Ciavaldini",
+          "type": "Nouveauté",
+          "scope": "front",
+          "title": "Setup tailwind v4 + shadcn, en-tete a la charte ministerielle"
+        },
+        {
+          "hash": "53e3b61",
+          "date": "2026-09-01",
+          "author": "Salah-Eddine",
+          "type": "Correction",
+          "scope": "rename",
+          "title": "Rename companies routes"
+        },
+        {
+          "hash": "f37f32a",
+          "date": "2026-09-01",
+          "author": "Salah-Eddine",
+          "type": "Nouveauté",
+          "scope": "schemas",
+          "title": "Adding of the schemas"
+        },
+        {
+          "hash": "5ff2ac2",
+          "date": "2026-09-01",
+          "author": "Salah-Eddine",
+          "type": "Nouveauté",
+          "scope": "controllers",
+          "title": "Creation of the new controllers for the api with comments when we will have the db linked"
+        },
+        {
+          "hash": "a3d842b",
+          "date": "2026-09-01",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "endpoint",
+          "title": "Add all endpoint and token check on necessary ones"
+        },
+        {
+          "hash": "065d1df",
+          "date": "2026-09-01",
+          "author": "Salah-Eddine",
+          "type": "Nouveauté",
+          "scope": "schemas",
+          "title": "Creation of the schemas for the api controllers"
+        },
+        {
+          "hash": "0907742",
+          "date": "2026-09-01",
+          "author": "Salah-Eddine",
+          "type": "Nouveauté",
+          "scope": "controllers",
+          "title": "Creation of the new controllers for the api"
+        },
+        {
+          "hash": "c8c0857",
+          "date": "2026-09-01",
+          "author": "Salah-Eddine",
+          "type": "Nouveauté",
+          "scope": "controllers",
+          "title": "Comments in order to continue and know what to do in the future"
+        },
+        {
+          "hash": "25e466e",
+          "date": "2026-09-01",
+          "author": "Salah-Eddine",
+          "type": "Correction",
+          "scope": "schemas",
+          "title": "Remove of the duplicate of LoginSchema"
+        },
+        {
+          "hash": "9c97651",
+          "date": "2026-09-01",
+          "author": "Tsukini",
+          "type": "Maintenance",
+          "scope": null,
+          "title": "Indentation fix (2 -> 4) and move json check has a utils tool"
+        },
+        {
+          "hash": "fe983d8",
+          "date": "2026-09-01",
+          "author": "Salah-Eddine",
+          "type": "Nouveauté",
+          "scope": "schema",
+          "title": "Add of the auth schema variables"
+        },
+        {
+          "hash": "11cf3a5",
+          "date": "2026-09-01",
+          "author": "thomas2_0",
+          "type": "Divers",
+          "scope": null,
+          "title": "First visual front with map, and login popup, and add tailwind"
+        },
+        {
+          "hash": "73c7c80",
+          "date": "2026-09-01",
+          "author": "Salah-Eddine",
+          "type": "Nouveauté",
+          "scope": "controller",
+          "title": "Controller that checks if the validate json works well"
+        },
+        {
+          "hash": "79e6cc9",
+          "date": "2026-09-01",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Setup template for endpoint & basic json schema verif"
+        },
+        {
+          "hash": "998ef4a",
+          "date": "2026-09-01",
+          "author": "Tsukini",
+          "type": "Correction",
+          "scope": null,
+          "title": "Missing balise on testing frontend"
+        },
+        {
+          "hash": "c56cc67",
+          "date": "2026-09-01",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "env",
+          "title": "Setup basic env usage"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-31",
+      "entries": [
+        {
+          "hash": "75308a2",
+          "date": "2026-08-31",
+          "author": "Tsukini",
+          "type": "Correction",
+          "scope": null,
+          "title": "'pnpm dev' is now functioning"
+        },
+        {
+          "hash": "38c3ee6",
+          "date": "2026-08-31",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Setup basic archi for frontend et backend"
+        },
+        {
+          "hash": "c381262",
+          "date": "2026-08-31",
+          "author": "Tsukini",
+          "type": "Documentation",
+          "scope": "info",
+          "title": "Add information for db, tools used and api"
+        },
+        {
+          "hash": "0ead852",
+          "date": "2026-08-31",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": null,
+          "title": "Mvoe app to root"
+        },
+        {
+          "hash": "ad2cd4c",
+          "date": "2026-08-31",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "pnpm",
+          "title": "Setup the project - default setup (Next.js)"
+        },
+        {
+          "hash": "45897a2",
+          "date": "2026-08-31",
+          "author": "Tsukini",
+          "type": "Nouveauté",
+          "scope": "workflow",
+          "title": "Add mirror"
+        },
+        {
+          "hash": "29d4432",
+          "date": "2026-08-31",
+          "author": "Tsukini",
+          "type": "Divers",
+          "scope": null,
+          "title": "Initial commit"
+        }
+      ]
+    }
+  ]
+}

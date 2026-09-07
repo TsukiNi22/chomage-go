@@ -6,7 +6,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prebuild": "node ../../scripts/generate-changelog.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",

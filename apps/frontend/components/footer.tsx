@@ -6,6 +6,7 @@ const legalLinks = [
     { label: "Conditions générales d'utilisation", href: "/cgu" },
     { label: "Fiche de registre", href: "/registre" },
     { label: "Risques", href: "/risques" },
+    { label: "Journal des modifications", href: "/changelog" },
 ];
 
 type Props = {

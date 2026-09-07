@@ -10,6 +10,7 @@ import { Building2, User } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { postCompany } from "@/lib/api";
 import { normalizeSiret, siretError } from "@/lib/siret";
+import { companyEmailError } from "@/lib/company-email";
 
 type Props = {
     open: boolean;
@@ -170,6 +171,12 @@ export default function AuthModal(props: Props) {
     async function handleEmployerSignup(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         setError(null);
+
+        const emailProblem = companyEmailError(employerEmail);
+        if (emailProblem !== null) {
+            setError(emailProblem);
+            return;
+        }
 
         const siretProblem = siretError(employerSiret);
         if (siretProblem !== null) {
@@ -401,9 +408,10 @@ export default function AuthModal(props: Props) {
                                     />
                                     <Field
                                         id="employer-email"
-                                        label="Adresse électronique"
+                                        label="Adresse électronique professionnelle"
                                         type="email"
                                         autoComplete="email"
+                                        placeholder="prenom.nom@votre-entreprise.fr"
                                         value={employerEmail}
                                         onChange={function (event) {
                                             setEmployerEmail(event.target.value);
