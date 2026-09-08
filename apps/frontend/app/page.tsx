@@ -15,10 +15,10 @@ export default async function Home() {
             <div id="how">
                 <HowItWorks />
             </div>
-            <ServiceInfo />
             <div id="jobs" className="border-b border-border bg-wash px-6 py-12">
                 <MapExplorer embedded={true} jobs={jobs} />
             </div>
+            <ServiceInfo />
         </>
     );
 }

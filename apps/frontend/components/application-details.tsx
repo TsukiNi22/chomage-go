@@ -8,13 +8,19 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import type { JobApplication } from "@/lib/applications-context";
+import { Trash2 } from "lucide-react";
+import {
+    applicationStatusLabel,
+    type JobApplication,
+} from "@/lib/applications-context";
 
 type Props = {
     application: JobApplication | null;
     open: boolean;
     onClose: () => void;
+    onDelete?: (application: JobApplication) => void;
 };
 
 function Field(props: { label: string; value: string }) {
@@ -63,6 +69,34 @@ export default function ApplicationDetails(props: Props) {
         );
     }
 
+    let statusClass = "font-heading";
+    if (application.status === 1) {
+        statusClass = "border-success font-heading text-success";
+    }
+    if (application.status === 2) {
+        statusClass = "border-destructive font-heading text-destructive";
+    }
+
+    const current = application;
+    let deleteButton = null;
+    if (props.onDelete) {
+        deleteButton = (
+            <Button
+                type="button"
+                variant="ghost"
+                onClick={function () {
+                    if (props.onDelete) {
+                        props.onDelete(current);
+                    }
+                }}
+                className="self-start font-heading font-semibold text-destructive hover:bg-destructive/10"
+            >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Retirer ma candidature
+            </Button>
+        );
+    }
+
     return (
         <Dialog open={props.open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-lg gap-0 p-0">
@@ -84,6 +118,15 @@ export default function ApplicationDetails(props: Props) {
                     <div className="grid grid-cols-2 gap-5">
                         <Field label="Ville" value={application.city} />
                         <Field label="Envoyée le" value={appliedAt} />
+
+                        <div className="flex flex-col gap-1">
+                            <span className="font-heading text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                                Statut
+                            </span>
+                            <Badge variant="outline" className={"self-start " + statusClass}>
+                                {applicationStatusLabel(application.status)}
+                            </Badge>
+                        </div>
                     </div>
 
                     <Separator />
@@ -94,6 +137,8 @@ export default function ApplicationDetails(props: Props) {
                         </span>
                         {messageBlock}
                     </div>
+
+                    {deleteButton}
                 </div>
             </DialogContent>
         </Dialog>

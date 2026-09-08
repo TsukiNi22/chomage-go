@@ -18,7 +18,7 @@ type ApiAddress = {
     needsLocationCheck: boolean;
 };
 
-type ApiJob = {
+export type ApiJob = {
     id: number;
     title: string;
     description: string | null;
@@ -28,11 +28,12 @@ type ApiJob = {
     salaryMin: number | null;
     salaryMax: number | null;
     createdAt: string | null;
-    company: { name: string } | null;
+    companiesId?: number;
+    company?: { id?: number; name: string } | null;
     address: ApiAddress | null;
 };
 
-function toJob(row: ApiJob): Job {
+export function toJob(row: ApiJob): Job {
     const address = row.address;
 
     let contract = CONTRACTS[row.type];
@@ -46,8 +47,15 @@ function toJob(row: ApiJob): Job {
     }
 
     let company = "Employeur non renseigné";
-    if (row.company !== null) {
+    if (row.company !== null && row.company !== undefined) {
         company = row.company.name;
+    }
+
+    let companyId: number | null = null;
+    if (row.companiesId !== undefined) {
+        companyId = row.companiesId;
+    } else if (row.company !== null && row.company !== undefined && row.company.id !== undefined) {
+        companyId = row.company.id;
     }
 
     let publishedAt = "";
@@ -64,6 +72,7 @@ function toJob(row: ApiJob): Job {
         id: row.id,
         title: row.title,
         company: company,
+        companyId: companyId,
         sector: row.sector || "Non renseigné",
         contract: contract,
         city: address?.city || "",
@@ -83,6 +92,21 @@ function toJob(row: ApiJob): Job {
         publishedAt: publishedAt,
         description: row.description || "",
     };
+}
+
+async function errorMessage(
+    response: Response,
+    fallback: string,
+): Promise<string> {
+    try {
+        const body = await response.json();
+        if (body && typeof body.error === "string") {
+            return body.error;
+        }
+    } catch {
+        return fallback;
+    }
+    return fallback;
 }
 
 function apiBase(): string {
@@ -109,6 +133,15 @@ export async function fetchJobs(): Promise<Job[]> {
     return rows.map(toJob);
 }
 
+export type CompanyAddress = {
+    label: string;
+    street: string | null;
+    postalCode: string | null;
+    city: string | null;
+    latitude: number | null;
+    longitude: number | null;
+};
+
 export type CompanySummary = {
     id: number;
     name: string;
@@ -116,19 +149,144 @@ export type CompanySummary = {
     description: string | null;
     link: string | null;
     employeeRange: number;
+    activity: string | null;
+    legalName: string | null;
+    sireneCheckedAt: string | null;
+    addressId: number | null;
+    address?: CompanyAddress | null;
 };
 
-export async function postCompany(
-    name: string,
-    siret: string,
-): Promise<CompanySummary | null> {
+export type SireneEstablishment = {
+    siret: string;
+    name: string;
+    legalName: string | null;
+    activity: string | null;
+    employeeRange: number;
+    address: CompanyAddress | null;
+};
+
+export type SireneLookup = {
+    ok: boolean;
+    establishment: SireneEstablishment | null;
+    message: string | null;
+};
+
+/** Confronte un SIRET à l'annuaire des entreprises, sans rien enregistrer. */
+export async function lookupSiret(siret: string): Promise<SireneLookup> {
+    let response;
+    try {
+        response = await fetch(
+            API_URL + "/api/companies/siret/" + encodeURIComponent(siret),
+        );
+    } catch {
+        return {
+            ok: false,
+            establishment: null,
+            message: "L'annuaire des entreprises ne répond pas. Réessayez.",
+        };
+    }
+
+    if (response.ok) {
+        return { ok: true, establishment: await response.json(), message: null };
+    }
+
+    return {
+        ok: false,
+        establishment: null,
+        message: await errorMessage(
+            response,
+            "Ce numéro de SIRET n'a pas pu être vérifié.",
+        ),
+    };
+}
+
+export type CompanyResult = {
+    company: CompanySummary | null;
+    message: string | null;
+};
+
+/**
+ * Rattache le compte courant à un établissement.
+ * Le nom, l'activité et l'adresse proviennent de l'API Sirene, jamais du formulaire.
+ */
+export async function postCompany(siret: string): Promise<CompanyResult> {
     let response;
     try {
         response = await fetch(API_URL + "/api/companies", {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, siret, employee_range: 0 }),
+            body: JSON.stringify({ siret }),
+        });
+    } catch {
+        return { company: null, message: "Le service ne répond pas. Réessayez." };
+    }
+
+    if (response.ok) {
+        return { company: await response.json(), message: null };
+    }
+
+    return {
+        company: null,
+        message: await errorMessage(
+            response,
+            "L'entreprise n'a pas pu être enregistrée.",
+        ),
+    };
+}
+
+export async function fetchCompany(id: number): Promise<CompanyDetails | null> {
+    let response;
+    try {
+        response = await fetch(apiBase() + "/api/companies/" + id, {
+            cache: "no-store",
+        });
+    } catch {
+        return null;
+    }
+
+    if (!response.ok) {
+        return null;
+    }
+
+    return await response.json();
+}
+
+export type CompanyDetails = CompanySummary & {
+    jobs: ApiJob[];
+};
+
+export async function patchCompany(
+    id: number,
+    values: { description?: string; link?: string },
+): Promise<CompanySummary | null> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/companies/" + id, {
+            method: "PATCH",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(values),
+        });
+    } catch {
+        return null;
+    }
+
+    if (!response.ok) {
+        return null;
+    }
+
+    return await response.json();
+}
+
+export async function refreshCompanyFromSirene(
+    id: number,
+): Promise<CompanySummary | null> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/companies/" + id + "/refresh", {
+            method: "POST",
+            credentials: "include",
         });
     } catch {
         return null;
@@ -161,11 +319,13 @@ export type ApiApplication = {
     id: number;
     jobId: number;
     description: string | null;
+    status: number;
     createdAt: string | null;
     job: {
         title: string;
         type: number;
-        company: { name: string } | null;
+        companiesId: number;
+        company: { id: number; name: string } | null;
         address: { city: string | null } | null;
     } | null;
 };
@@ -260,6 +420,66 @@ export async function fetchMyProfile(): Promise<UserProfile | null> {
     return await response.json();
 }
 
+export type AccountModeration = {
+    state: "suspended" | "banned";
+    reason: string | null;
+    since: string | null;
+};
+
+export type AccountState = {
+    profile: UserProfile | null;
+    moderation: AccountModeration | null;
+};
+
+/**
+ * Charge le profil, en distinguant l'indisponibilité du service d'un compte modéré :
+ * l'API répond 403 avec le motif quand le compte est suspendu ou banni.
+ */
+export async function fetchAccountState(): Promise<AccountState> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/users", {
+            credentials: "include",
+        });
+    } catch {
+        return { profile: null, moderation: null };
+    }
+
+    if (response.ok) {
+        return { profile: await response.json(), moderation: null };
+    }
+
+    if (response.status === 403) {
+        try {
+            const body = await response.json();
+            if (body && body.moderation) {
+                return { profile: null, moderation: body.moderation };
+            }
+        } catch {
+            return { profile: null, moderation: null };
+        }
+    }
+
+    return { profile: null, moderation: null };
+}
+
+export async function fetchPublicProfile(id: number): Promise<UserProfile | null> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/users/" + id, {
+            credentials: "include",
+        });
+    } catch {
+        return null;
+    }
+
+    if (!response.ok) {
+        return null;
+    }
+
+    return await response.json();
+}
+
 export async function fetchUserDataExport(): Promise<unknown> {
     const response = await fetch(API_URL + "/api/extract", {
         credentials: "include",
@@ -282,6 +502,7 @@ export type EmployerJob = {
     salaryMax: number | null;
     maxApplicants: number | null;
     companiesId: number;
+    address?: { city: string | null; label: string } | null;
     skills?: { id: number; name: string }[];
 };
 
@@ -359,6 +580,15 @@ export async function setApplicationStatus(
     return response.ok;
 }
 
+export type NewJobAddress = {
+    label: string;
+    street?: string | null;
+    postal_code?: string | null;
+    city?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+};
+
 export type NewJobInput = {
     companies_id: number;
     title: string;
@@ -369,9 +599,15 @@ export type NewJobInput = {
     salary_min: number;
     salary_max?: number;
     max_applicants?: number;
+    address?: NewJobAddress;
 };
 
-export async function postJob(input: NewJobInput): Promise<EmployerJob | null> {
+export type NewJobResult = {
+    job: EmployerJob | null;
+    message: string | null;
+};
+
+export async function postJob(input: NewJobInput): Promise<NewJobResult> {
     let response;
     try {
         response = await fetch(API_URL + "/api/jobs", {
@@ -381,14 +617,20 @@ export async function postJob(input: NewJobInput): Promise<EmployerJob | null> {
             body: JSON.stringify(input),
         });
     } catch {
-        return null;
+        return { job: null, message: "Le service ne répond pas. Réessayez." };
     }
 
-    if (!response.ok) {
-        return null;
+    if (response.ok) {
+        return { job: await response.json(), message: null };
     }
 
-    return await response.json();
+    return {
+        job: null,
+        message: await errorMessage(
+            response,
+            "La publication a échoué. Une offre du même intitulé existe peut-être déjà.",
+        ),
+    };
 }
 
 export async function deleteJob(id: number): Promise<boolean> {
@@ -485,6 +727,8 @@ export type AdminMetrics = {
     applications: number;
     suspended: number;
     banned: number;
+    reports: number;
+    openReports: number;
     byRank: { rank: number; total: number }[];
     byApplicationStatus: { status: number; total: number }[];
     topCities: { city: string | null; total: number }[];
@@ -523,10 +767,74 @@ export async function fetchAdminMetrics(): Promise<AdminMetrics | null> {
     return await response.json();
 }
 
-export async function fetchAdminUsers(): Promise<AdminUser[]> {
+export type AdminUserFilters = {
+    q?: string;
+    rank?: string;
+    state?: string;
+};
+
+function queryString(filters: Record<string, string | undefined>): string {
+    const params = new URLSearchParams();
+
+    for (const key of Object.keys(filters)) {
+        const value = filters[key];
+        if (value !== undefined && value !== "") {
+            params.set(key, value);
+        }
+    }
+
+    const query = params.toString();
+    if (query === "") {
+        return "";
+    }
+    return "?" + query;
+}
+
+export async function fetchAdminUsers(
+    filters: AdminUserFilters = {},
+): Promise<AdminUser[]> {
     let response;
     try {
-        response = await fetch(API_URL + "/api/admin/users", {
+        response = await fetch(
+            API_URL + "/api/admin/users" + queryString(filters),
+            { credentials: "include" },
+        );
+    } catch {
+        return [];
+    }
+
+    if (!response.ok) {
+        return [];
+    }
+
+    return await response.json();
+}
+
+export type AdminJob = {
+    id: number;
+    title: string;
+    sector: string | null;
+    type: number;
+    remote: number;
+    salaryMin: number | null;
+    salaryMax: number | null;
+    createdAt: string | null;
+    applicantsCount: number;
+    companiesId: number;
+    company: { id: number; name: string } | null;
+    address: { city: string | null; postalCode: string | null } | null;
+    poster: {
+        id: number;
+        firstname: string;
+        lastname: string;
+        email: string;
+    } | null;
+};
+
+export async function fetchAdminJobs(q: string = ""): Promise<AdminJob[]> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/admin/jobs" + queryString({ q }), {
             credentials: "include",
         });
     } catch {
@@ -538,6 +846,152 @@ export async function fetchAdminUsers(): Promise<AdminUser[]> {
     }
 
     return await response.json();
+}
+
+export type AdminReport = {
+    id: number;
+    reason: string;
+    description: string | null;
+    status: number;
+    createdAt: string | null;
+    reporter: {
+        id: number;
+        firstname: string;
+        lastname: string;
+        email: string;
+    } | null;
+    targetUser: {
+        id: number;
+        firstname: string;
+        lastname: string;
+        email: string;
+    } | null;
+    job: { id: number; title: string; company: { name: string } | null } | null;
+};
+
+export async function fetchAdminReports(
+    filters: { q?: string; status?: string } = {},
+): Promise<AdminReport[]> {
+    let response;
+    try {
+        response = await fetch(
+            API_URL + "/api/admin/reports" + queryString(filters),
+            { credentials: "include" },
+        );
+    } catch {
+        return [];
+    }
+
+    if (!response.ok) {
+        return [];
+    }
+
+    return await response.json();
+}
+
+export async function setReportStatus(
+    id: number,
+    status: number,
+): Promise<boolean> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/admin/reports/" + id, {
+            method: "PATCH",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status }),
+        });
+    } catch {
+        return false;
+    }
+
+    return response.ok;
+}
+
+export type RankResult = {
+    ok: boolean;
+    message: string | null;
+};
+
+export async function setUserRank(
+    id: number,
+    rank: number,
+): Promise<RankResult> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/admin/users/" + id + "/rank", {
+            method: "PATCH",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ rank }),
+        });
+    } catch {
+        return { ok: false, message: "Le service ne répond pas. Réessayez." };
+    }
+
+    if (response.ok) {
+        return { ok: true, message: null };
+    }
+
+    return {
+        ok: false,
+        message: await errorMessage(response, "Le rôle n'a pas pu être modifié."),
+    };
+}
+
+export const REPORT_REASONS = [
+    { value: "offre-frauduleuse", label: "Offre frauduleuse" },
+    { value: "contenu-discriminatoire", label: "Contenu discriminatoire" },
+    { value: "contenu-inapproprie", label: "Contenu inapproprié" },
+    { value: "usurpation", label: "Usurpation d'identité" },
+    { value: "spam", label: "Spam ou publicité" },
+    { value: "autre", label: "Autre motif" },
+];
+
+export function reportReasonLabel(value: string): string {
+    const found = REPORT_REASONS.find(function (reason) {
+        return reason.value === value;
+    });
+    if (found === undefined) {
+        return value;
+    }
+    return found.label;
+}
+
+export type ReportResult = {
+    ok: boolean;
+    message: string | null;
+};
+
+export async function postReport(input: {
+    job_id?: number;
+    user_id?: number;
+    reason: string;
+    description?: string;
+}): Promise<ReportResult> {
+    let response;
+    try {
+        response = await fetch(API_URL + "/api/reports", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(input),
+        });
+    } catch {
+        return { ok: false, message: "Le service ne répond pas. Réessayez." };
+    }
+
+    if (response.ok) {
+        return { ok: true, message: null };
+    }
+
+    return {
+        ok: false,
+        message: await errorMessage(
+            response,
+            "Le signalement n'a pas pu être enregistré.",
+        ),
+    };
 }
 
 export async function moderateUser(

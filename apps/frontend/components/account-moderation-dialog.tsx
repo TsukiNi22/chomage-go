@@ -1,0 +1,126 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { authClient } from "@/lib/auth-client";
+import { fetchAccountState, type AccountModeration } from "@/lib/api";
+
+export function moderationTitle(state: AccountModeration["state"]): string {
+    if (state === "banned") {
+        return "Votre compte a été banni";
+    }
+    return "Votre compte est suspendu";
+}
+
+export function moderationBody(state: AccountModeration["state"]): string {
+    if (state === "banned") {
+        return "L'accès à la plateforme vous a été définitivement retiré par un administrateur. Vous ne pouvez plus candidater, publier d'offre ni modifier votre profil.";
+    }
+    return "Un administrateur a suspendu votre compte. Vous ne pouvez plus candidater, publier d'offre ni modifier votre profil tant que la suspension est en vigueur.";
+}
+
+export function moderationReasonText(reason: string | null): string {
+    if (reason === null || reason.trim() === "") {
+        return "Aucun motif n'a été précisé par la modération.";
+    }
+    return reason;
+}
+
+/**
+ * Avertit l'utilisateur dès sa connexion lorsque son compte est suspendu ou banni,
+ * en reprenant le motif saisi par la modération.
+ */
+export default function AccountModerationDialog() {
+    const { data: session } = authClient.useSession();
+    const [moderation, setModeration] = useState<AccountModeration | null>(null);
+    const [open, setOpen] = useState(false);
+
+    const userId = session?.user?.id;
+
+    useEffect(
+        function () {
+            if (userId === undefined) {
+                setModeration(null);
+                setOpen(false);
+                return;
+            }
+
+            let cancelled = false;
+
+            fetchAccountState().then(function (state) {
+                if (cancelled) {
+                    return;
+                }
+                setModeration(state.moderation);
+                setOpen(state.moderation !== null);
+            });
+
+            return function () {
+                cancelled = true;
+            };
+        },
+        [userId],
+    );
+
+    if (moderation === null) {
+        return null;
+    }
+
+    async function handleSignOut() {
+        setOpen(false);
+        await authClient.signOut();
+        window.location.href = "/";
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent className="max-w-md">
+                <DialogHeader>
+                    <DialogTitle className="font-heading text-destructive">
+                        {moderationTitle(moderation.state)}
+                    </DialogTitle>
+                </DialogHeader>
+
+                <div className="flex flex-col gap-4">
+                    <p className="text-sm text-muted-foreground">
+                        {moderationBody(moderation.state)}
+                    </p>
+
+                    <div className="flex flex-col gap-1 border-l-2 border-destructive bg-destructive/5 p-4">
+                        <span className="font-heading text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                            Motif
+                        </span>
+                        <p className="text-sm">{moderationReasonText(moderation.reason)}</p>
+                    </div>
+                </div>
+
+                <DialogFooter>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={function () {
+                            setOpen(false);
+                        }}
+                        className="font-heading font-semibold text-primary hover:bg-accent"
+                    >
+                        Fermer
+                    </Button>
+                    <Button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
+                    >
+                        Se déconnecter
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}

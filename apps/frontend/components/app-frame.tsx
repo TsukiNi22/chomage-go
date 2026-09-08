@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import AccountModerationDialog from "@/components/account-moderation-dialog";
 
 const FULL_HEIGHT_PATHS = ["/carte"];
 
@@ -22,6 +23,7 @@ export default function AppFrame(props: { children: React.ReactNode }) {
                     {props.children}
                 </main>
                 <Footer compact />
+                <AccountModerationDialog />
             </div>
         );
     }
@@ -33,6 +35,7 @@ export default function AppFrame(props: { children: React.ReactNode }) {
                 {props.children}
             </main>
             <Footer />
+            <AccountModerationDialog />
         </div>
     );
 }

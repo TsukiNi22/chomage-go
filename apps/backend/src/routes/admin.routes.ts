@@ -96,4 +96,118 @@ router.patch("/users/:id/moderation", requireAuth, adminController.patchModerati
  */
 router.delete("/jobs/:id", requireAuth, adminController.deleteAnyJob);
 
+/**
+ * @openapi
+ * /admin/users/{id}/rank:
+ *   patch:
+ *     summary: Change a user role (admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [rank]
+ *             properties:
+ *               rank:
+ *                 type: integer
+ *                 enum: [0, 1, 2]
+ *     responses:
+ *       200:
+ *         description: Role updated
+ *       400:
+ *         description: Cannot change your own role, or employer without a company
+ *       403:
+ *         description: Admin access required
+ *       404:
+ *         description: User not found
+ */
+router.patch("/users/:id/rank", requireAuth, adminController.patchRank);
+
+/**
+ * @openapi
+ * /admin/jobs:
+ *   get:
+ *     summary: List every job offer with its applicant count (admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema: { type: string }
+ *         description: Free-text search on title, sector, company or city
+ *     responses:
+ *       200:
+ *         description: List of job offers
+ *       403:
+ *         description: Admin access required
+ */
+router.get("/jobs", requireAuth, adminController.getJobs);
+
+/**
+ * @openapi
+ * /admin/reports:
+ *   get:
+ *     summary: List reports filed on offers and profiles (admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema: { type: string }
+ *       - in: query
+ *         name: status
+ *         schema: { type: integer, enum: [0, 1, 2] }
+ *     responses:
+ *       200:
+ *         description: List of reports
+ *       403:
+ *         description: Admin access required
+ */
+router.get("/reports", requireAuth, adminController.getReports);
+
+/**
+ * @openapi
+ * /admin/reports/{id}:
+ *   patch:
+ *     summary: Mark a report as handled or dismissed (admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: integer
+ *                 enum: [0, 1, 2]
+ *     responses:
+ *       200:
+ *         description: Report updated
+ *       403:
+ *         description: Admin access required
+ *       404:
+ *         description: Report not found
+ */
+router.patch("/reports/:id", requireAuth, adminController.patchReport);
+
 export default router;

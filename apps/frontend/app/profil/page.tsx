@@ -3,8 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-import { fetchMyProfile, fetchUserDataExport } from "@/lib/api";
-import type { UserProfile } from "@/lib/api";
+import { fetchAccountState, fetchUserDataExport } from "@/lib/api";
+import type { AccountModeration, UserProfile } from "@/lib/api";
+import {
+    moderationBody,
+    moderationReasonText,
+    moderationTitle,
+} from "@/components/account-moderation-dialog";
+import { UserRank } from "@/lib/user-rank";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -37,7 +43,10 @@ export default function ProfilPage() {
     const { data: session, isPending } = authClient.useSession();
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [moderation, setModeration] = useState<AccountModeration | null>(null);
     const [loadingProfile, setLoadingProfile] = useState(true);
+    const [sendingVerification, setSendingVerification] = useState(false);
+    const [verificationFeedback, setVerificationFeedback] = useState<string | null>(null);
 
     const [firstname, setFirstname] = useState("");
     const [lastname, setLastname] = useState("");
@@ -76,11 +85,13 @@ export default function ProfilPage() {
 
             let cancelled = false;
 
-            fetchMyProfile().then(function (data) {
+            fetchAccountState().then(function (state) {
                 if (cancelled) {
                     return;
                 }
+                const data = state.profile;
                 setProfile(data);
+                setModeration(state.moderation);
                 if (data !== null) {
                     setFirstname(data.firstname || "");
                     setLastname(data.lastname || "");
@@ -157,6 +168,29 @@ export default function ProfilPage() {
         setCurrentPassword("");
         setNewPassword("");
         setPasswordFeedback("Mot de passe modifié. Vos autres sessions ont été déconnectées.");
+    }
+
+    async function handleResendVerification() {
+        setSendingVerification(true);
+        setVerificationFeedback(null);
+
+        const result = await authClient.sendVerificationEmail({
+            email: session?.user?.email || "",
+            callbackURL: "/profil?verifie=1",
+        });
+
+        setSendingVerification(false);
+
+        if (result.error) {
+            setVerificationFeedback(
+                "L'envoi a échoué. Réessayez dans un instant.",
+            );
+            return;
+        }
+
+        setVerificationFeedback(
+            "Un message de vérification vient d'être envoyé à votre adresse.",
+        );
     }
 
     function handleLocalisationChange(checked: boolean) {
@@ -253,11 +287,17 @@ export default function ProfilPage() {
                         disabled
                     />
                     <p className="text-xs text-muted-foreground">
-                        Le SIRET identifie légalement votre établissement et ne peut pas
-                        être modifié depuis le profil. Contactez l&apos;assistance en cas
-                        d&apos;erreur.
+                        Le nom et le SIRET proviennent de l&apos;annuaire des entreprises
+                        et ne se modifient pas depuis le profil.
                     </p>
                 </div>
+
+                <a
+                    href={"/entreprises/" + company.id}
+                    className="self-start font-heading text-sm font-semibold text-primary underline underline-offset-4 hover:no-underline"
+                >
+                    Consulter et compléter la fiche de l&apos;entreprise
+                </a>
             </div>
         );
     }
@@ -373,6 +413,33 @@ export default function ProfilPage() {
         );
     }
 
+    if (moderation !== null) {
+        return (
+            <Shell>
+                <div className="border-l-2 border-destructive bg-background p-10">
+                    <h1 className="font-heading text-2xl font-bold text-destructive">
+                        {moderationTitle(moderation.state)}
+                    </h1>
+                    <p className="mt-3 text-muted-foreground">
+                        {moderationBody(moderation.state)}
+                    </p>
+
+                    <div className="mt-6 flex flex-col gap-1 border-l-2 border-destructive bg-destructive/5 p-4">
+                        <span className="font-heading text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                            Motif
+                        </span>
+                        <p className="text-sm">{moderationReasonText(moderation.reason)}</p>
+                    </div>
+
+                    <p className="mt-6 text-sm text-muted-foreground">
+                        Pour contester cette décision, contactez le délégué à la protection
+                        des données dont l&apos;adresse figure en page d&apos;accueil.
+                    </p>
+                </div>
+            </Shell>
+        );
+    }
+
     if (profile === null) {
         return (
             <Shell>
@@ -387,6 +454,18 @@ export default function ProfilPage() {
             </Shell>
         );
     }
+
+    const rank = profile.rank;
+    const isEmployer = rank === UserRank.EMPLOYER;
+    const isAdmin = rank === UserRank.ADMIN;
+    // L'employeur candidate pas : ni présentation, ni adresse personnelle, ni CV.
+    // L'administrateur ne conserve que son identité, son adresse et sa géolocalisation.
+    const showAddress = !isEmployer;
+    const showDescription = !isEmployer && !isAdmin;
+    const showResume = !isEmployer && !isAdmin;
+    const showEmailContact = !isAdmin;
+    const showAccountEmail = !isAdmin;
+    const showCompany = !isAdmin;
 
     // Région d'annonce présente en permanence dans le document, masquée tant
     // qu'elle est vide : une région live créée avec son message n'est pas
@@ -409,6 +488,34 @@ export default function ProfilPage() {
     let saveLabel = "Enregistrer";
     if (saving) {
         saveLabel = "Enregistrement…";
+    }
+
+    let verificationBlock = null;
+    if (profile.emailVerified === false) {
+        verificationBlock = (
+            <div className="flex flex-col gap-2 border-l-2 border-action-text bg-action/5 p-3">
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                    Votre adresse électronique n&apos;est pas encore vérifiée. Ouvrez le
+                    message de confirmation reçu à l&apos;inscription, ou demandez-en un
+                    nouveau.
+                </p>
+                <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={sendingVerification}
+                    className="self-start font-heading text-xs font-semibold text-primary underline underline-offset-4 hover:no-underline disabled:opacity-60"
+                >
+                    {sendingVerification
+                        ? "Envoi…"
+                        : "Renvoyer le message de vérification"}
+                </button>
+                {verificationFeedback !== null && (
+                    <p role="status" aria-live="polite" className="text-xs text-primary">
+                        {verificationFeedback}
+                    </p>
+                )}
+            </div>
+        );
     }
 
     return (
@@ -459,81 +566,91 @@ export default function ProfilPage() {
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                    <Label
-                        htmlFor="profil-email"
-                        className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
-                    >
-                        Adresse électronique
-                    </Label>
-                    <Input id="profil-email" value={session.user.email} disabled />
-                    <p className="text-xs text-muted-foreground">
-                        La modification de l&apos;adresse électronique nécessite une
-                        vérification. Contactez l&apos;assistance.
-                    </p>
-                </div>
+                {showAccountEmail && (
+                    <div className="flex flex-col gap-1.5">
+                        <Label
+                            htmlFor="profil-email"
+                            className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
+                        >
+                            Adresse électronique
+                        </Label>
+                        <Input id="profil-email" value={session.user.email} disabled />
+                        <p className="text-xs text-muted-foreground">
+                            La modification de l&apos;adresse électronique nécessite une
+                            vérification. Contactez l&apos;assistance.
+                        </p>
+                        {verificationBlock}
+                    </div>
+                )}
 
-                {companyBlock}
+                {showCompany && companyBlock}
 
-                <div className="flex flex-col gap-1.5">
-                    <Label
-                        htmlFor="profil-address"
-                        className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
-                    >
-                        Adresse postale
-                    </Label>
-                    <AddressAutocomplete
-                        id="profil-address"
-                        value={address}
-                        onChange={setAddress}
-                        placeholder="12 rue de la Paix, 35000 Rennes"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                        Commencez à saisir votre adresse, puis choisissez une proposition
-                        pour qu&apos;elle soit correctement localisée.
-                    </p>
-                </div>
+                {showAddress && (
+                    <div className="flex flex-col gap-1.5">
+                        <Label
+                            htmlFor="profil-address"
+                            className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
+                        >
+                            Adresse postale
+                        </Label>
+                        <AddressAutocomplete
+                            id="profil-address"
+                            value={address}
+                            onChange={setAddress}
+                            placeholder="12 rue de la Paix, 35000 Rennes"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Commencez à saisir votre adresse, puis choisissez une proposition
+                            pour qu&apos;elle soit correctement localisée.
+                        </p>
+                    </div>
+                )}
 
-                <div className="flex flex-col gap-1.5">
-                    <Label
-                        htmlFor="profil-description"
-                        className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
-                    >
-                        Présentation
-                    </Label>
-                    <textarea
-                        id="profil-description"
-                        value={description}
-                        onChange={function (event) {
-                            setDescription(event.target.value);
-                        }}
-                        placeholder="Votre parcours, vos compétences, ce que vous recherchez."
-                        className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring"
-                    />
-                </div>
+                {showDescription && (
+                    <div className="flex flex-col gap-1.5">
+                        <Label
+                            htmlFor="profil-description"
+                            className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
+                        >
+                            Présentation
+                        </Label>
+                        <textarea
+                            id="profil-description"
+                            value={description}
+                            onChange={function (event) {
+                                setDescription(event.target.value);
+                            }}
+                            placeholder="Votre parcours, vos compétences, ce que vous recherchez."
+                            className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring"
+                        />
+                    </div>
+                )}
 
-                <div className="flex flex-col gap-1.5">
-                    <Label
-                        htmlFor="profil-email-contact"
-                        className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
-                    >
-                        Adresse électronique de contact
-                    </Label>
-                    <Input
-                        id="profil-email-contact"
-                        type="email"
-                        value={emailContact}
-                        onChange={function (event) {
-                            setEmailContact(event.target.value);
-                        }}
-                        placeholder="Laissez vide pour utiliser votre adresse de connexion"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                        Adresse communiquée aux employeurs, si vous souhaitez qu&apos;elle
-                        diffère de votre adresse de connexion.
-                    </p>
-                </div>
+                {showEmailContact && (
+                    <div className="flex flex-col gap-1.5">
+                        <Label
+                            htmlFor="profil-email-contact"
+                            className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
+                        >
+                            Adresse électronique de contact
+                        </Label>
+                        <Input
+                            id="profil-email-contact"
+                            type="email"
+                            value={emailContact}
+                            onChange={function (event) {
+                                setEmailContact(event.target.value);
+                            }}
+                            placeholder="Laissez vide pour utiliser votre adresse de connexion"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Adresse communiquée aux employeurs ou aux candidats, si vous
+                            souhaitez qu&apos;elle diffère de votre adresse de connexion.
+                        </p>
+                    </div>
+                )}
 
+                {showResume && (
                 <div className="flex flex-col gap-2 border-t border-border pt-6">
                     <Label
                         htmlFor="profil-resume"
@@ -566,6 +683,7 @@ export default function ProfilPage() {
                         </p>
                     )}
                 </div>
+                )}
 
                 <div className="flex flex-col gap-2 border-t border-border pt-6">
                     <div className="flex items-center gap-3">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import JobPostingsTable from "@/components/job-posting-table";
 import CreateJobPostingDialog from "@/components/job-posting-add";
 import JobApplicants from "@/components/job-applicants";
@@ -20,6 +21,7 @@ import {
     fetchCompanyJobs,
     fetchJobApplicants,
     fetchMyProfile,
+    type CompanySummary,
     type EmployerJob,
 } from "@/lib/api";
 import type { EmployerJobPosting } from "@/lib/employer-jobs";
@@ -61,6 +63,7 @@ function toPosting(job: EmployerJob, applicants: number): EmployerJobPosting {
 export default function EmployerJobsPage() {
     const { data: session } = authClient.useSession();
     const [companiesId, setCompaniesId] = useState<number | null>(null);
+    const [company, setCompany] = useState<CompanySummary | null>(null);
     const [jobs, setJobs] = useState<EmployerJob[]>([]);
     const [counts, setCounts] = useState<Record<number, number>>({});
     const [stats, setStats] = useState({ total: 0, pending: 0, accepted: 0, refused: 0 });
@@ -120,6 +123,7 @@ export default function EmployerJobsPage() {
                     return;
                 }
                 setCompaniesId(profile.companiesId);
+                setCompany(profile.company || null);
                 if (profile.companiesId !== null) {
                     reload(profile.companiesId);
                 } else {
@@ -244,6 +248,24 @@ export default function EmployerJobsPage() {
         deleteLabel = "Suppression…";
     }
 
+    let companyActivity: string | null = null;
+    let companyAddress: string | null = null;
+    let companyLink: React.ReactNode = <span />;
+    if (company !== null) {
+        companyActivity = company.activity;
+        if (company.address) {
+            companyAddress = company.address.label;
+        }
+        companyLink = (
+            <Link
+                href={"/entreprises/" + company.id}
+                className="font-heading text-sm font-semibold text-primary underline underline-offset-4 hover:no-underline"
+            >
+                Fiche de {company.name}
+            </Link>
+        );
+    }
+
     return (
         <div className="mx-auto max-w-6xl px-6 py-10">
             <div className="mb-6 flex items-center justify-between">
@@ -270,9 +292,12 @@ export default function EmployerJobsPage() {
                 onEditSkills={openSkills}
             />
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                {companyLink}
                 <CreateJobPostingDialog
                     companiesId={companiesId}
+                    companyActivity={companyActivity}
+                    companyAddress={companyAddress}
                     onCreated={handleCreated}
                 />
             </div>

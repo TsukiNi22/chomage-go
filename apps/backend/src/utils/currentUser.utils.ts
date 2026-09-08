@@ -23,11 +23,23 @@ export async function getCurrentUser(req: Request)
     }
 
     if (user.bannedAt !== null) {
-        throw new HttpError(403, "Ce compte a été banni de la plateforme");
+        throw new HttpError(403, "Ce compte a été banni de la plateforme", {
+            moderation: {
+                state: "banned",
+                reason: user.moderationReason,
+                since: user.bannedAt,
+            },
+        });
     }
 
     if (user.suspendedAt !== null) {
-        throw new HttpError(403, "Ce compte est suspendu");
+        throw new HttpError(403, "Ce compte est suspendu", {
+            moderation: {
+                state: "suspended",
+                reason: user.moderationReason,
+                since: user.suspendedAt,
+            },
+        });
     }
 
     return user;

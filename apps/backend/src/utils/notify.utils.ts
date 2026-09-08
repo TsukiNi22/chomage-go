@@ -64,18 +64,81 @@ function escapeHtml(value: string): string
         .replace(/"/g, "&quot;");
 }
 
-export function sendNewApplicationMail(input: NewApplicationMail)
+/**
+ * Point de sortie unique des e-mails.
+ * Aucun transport SMTP n'est installe sur ce demonstrateur : le message est journalise
+ * tel qu'il partirait, et la variable SMTP_HOST sert de temoin de configuration.
+ */
+export function sendMail(to: string, subject: string, html: string)
 {
-    const html = renderNewApplicationMail(input);
-
     if (!process.env.SMTP_HOST) {
         console.log(
-            `[notify] pas de SMTP configure, e-mail non envoye a ${input.to} ` +
-            `(nouvelle candidature de ${input.candidateName} sur "${input.jobTitle}") ` +
-            `- ${html.length} octets de HTML prets a l'envoi`,
+            `[notify] pas de SMTP configure, e-mail non envoye a ${to} ` +
+            `(${subject}) - ${html.length} octets de HTML prets a l'envoi`,
         );
         return;
     }
 
-    console.log(`[notify] SMTP_HOST defini mais aucun transport installe, e-mail non envoye a ${input.to}`);
+    console.log(`[notify] SMTP_HOST defini mais aucun transport installe, e-mail non envoye a ${to} (${subject})`);
+}
+
+export function sendNewApplicationMail(input: NewApplicationMail)
+{
+    sendMail(
+        input.to,
+        `Nouvelle candidature de ${input.candidateName} sur "${input.jobTitle}"`,
+        renderNewApplicationMail(input),
+    );
+}
+
+type VerificationMail = {
+    name: string;
+    url: string;
+};
+
+export function renderVerificationMail(input: VerificationMail): string
+{
+    return `<!doctype html>
+<html lang="fr">
+<body style="margin:0;padding:0;background:#f2f7f6;font-family:system-ui,-apple-system,sans-serif;color:#16192b">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-top:2px solid #0f5f5c">
+        <tr><td style="padding:24px 32px 8px">
+          <span style="font-size:20px;font-weight:800;color:#0f5f5c">Géo<span style="color:#9c4429">Emploi</span></span>
+        </td></tr>
+        <tr><td style="padding:0 32px 8px">
+          <p style="margin:0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.4px;color:#566360">Vérification de l'adresse</p>
+          <h1 style="margin:8px 0 0;font-size:22px;line-height:1.25;color:#0f5f5c">Confirmez votre adresse électronique</h1>
+        </td></tr>
+        <tr><td style="padding:16px 32px 0">
+          <p style="margin:0 0 12px;line-height:1.6;color:#566360">
+            Bonjour ${escapeHtml(input.name)}, confirmez votre adresse pour activer l'ensemble des
+            fonctionnalités de votre compte. Ce lien expire dans une heure.
+          </p>
+        </td></tr>
+        <tr><td style="padding:24px 32px">
+          <a href="${escapeHtml(input.url)}"
+             style="display:inline-block;padding:10px 18px;background:#b85433;color:#ffffff;text-decoration:none;font-weight:600;border-radius:4px">
+            Vérifier mon adresse
+          </a>
+        </td></tr>
+        <tr><td style="padding:0 32px 16px">
+          <p style="margin:0;font-size:13px;color:#566360;word-break:break-all">${escapeHtml(input.url)}</p>
+        </td></tr>
+        <tr><td style="padding:16px 32px 24px;border-top:1px solid #d2e0de">
+          <p style="margin:0;font-size:13px;font-weight:600;color:#9c4429">
+            Démonstrateur technique, ne constitue pas un service public en exploitation.
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+export function sendVerificationMail(to: string, input: VerificationMail)
+{
+    sendMail(to, "Confirmez votre adresse électronique — GéoEmploi", renderVerificationMail(input));
 }

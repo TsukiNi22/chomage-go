@@ -37,6 +37,29 @@ router.get("/:id", companiesController.getCompanie);
 
 /**
  * @openapi
+ * /companies/siret/{siret}:
+ *   get:
+ *     summary: Look up an establishment in the public Sirene directory
+ *     tags: [Companies]
+ *     parameters:
+ *       - in: path
+ *         name: siret
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Establishment found
+ *       400:
+ *         description: Invalid SIRET
+ *       404:
+ *         description: No establishment matches this SIRET
+ *       503:
+ *         description: Sirene directory unreachable
+ */
+router.get("/siret/:siret", companiesController.getSiret);
+
+/**
+ * @openapi
  * /companies:
  *   post:
  *     summary: Create a company
@@ -120,6 +143,29 @@ router.patch("/:id", requireAuth, companiesController.patchCompanie);
  *       404:
  *         description: Company not found
  */
+/**
+ * @openapi
+ * /companies/{id}/refresh:
+ *   post:
+ *     summary: Re-sync legal data from the Sirene directory
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Company updated from Sirene
+ *       403:
+ *         description: You do not manage this company
+ *       404:
+ *         description: Company not found
+ */
+router.post("/:id/refresh", requireAuth, companiesController.refreshCompanie);
+
 router.delete("/:id", requireAuth, companiesController.deleteCompanie);
 
 export default router;

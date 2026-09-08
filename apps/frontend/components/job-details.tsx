@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +13,8 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import ReportDialog from "@/components/report-dialog";
+import { Flag } from "lucide-react";
 import { formatSalary } from "@/components/job-list";
 import { distanceInKm, formatDistance } from "@/lib/distance";
 import { authClient } from "@/lib/auth-client";
@@ -44,6 +47,7 @@ export default function JobDetails(props: Props) {
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
     const [applyError, setApplyError] = useState<string | null>(null);
+    const [reportOpen, setReportOpen] = useState(false);
     const { data: session } = authClient.useSession();
     const { addApplication } = useApplications();
     const job = props.job;
@@ -57,6 +61,7 @@ export default function JobDetails(props: Props) {
             setApplied(false);
             setMessage("");
             setApplyError(null);
+            setReportOpen(false);
         },
         [jobId],
     );
@@ -187,7 +192,36 @@ export default function JobDetails(props: Props) {
     }
 
 
+    let companyLine: React.ReactNode = job.company;
+    if (job.companyId !== null) {
+        companyLine = (
+            <Link
+                href={"/entreprises/" + job.companyId}
+                className="font-semibold text-primary underline underline-offset-4 hover:no-underline"
+            >
+                {job.company}
+            </Link>
+        );
+    }
+
+    let reportButton = null;
+    if (session) {
+        reportButton = (
+            <button
+                type="button"
+                onClick={function () {
+                    setReportOpen(true);
+                }}
+                className="flex items-center gap-1.5 self-start font-heading text-xs font-medium text-destructive underline underline-offset-4 hover:no-underline"
+            >
+                <Flag className="h-3.5 w-3.5" />
+                Signaler cette offre
+            </button>
+        );
+    }
+
     return (
+        <>
         <Dialog open={props.open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-lg gap-0 p-0">
                 <DialogHeader className="border-b border-border p-6 pr-14 text-left">
@@ -200,7 +234,7 @@ export default function JobDetails(props: Props) {
                         </Badge>
                     </div>
                     <DialogDescription className="text-base text-foreground">
-                        {job.company}
+                        {companyLine}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -224,6 +258,8 @@ export default function JobDetails(props: Props) {
                     </div>
 
                     {messageBlock}
+
+                    {reportButton}
                 </div>
 
                 <DialogFooter className="border-t border-border bg-muted p-6 sm:justify-between">
@@ -240,5 +276,15 @@ export default function JobDetails(props: Props) {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <ReportDialog
+            open={reportOpen}
+            onClose={function () {
+                setReportOpen(false);
+            }}
+            jobId={job.id}
+            subject={job.title + " — " + job.company}
+        />
+        </>
     );
 }

@@ -37,7 +37,6 @@ export default function Header() {
     const { data: session, isPending } = authClient.useSession();
     const cgu = useCgu();
     const isJobSeeker = session?.user?.rank === UserRank.JOB_SEEKER;
-    const isOnApplicationsPage = pathname === MY_APPLICATIONS_ROUTE;
     const router = useRouter();
 
     function openModal() {
@@ -88,6 +87,22 @@ export default function Header() {
         );
     }
 
+    // Entrées de navigation propres au rôle, partagées par le menu large et le menu glissant.
+    const roleLinks: { label: string; href: string; badge?: React.ReactNode }[] = [];
+    if (isJobSeeker) {
+        roleLinks.push({ label: "Mes candidatures", href: MY_APPLICATIONS_ROUTE });
+    }
+    if (isEmployer) {
+        roleLinks.push({
+            label: "Publier une offre",
+            href: PUBLISH_JOB_ROUTE,
+            badge: pendingBadge,
+        });
+    }
+    if (isAdmin) {
+        roleLinks.push({ label: "Administration", href: ADMIN_ROUTE });
+    }
+
     async function handleSignOut() {
         await authClient.signOut();
         router.push("/");
@@ -102,8 +117,6 @@ export default function Header() {
             Se connecter/S&apos;inscrire
         </Button>
     );
-
-    let applicationsButton: React.ReactNode = null;
 
     if (isPending) {
         accountArea = <Skeleton className="h-9 w-32" />;
@@ -156,7 +169,7 @@ export default function Header() {
 
     return (
         <>
-            <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 border-b-2 border-primary bg-background px-4 py-4 sm:px-6 lg:gap-6 lg:px-8">
+            <header className="grid grid-cols-[1fr_auto] items-center gap-4 border-b-2 border-primary bg-background px-4 py-4 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:gap-6 lg:px-8">
                 <Link href="/" aria-label="Retour à l'accueil" className="justify-self-start">
                     <Wordmark />
                 </Link>
@@ -179,45 +192,24 @@ export default function Header() {
                             );
                         })}
 
-                        {isJobSeeker && (
-                            <li>
-                                <a
-                                    href={MY_APPLICATIONS_ROUTE}
-                                    className="font-heading text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
-                                >
-                                    Mes candidatures
-                                </a>
-                            </li>
-                        )}
-
-                        {isEmployer && (
-                            <li>
-                                <a
-                                    href={PUBLISH_JOB_ROUTE}
-                                    className="font-heading text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
-                                >
-                                    Publier une offre
-                                    {pendingBadge}
-                                </a>
-                            </li>
-                        )}
-
-                        {isAdmin && (
-                            <li>
-                                <a
-                                    href={ADMIN_ROUTE}
-                                    className="font-heading text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
-                                >
-                                    Administration
-                                </a>
-                            </li>
-                        )}
+                        {roleLinks.map(function (link) {
+                            return (
+                                <li key={link.href}>
+                                    <a
+                                        href={link.href}
+                                        className="font-heading text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
+                                    >
+                                        {link.label}
+                                        {link.badge}
+                                    </a>
+                                </li>
+                            );
+                        })}
                     </ul>
                 </nav>
 
                 <div className="hidden items-center justify-self-end gap-3 lg:flex">
                     {accountArea}
-                    {applicationsButton}
                     {publishButton}
                 </div>
 
@@ -227,7 +219,7 @@ export default function Header() {
                             variant="ghost"
                             size="icon"
                             aria-label="Ouvrir le menu de navigation"
-                            className="justify-self-end lg:hidden"
+                            className="col-start-2 justify-self-end lg:hidden"
                         >
                             <Menu className="size-5" />
                         </Button>
@@ -253,6 +245,20 @@ export default function Header() {
                                                     className="font-heading text-base font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
                                                 >
                                                     {link.label}
+                                                </a>
+                                            </li>
+                                        );
+                                    })}
+
+                                    {roleLinks.map(function (link) {
+                                        return (
+                                            <li key={link.href}>
+                                                <a
+                                                    href={link.href}
+                                                    className="font-heading text-base font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
+                                                >
+                                                    {link.label}
+                                                    {link.badge}
                                                 </a>
                                             </li>
                                         );

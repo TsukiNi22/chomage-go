@@ -4,6 +4,7 @@ import {HttpError} from "../types/httpError.ts";
 import * as schemas from "../schemas/jobs.schema.ts";
 import {getCurrentUser} from "../utils/currentUser.utils.ts";
 import {isUniqueViolation} from "../utils/dbError.utils.ts";
+import {createAddress} from "../utils/address.utils.ts";
 import {db} from "../db/index.ts";
 import {applications, companies, jobs, jobSkills} from "../db/schema.ts";
 import {eq} from "drizzle-orm";
@@ -14,7 +15,7 @@ type JobValues = {
     type?: number;
     sector?: string;
     remote?: number;
-    addressId?: number;
+    addressId?: number | null;
     maxApplicants?: number;
     salaryMin?: number;
     salaryMax?: number;
@@ -92,6 +93,15 @@ export async function postJob(req: Request, res: Response, next: NextFunction)
 
     checkCompanyAccess(user.rank, user.companiesId, req.body.companies_id);
 
+    // Une offre peut porter son propre lieu ; sans adresse saisie on retombe sur celle de l'entreprise.
+    let addressId = req.body.address_id;
+    if (req.body.address !== undefined) {
+        addressId = await createAddress(req.body.address);
+    }
+    if (addressId === undefined || addressId === null) {
+        addressId = company.addressId;
+    }
+
     let created;
     try {
         const rows = await db.insert(jobs).values({
@@ -102,7 +112,7 @@ export async function postJob(req: Request, res: Response, next: NextFunction)
             type: req.body.type,
             sector: req.body.sector,
             remote: req.body.remote,
-            addressId: req.body.address_id,
+            addressId: addressId,
             maxApplicants: req.body.max_applicants,
             salaryMin: req.body.salary_min,
             salaryMax: req.body.salary_max,
@@ -155,6 +165,8 @@ export async function patchJob(req: Request, res: Response, next: NextFunction)
         values.remote = req.body.remote;
     if (req.body.address_id !== undefined)
         values.addressId = req.body.address_id;
+    if (req.body.address !== undefined)
+        values.addressId = await createAddress(req.body.address);
     if (req.body.max_applicants !== undefined)
         values.maxApplicants = req.body.max_applicants;
     if (req.body.salary_min !== undefined)

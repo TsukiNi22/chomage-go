@@ -8,46 +8,68 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
+import AddressAutocomplete from "@/components/address-autocomplete";
 import { RequiredMark, RequiredFieldsNote } from "@/components/form-required-mark";
+import type { Place } from "@/lib/geocoding";
 import type { ContractType } from "@/lib/employer-jobs";
-import { postJob, postJobSkill } from "@/lib/api";
+import { postJob, postJobSkill, type NewJobInput } from "@/lib/api";
 
 const contractTypes: ContractType[] = ["CDI", "CDD", "Alternance", "Stage", "Freelance"];
+
+const remoteOptions = ["Aucun", "Partiel", "Total"];
 
 const CONTRACT_ERROR = "Sélectionnez un type de contrat pour publier l'offre.";
 
 type Props = {
     companiesId: number;
+    companyActivity?: string | null;
+    companyAddress?: string | null;
     onCreated: () => void;
 };
 
 export default function CreateJobPostingDialog(props: Props) {
     const [open, setOpen] = useState(false);
     const [contractType, setContractType] = useState<ContractType | "">("");
+    const [remote, setRemote] = useState("Aucun");
+    const [address, setAddress] = useState("");
+    const [place, setPlace] = useState<Place | null>(null);
+    const [contractError, setContractError] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
     const contractRef = useRef<HTMLButtonElement>(null);
 
+    function resetForm() {
+        setContractType("");
+        setRemote("Aucun");
+        setAddress("");
+        setPlace(null);
+        setContractError(null);
+        setError(null);
+    }
+
     function handleOpenChange(nextOpen: boolean) {
         setOpen(nextOpen);
         if (!nextOpen) {
-            setContractType("");
-            setError(null);
+            resetForm();
         }
     }
 
     function handleContractChange(value: string) {
         setContractType(value as ContractType);
-        setError(null);
+        setContractError(null);
+    }
+
+    function handleAddressChange(value: string) {
+        setAddress(value);
+        setPlace(null);
     }
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        setError(null);
 
-        // Le champ est obligatoire mais n'est pas un contrôle natif : sans ce
-        // traitement, le refus serait silencieux (RGAA 11.10).
         if (contractType === "") {
-            setError(CONTRACT_ERROR);
+            setContractError(CONTRACT_ERROR);
             if (contractRef.current !== null) {
                 contractRef.current.focus();
             }
@@ -59,6 +81,7 @@ export default function CreateJobPostingDialog(props: Props) {
 
         const title = String(formData.get("title")).trim();
         const description = String(formData.get("description")).trim();
+        const sector = String(formData.get("sector")).trim();
         const skillsRaw = String(formData.get("skills")).trim();
         const salaryMin = Number(formData.get("salaryMin"));
         const salaryMaxRaw = String(formData.get("salaryMax")).trim();
@@ -70,28 +93,37 @@ export default function CreateJobPostingDialog(props: Props) {
             return;
         }
 
-        const input: Parameters<typeof postJob>[0] = {
+        const input: NewJobInput = {
             companies_id: props.companiesId,
             title: title,
             description: description,
             type: contractTypes.indexOf(contractType),
+            remote: remoteOptions.indexOf(remote),
             salary_min: salaryMin,
         };
+        if (sector !== "") {
+            input.sector = sector;
+        }
         if (salaryMaxRaw !== "") {
             input.salary_max = salaryMax;
         }
         if (maxApplicantsRaw !== "") {
             input.max_applicants = Number(maxApplicantsRaw);
         }
+        if (address.trim() !== "") {
+            input.address = { label: address.trim() };
+            if (place !== null) {
+                input.address.latitude = place.lat;
+                input.address.longitude = place.lon;
+            }
+        }
 
         setSaving(true);
         const created = await postJob(input);
         setSaving(false);
 
-        if (created === null) {
-            setError(
-                "La publication a échoué. Une offre du même intitulé existe peut-être déjà.",
-            );
+        if (created.job === null) {
+            setError(created.message);
             return;
         }
 
@@ -105,17 +137,21 @@ export default function CreateJobPostingDialog(props: Props) {
             });
 
         for (const skill of skills) {
-            await postJobSkill(created.id, skill);
+            await postJobSkill(created.job.id, skill);
         }
 
         props.onCreated();
         form.reset();
-        setContractType("");
-        setError(null);
+        resetForm();
         setOpen(false);
     }
 
-    // Région d'annonce permanente, masquée tant qu'aucune erreur n'est levée.
+    let contractErrorClass = "sr-only";
+    if (contractError !== null) {
+        contractErrorClass =
+            "border border-destructive bg-destructive/5 px-3 py-2 text-sm text-destructive";
+    }
+
     let errorClass = "sr-only";
     if (error !== null) {
         errorClass =
@@ -129,9 +165,22 @@ export default function CreateJobPostingDialog(props: Props) {
 
     let contractInvalid: boolean | undefined = undefined;
     let contractDescribedBy: string | undefined = undefined;
-    if (error !== null) {
+    if (contractError !== null) {
         contractInvalid = true;
         contractDescribedBy = "contractType-error";
+    }
+
+    let addressHint = "Sans adresse, l'offre est localisée au siège de l'entreprise.";
+    if (props.companyAddress) {
+        addressHint =
+            "Sans adresse, l'offre est localisée à l'adresse de l'entreprise (" +
+            props.companyAddress +
+            ").";
+    }
+
+    let sectorPlaceholder = "Informatique, bâtiment, santé…";
+    if (props.companyActivity) {
+        sectorPlaceholder = props.companyActivity;
     }
 
     return (
@@ -143,7 +192,7 @@ export default function CreateJobPostingDialog(props: Props) {
                 </Button>
             </DialogTrigger>
 
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle className="font-heading text-primary">
                         Publier une nouvelle offre
@@ -188,10 +237,50 @@ export default function CreateJobPostingDialog(props: Props) {
                             id="contractType-error"
                             role="alert"
                             aria-live="assertive"
-                            className={errorClass}
+                            className={contractErrorClass}
                         >
-                            {error}
+                            {contractError}
                         </p>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="remote">Télétravail</Label>
+                        <Select value={remote} onValueChange={setRemote}>
+                            <SelectTrigger id="remote" className="w-full">
+                                <SelectValue placeholder="Sélectionner" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {remoteOptions.map(function (option) {
+                                    return (
+                                        <SelectItem key={option} value={option}>
+                                            {option}
+                                        </SelectItem>
+                                    );
+                                })}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="sector">Secteur d&apos;activité</Label>
+                        <Input
+                            id="sector"
+                            name="sector"
+                            placeholder={sectorPlaceholder}
+                            maxLength={100}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="jobAddress">Adresse du poste</Label>
+                        <AddressAutocomplete
+                            id="jobAddress"
+                            value={address}
+                            onChange={handleAddressChange}
+                            onSelect={setPlace}
+                            placeholder="12 rue de la Paix, 35000 Rennes"
+                        />
+                        <p className="text-xs text-muted-foreground">{addressHint}</p>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
@@ -245,9 +334,14 @@ export default function CreateJobPostingDialog(props: Props) {
                         />
                     </div>
 
+                    <p role="alert" aria-live="assertive" className={errorClass}>
+                        {error}
+                    </p>
+
                     <DialogFooter>
                         <Button
                             type="submit"
+                            disabled={saving}
                             className="bg-action font-heading font-semibold text-action-foreground hover:bg-action-hover"
                         >
                             {publishLabel}

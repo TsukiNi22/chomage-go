@@ -208,6 +208,11 @@ export default function MapExplorer(props: ExplorerProps) {
         setSuggestions([]);
         setSuggestionsOpen(false);
         setHighlightedIndex(-1);
+
+        // Une offre sélectionnée prime sur le lieu pour le centrage : on la relâche
+        // pour que la carte se recentre bien sur la commune recherchée.
+        setSelectedJob(null);
+        setDetailsOpen(false);
     }
 
     function toggleGeoLocally() {

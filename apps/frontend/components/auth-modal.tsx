@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, User } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { postCompany } from "@/lib/api";
+import { lookupSiret, postCompany, type SireneEstablishment } from "@/lib/api";
 import { normalizeSiret, siretError } from "@/lib/siret";
 import { companyEmailError } from "@/lib/company-email";
 
@@ -112,9 +112,10 @@ export default function AuthModal(props: Props) {
     const [employerLastname, setEmployerLastname] = useState("");
     const [employerFirstname, setEmployerFirstname] = useState("");
     const [employerEmail, setEmployerEmail] = useState("");
-    const [employerCompany, setEmployerCompany] = useState("");
     const [employerSiret, setEmployerSiret] = useState("");
     const [employerPassword, setEmployerPassword] = useState("");
+    const [establishment, setEstablishment] = useState<SireneEstablishment | null>(null);
+    const [checkingSiret, setCheckingSiret] = useState(false);
 
     function handleOpenChange(open: boolean) {
         if (!open) {
@@ -168,6 +169,35 @@ export default function AuthModal(props: Props) {
         }
     }
 
+    /** Confronte le SIRET saisi à l'annuaire des entreprises pour en tirer la raison sociale. */
+    async function verifySiret() {
+        setEstablishment(null);
+        setError(null);
+
+        const siretProblem = siretError(employerSiret);
+        if (siretProblem !== null) {
+            setError(siretProblem);
+            return null;
+        }
+
+        setCheckingSiret(true);
+        const lookup = await lookupSiret(normalizeSiret(employerSiret));
+        setCheckingSiret(false);
+
+        if (!lookup.ok || lookup.establishment === null) {
+            setError(lookup.message || "Ce numéro de SIRET n'a pas pu être vérifié.");
+            return null;
+        }
+
+        setEstablishment(lookup.establishment);
+        return lookup.establishment;
+    }
+
+    function handleSiretChange(event: React.ChangeEvent<HTMLInputElement>) {
+        setEmployerSiret(event.target.value);
+        setEstablishment(null);
+    }
+
     async function handleEmployerSignup(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         setError(null);
@@ -178,10 +208,13 @@ export default function AuthModal(props: Props) {
             return;
         }
 
-        const siretProblem = siretError(employerSiret);
-        if (siretProblem !== null) {
-            setError(siretProblem);
-            return;
+        // Le nom de l'entreprise n'est jamais saisi : il vient de l'annuaire des entreprises.
+        let found = establishment;
+        if (found === null) {
+            found = await verifySiret();
+            if (found === null) {
+                return;
+            }
         }
 
         setLoading(true);
@@ -200,21 +233,22 @@ export default function AuthModal(props: Props) {
             return;
         }
 
-        const company = await postCompany(
-            employerCompany,
-            normalizeSiret(employerSiret),
-        );
+        const result = await postCompany(normalizeSiret(employerSiret));
 
-        setLoading(false);
-
-        if (company === null) {
+        if (result.company === null) {
+            setLoading(false);
             setError(
-                "Le compte est créé, mais l'entreprise n'a pas pu être enregistrée. Réessayez depuis votre profil.",
+                (result.message || "L'entreprise n'a pas pu être enregistrée.") +
+                    " Votre compte est créé, réessayez depuis votre profil.",
             );
             return;
         }
 
         props.onClose();
+
+        // Le rang vient de passer à « employeur » côté serveur : on recharge la page
+        // pour repartir sur une session à jour, avec l'espace de publication d'offres.
+        window.location.href = "/offres";
     }
 
     function backToChoice() {
@@ -231,6 +265,45 @@ export default function AuthModal(props: Props) {
         </p>
     );
 }
+
+    let establishmentBlock = (
+        <p className="text-xs text-muted-foreground">
+            Le nom de l&apos;entreprise, son activité et son adresse sont repris de
+            l&apos;annuaire des entreprises à partir du SIRET.
+        </p>
+    );
+    if (establishment !== null) {
+        let activityLine = null;
+        if (establishment.activity !== null) {
+            activityLine = (
+                <span className="block text-xs text-muted-foreground">
+                    {establishment.activity}
+                </span>
+            );
+        }
+
+        let addressLine = null;
+        if (establishment.address !== null) {
+            addressLine = (
+                <span className="block text-xs text-muted-foreground">
+                    {establishment.address.label}
+                </span>
+            );
+        }
+
+        establishmentBlock = (
+            <div
+                aria-live="polite"
+                className="border border-primary/40 bg-accent px-3 py-2"
+            >
+                <span className="block font-heading text-sm font-semibold text-primary">
+                    {establishment.name}
+                </span>
+                {activityLine}
+                {addressLine}
+            </div>
+        );
+    }
 
     let submitLabel = "Se connecter";
     if (loading) {
@@ -417,27 +490,38 @@ export default function AuthModal(props: Props) {
                                             setEmployerEmail(event.target.value);
                                         }}
                                     />
-                                    <Field
-                                        id="employer-company"
-                                        label="Nom de l'entreprise"
-                                        type="text"
-                                        autoComplete="organization"
-                                        value={employerCompany}
-                                        onChange={function (event) {
-                                            setEmployerCompany(event.target.value);
-                                        }}
-                                    />
-                                    <Field
-                                        id="employer-siret"
-                                        label="Numéro de SIRET"
-                                        type="text"
-                                        placeholder="14 chiffres"
-                                        autoComplete="off"
-                                        value={employerSiret}
-                                        onChange={function (event) {
-                                            setEmployerSiret(event.target.value);
-                                        }}
-                                    />
+                                    <div className="flex flex-col gap-1.5">
+                                        <Label
+                                            htmlFor="employer-siret"
+                                            className="font-heading text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
+                                        >
+                                            Numéro de SIRET
+                                            <span aria-hidden="true" className="ml-0.5 text-destructive">
+                                                *
+                                            </span>
+                                        </Label>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                id="employer-siret"
+                                                type="text"
+                                                placeholder="14 chiffres"
+                                                autoComplete="off"
+                                                required
+                                                value={employerSiret}
+                                                onChange={handleSiretChange}
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                disabled={checkingSiret}
+                                                onClick={verifySiret}
+                                                className="shrink-0 border-primary font-heading font-semibold text-primary"
+                                            >
+                                                {checkingSiret ? "Vérification…" : "Vérifier"}
+                                            </Button>
+                                        </div>
+                                        {establishmentBlock}
+                                    </div>
                                     <Field
                                         id="employer-password"
                                         label="Mot de passe"

@@ -81,7 +81,7 @@ const articles = [
     {
         title: "Article 10. Contact",
         blocks: [
-            "Pour toute question relative aux présentes conditions, à la protection des données ou à l'utilisation de l'Application, vous pouvez contacter l'Équipe de développement à equipedev@chomagego.fr. Ce contact est valable jusqu'à la finalisation du contrat et au transfert de la propriété intellectuelle.",
+            "Pour toute question relative aux présentes conditions, à la protection des données ou à l'utilisation de l'Application, vous pouvez contacter l'Équipe de développement à equipedev@geoemploi.fr. Ce contact est valable jusqu'à la finalisation du contrat et au transfert de la propriété intellectuelle.",
             "Après la finalisation du contrat et le transfert de la propriété intellectuelle, le contact est celui du client, à contact@client.fr.",
         ],
     },

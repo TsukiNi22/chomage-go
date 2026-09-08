@@ -16,6 +16,8 @@ import {
     type Applicant,
 } from "@/lib/api";
 import { safeResume } from "@/lib/resume";
+import ReportDialog from "@/components/report-dialog";
+import { Flag } from "lucide-react";
 
 type Props = {
     jobId: number | null;
@@ -39,6 +41,7 @@ export default function JobApplicants(props: Props) {
     const [applicants, setApplicants] = useState<Applicant[]>([]);
     const [loading, setLoading] = useState(true);
     const [busy, setBusy] = useState(0);
+    const [reported, setReported] = useState<Applicant | null>(null);
 
     const jobId = props.jobId;
     const isOpen = props.open;
@@ -105,8 +108,10 @@ export default function JobApplicants(props: Props) {
                     let name = "Candidat supprimé";
                     let contactEmail = "";
                     let profile = null;
+                    let addressLine = null;
                     let resumeLink = null;
                     let skills = null;
+                    let reportButton = null;
 
                     if (user !== null) {
                         name = user.firstname + " " + user.lastname;
@@ -116,13 +121,43 @@ export default function JobApplicants(props: Props) {
                             contactEmail = user.emailContact;
                         }
 
-                        if (user.description) {
-                            profile = (
-                                <p className="text-sm leading-relaxed text-muted-foreground">
-                                    {user.description}
-                                </p>
+                        if (user.address) {
+                            addressLine = (
+                                <div className="flex flex-col gap-0.5">
+                                    <span className="font-heading text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                                        Adresse
+                                    </span>
+                                    <span className="text-sm">{user.address}</span>
+                                </div>
                             );
                         }
+
+                        if (user.description) {
+                            profile = (
+                                <div className="flex flex-col gap-0.5">
+                                    <span className="font-heading text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                                        Présentation
+                                    </span>
+                                    <p className="text-sm leading-relaxed text-muted-foreground">
+                                        {user.description}
+                                    </p>
+                                </div>
+                            );
+                        }
+
+                        const candidate = applicant;
+                        reportButton = (
+                            <button
+                                type="button"
+                                onClick={function () {
+                                    setReported(candidate);
+                                }}
+                                className="flex items-center gap-1.5 font-heading text-xs font-medium text-destructive underline underline-offset-4 hover:no-underline"
+                            >
+                                <Flag className="h-3.5 w-3.5" />
+                                Signaler ce profil
+                            </button>
+                        );
 
                         const resumeHref = safeResume(user.resume);
                         if (resumeHref !== null) {
@@ -199,6 +234,7 @@ export default function JobApplicants(props: Props) {
                                 </Badge>
                             </div>
 
+                            {addressLine}
                             {profile}
                             {skills}
                             {messageBlock}
@@ -233,6 +269,7 @@ export default function JobApplicants(props: Props) {
                                 >
                                     <a href={"mailto:" + contactEmail}>Contacter</a>
                                 </Button>
+                                {reportButton}
                             </div>
                         </article>
                     );
@@ -241,7 +278,15 @@ export default function JobApplicants(props: Props) {
         );
     }
 
+    let reportSubject = "";
+    let reportUserId: number | null = null;
+    if (reported !== null && reported.user !== null) {
+        reportSubject = reported.user.firstname + " " + reported.user.lastname;
+        reportUserId = reported.user.id;
+    }
+
     return (
+        <>
         <Dialog open={props.open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
                 <DialogHeader>
@@ -254,5 +299,15 @@ export default function JobApplicants(props: Props) {
                 {body}
             </DialogContent>
         </Dialog>
+
+        <ReportDialog
+            open={reported !== null}
+            onClose={function () {
+                setReported(null);
+            }}
+            userId={reportUserId}
+            subject={reportSubject}
+        />
+        </>
     );
 }

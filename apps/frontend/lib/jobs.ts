@@ -2,6 +2,7 @@ export type Job = {
     id: number;
     title: string;
     company: string;
+    companyId: number | null;
     sector: string;
     contract: "CDI" | "CDD" | "Alternance" | "Stage";
     city: string;

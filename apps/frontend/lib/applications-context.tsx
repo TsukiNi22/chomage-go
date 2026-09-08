@@ -11,6 +11,7 @@ import {
 import type { Job } from "@/lib/jobs";
 import { authClient } from "@/lib/auth-client";
 import {
+    deleteApplication,
     fetchApplications,
     postApplication,
     type ApiApplication,
@@ -18,13 +19,25 @@ import {
 
 const CONTRACTS = ["CDI", "CDD", "Alternance", "Stage", "Freelance"];
 
+export const APPLICATION_STATUS_LABELS = ["En attente", "Acceptée", "Refusée"];
+
+export function applicationStatusLabel(status: number): string {
+    const label = APPLICATION_STATUS_LABELS[status];
+    if (label === undefined) {
+        return "En attente";
+    }
+    return label;
+}
+
 export type JobApplication = {
     id: number;
     jobId: number;
     title: string;
     company: string;
+    companyId: number | null;
     city: string;
     contractType: string;
+    status: number;
     appliedAt: string;
     message: string;
 };
@@ -33,6 +46,7 @@ type ApplicationsContextValue = {
     applications: JobApplication[];
     loading: boolean;
     addApplication: (job: Job, message: string) => Promise<string | null>;
+    removeApplication: (id: number) => Promise<boolean>;
     hasApplied: (jobId: number) => boolean;
 };
 
@@ -45,6 +59,7 @@ function toApplication(row: ApiApplication): JobApplication {
 
     let title = "Offre retirée";
     let company = "";
+    let companyId: number | null = null;
     let city = "";
     let contractType = "";
 
@@ -53,6 +68,7 @@ function toApplication(row: ApiApplication): JobApplication {
         contractType = CONTRACTS[job.type] || "";
         if (job.company !== null) {
             company = job.company.name;
+            companyId = job.company.id;
         }
         if (job.address !== null && job.address.city !== null) {
             city = job.address.city;
@@ -74,8 +90,10 @@ function toApplication(row: ApiApplication): JobApplication {
         jobId: row.jobId,
         title: title,
         company: company,
+        companyId: companyId,
         city: city,
         contractType: contractType,
+        status: row.status,
         appliedAt: appliedAt,
         message: message,
     };
@@ -124,9 +142,17 @@ export function ApplicationsProvider(props: { children: ReactNode }) {
         return result.message;
     }
 
+    async function removeApplication(id: number) {
+        const ok = await deleteApplication(id);
+        if (ok) {
+            await reload();
+        }
+        return ok;
+    }
+
     return (
         <ApplicationsContext.Provider
-            value={{ applications, loading, addApplication, hasApplied }}
+            value={{ applications, loading, addApplication, removeApplication, hasApplied }}
         >
             {props.children}
         </ApplicationsContext.Provider>

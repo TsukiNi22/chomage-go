@@ -44,6 +44,9 @@ export const companies = pgTable(
         description: text("description"),
         link: varchar("link", { length: 500 }),
         employeeRange: integer("employee_range").notNull(),
+        activity: varchar("activity", { length: 255 }), // libellé de l'activité principale, renseigné par l'API Sirene
+        legalName: varchar("legal_name", { length: 255 }), // dénomination légale retournée par l'API Sirene
+        sireneCheckedAt: timestamp("sirene_checked_at"), // dernière confrontation du SIRET à l'API Sirene
         // NOTE: addressId reste optionnel -> on met l'adresse à NULL si elle est supprimée,
         // on ne veut pas qu'une suppression d'adresse fasse disparaître l'entreprise entière.
         addressId: integer("address_id").references(() => addresses.id, { onDelete: "set null" }),
@@ -206,6 +209,21 @@ export const applications = pgTable(
 // Archive des offres (> 30 jours) — même contenu que "jobs",
 // purgée après 2 ans passés en archive.
 // ------------------------------------------------------------
+export const reports = pgTable(
+    "reports",
+    {
+        id: serial("id").primaryKey(),
+        reporterId: integer("reporter_id").references(() => users.id, { onDelete: "set null" }),
+        jobId: integer("job_id").references(() => jobs.id, { onDelete: "cascade" }), // offre signalée
+        targetUserId: integer("target_user_id").references(() => users.id, { onDelete: "cascade" }), // profil signalé
+        reason: varchar("reason", { length: 100 }).notNull(),
+        description: text("description"),
+        status: integer("status").notNull().default(0), // 0 ouvert, 1 traité, 2 rejeté
+        createdAt: timestamp("created_at").defaultNow(),
+    },
+    (t) => [index("idx_reports_status").on(t.status)]
+);
+
 export const jobsArchive = pgTable("jobs_archive", {
     id: serial("id").primaryKey(),
     originalJobId: integer("original_job_id").notNull(), // trace l'ancien id, pas de FK (la ligne source n'existe plus)
@@ -252,6 +270,8 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     skills: many(userSkills),
     experiences: many(experience),
     applications: many(applications),
+    reportsFiled: many(reports, { relationName: "reportsFiled" }),
+    reportsReceived: many(reports, { relationName: "reportsReceived" }),
 }));
 
 export const userSkillsRelations = relations(userSkills, ({ one }) => ({
@@ -273,6 +293,7 @@ export const jobsRelations = relations(jobs, ({ one, many }) => ({
     address: one(addresses, { fields: [jobs.addressId], references: [addresses.id] }),
     skills: many(jobSkills),
     applications: many(applications),
+    reports: many(reports),
 }));
 
 export const jobSkillsRelations = relations(jobSkills, ({ one }) => ({
@@ -282,6 +303,12 @@ export const jobSkillsRelations = relations(jobSkills, ({ one }) => ({
 export const applicationsRelations = relations(applications, ({ one }) => ({
     job: one(jobs, { fields: [applications.jobId], references: [jobs.id] }),
     user: one(users, { fields: [applications.userId], references: [users.id] }),
+}));
+
+export const reportsRelations = relations(reports, ({ one }) => ({
+    reporter: one(users, { fields: [reports.reporterId], references: [users.id], relationName: "reportsFiled" }),
+    job: one(jobs, { fields: [reports.jobId], references: [jobs.id] }),
+    targetUser: one(users, { fields: [reports.targetUserId], references: [users.id], relationName: "reportsReceived" }),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
