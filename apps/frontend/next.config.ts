@@ -9,6 +9,9 @@ if (!process.env.NEXT_PUBLIC_API_URL) {
     );
 }
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+    allowedDevOrigins: ['10.168.145.219'],
+    //devIndicators: false,
+};
 
 export default nextConfig;
