@@ -40,7 +40,40 @@ export type JobApplication = {
     status: number;
     appliedAt: string;
     message: string;
+    /** Raison pour laquelle l'offre n'est plus diffusée, null si elle l'est toujours. */
+    unavailableReason: string | null;
 };
+
+/**
+ * Une offre disparaît de la diffusion quand elle est retirée, quand son entreprise
+ * est modérée, ou quand l'employeur qui l'a publiée l'est. La candidature reste
+ * visible côté candidat, avec la raison.
+ */
+function unavailableReason(job: ApiApplication["job"]): string | null {
+    if (job === null) {
+        return "Offre retirée";
+    }
+
+    if (job.company !== null) {
+        if (job.company.bannedAt !== null) {
+            return "Entreprise bannie";
+        }
+        if (job.company.suspendedAt !== null) {
+            return "Entreprise suspendue";
+        }
+    }
+
+    if (job.poster !== null) {
+        if (job.poster.bannedAt !== null) {
+            return "Employeur banni";
+        }
+        if (job.poster.suspendedAt !== null) {
+            return "Employeur suspendu";
+        }
+    }
+
+    return null;
+}
 
 type ApplicationsContextValue = {
     applications: JobApplication[];
@@ -96,6 +129,7 @@ function toApplication(row: ApiApplication): JobApplication {
         status: row.status,
         appliedAt: appliedAt,
         message: message,
+        unavailableReason: unavailableReason(job),
     };
 }
 

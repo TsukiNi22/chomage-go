@@ -369,8 +369,14 @@ export type ApiApplication = {
         title: string;
         type: number;
         companiesId: number;
-        company: { id: number; name: string } | null;
+        company: {
+            id: number;
+            name: string;
+            suspendedAt: string | null;
+            bannedAt: string | null;
+        } | null;
         address: { city: string | null } | null;
+        poster: { suspendedAt: string | null; bannedAt: string | null } | null;
     } | null;
 };
 
@@ -468,6 +474,9 @@ export type AccountModeration = {
     state: "suspended" | "banned";
     reason: string | null;
     since: string | null;
+    /** "account" quand le compte est visé, "company" quand c'est son entreprise. */
+    source?: "account" | "company";
+    companyName?: string | null;
 };
 
 export type AccountState = {

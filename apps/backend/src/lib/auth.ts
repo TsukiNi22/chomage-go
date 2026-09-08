@@ -13,17 +13,38 @@ export const auth = betterAuth({
     }),
     user: {
         modelName: "users",
+        // `returned: false` garde le champ modifiable mais l'exclut de la charge utile
+        // de session. Le cache de session vit dans un cookie : un CV en base64 y ferait
+        // exploser la limite des 4 ko et désactiverait le cache. Ces champs sont lus
+        // via GET /api/users, jamais depuis la session.
         additionalFields: {
             rank: { type: "number", required: true, defaultValue: 2, input: false },
-            companiesId: { type: "number", required: false, fieldName: "companies_id", input: false },
+            companiesId: {
+                type: "number",
+                required: false,
+                fieldName: "companies_id",
+                input: false,
+                returned: false,
+            },
             firstname: { type: "string", required: true },
             lastname: { type: "string", required: true },
-            emailContact: { type: "string", required: false, fieldName: "email_contact" },
-            address: { type: "string", required: false },
-            description: { type: "string", required: false },
-            resume: { type: "string", required: false },
+            emailContact: {
+                type: "string",
+                required: false,
+                fieldName: "email_contact",
+                returned: false,
+            },
+            address: { type: "string", required: false, returned: false },
+            description: { type: "string", required: false, returned: false },
+            resume: { type: "string", required: false, returned: false },
             localisation: { type: "boolean", required: false },
-            allowedAt: { type: "date", required: false, fieldName: "allowed_at", input: false },
+            allowedAt: {
+                type: "date",
+                required: false,
+                fieldName: "allowed_at",
+                input: false,
+                returned: false,
+            },
         },
     },
     session: {

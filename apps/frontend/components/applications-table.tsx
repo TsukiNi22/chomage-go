@@ -84,7 +84,17 @@ export default function ApplicationsTable(props: Props) {
                                 >
                                     {application.title}
                                 </TableCell>
-                                <TableCell className="text-sm">{application.company}</TableCell>
+                                <TableCell className="text-sm">
+                                    {application.company}
+                                    {application.unavailableReason !== null && (
+                                        <Badge
+                                            variant="outline"
+                                            className="ml-2 border-destructive font-heading text-destructive"
+                                        >
+                                            {application.unavailableReason}
+                                        </Badge>
+                                    )}
+                                </TableCell>
                                 <TableCell className="text-sm text-muted-foreground">
                                     {application.city}
                                 </TableCell>

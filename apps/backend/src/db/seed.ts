@@ -62,9 +62,22 @@ async function seedJobs(posterId: number)
 
     const list = jobsData as SeedJob[];
     const companyIds = new Map<string, number>();
+    const seen = new Set<string>();
     let created = 0;
+    let skipped = 0;
 
     for (const item of list) {
+        // Une offre est identifiée par son intitulé au sein d'une entreprise
+        // (contrainte unique en base) : le jeu de démonstration contient quelques
+        // doublons, on les écarte avant l'insertion plutôt qu'en rattrapant l'erreur.
+        const key = item.company + "\u0000" + item.title;
+        if (seen.has(key)) {
+            console.log(`[seed] doublon ignore : "${item.title}" chez ${item.company}`);
+            skipped++;
+            continue;
+        }
+        seen.add(key);
+
         let companyId = companyIds.get(item.company);
 
         if (companyId === undefined) {
@@ -122,12 +135,18 @@ async function seedJobs(posterId: number)
                 createdAt: new Date(item.publishedAt),
             });
             created++;
-        } catch {
+        } catch (error) {
+            // L'adresse ne sert plus à rien si l'offre n'a pas pu être créée.
             await db.delete(addresses).where(eq(addresses.id, address.id));
+            skipped++;
+            console.error(`[seed] offre ignoree : "${item.title}" chez ${item.company}`, error);
         }
     }
 
-    console.log(`[seed] created ${created} jobs across ${companyIds.size} companies`);
+    console.log(
+        `[seed] created ${created} jobs across ${companyIds.size} companies ` +
+        `(${skipped} ignorees sur ${list.length})`,
+    );
 }
 
 async function ensureUser(

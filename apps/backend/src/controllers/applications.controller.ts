@@ -116,6 +116,8 @@ export async function getApplication(req: Request, res: Response, next: NextFunc
 {
     const user = await getCurrentUser(req);
 
+    // L'état de modération de l'entreprise et de l'employeur est joint : le candidat
+    // doit voir qu'une offre à laquelle il a postulé n'est plus diffusée.
     const list = await db.query.applications.findMany({
         where: eq(applications.userId, user.id),
         with: {
@@ -123,6 +125,9 @@ export async function getApplication(req: Request, res: Response, next: NextFunc
                 with: {
                     company: true,
                     address: true,
+                    poster: {
+                        columns: { id: true, suspendedAt: true, bannedAt: true },
+                    },
                 },
             },
         },

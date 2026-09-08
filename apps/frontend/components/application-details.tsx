@@ -77,6 +77,22 @@ export default function ApplicationDetails(props: Props) {
         statusClass = "border-destructive font-heading text-destructive";
     }
 
+    let unavailableBlock = null;
+    if (application.unavailableReason !== null) {
+        unavailableBlock = (
+            <div className="border-l-2 border-destructive bg-destructive/5 p-4">
+                <p className="font-heading text-sm font-semibold text-destructive">
+                    {application.unavailableReason}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                    Cette offre n&apos;est plus diffusée sur la plateforme. Votre
+                    candidature reste enregistrée, mais l&apos;employeur peut ne plus y
+                    donner suite.
+                </p>
+            </div>
+        );
+    }
+
     const current = application;
     let deleteButton = null;
     if (props.onDelete) {
@@ -115,6 +131,8 @@ export default function ApplicationDetails(props: Props) {
                 </DialogHeader>
 
                 <div className="flex flex-col gap-5 p-6">
+                    {unavailableBlock}
+
                     <div className="grid grid-cols-2 gap-5">
                         <Field label="Ville" value={application.city} />
                         <Field label="Envoyée le" value={appliedAt} />

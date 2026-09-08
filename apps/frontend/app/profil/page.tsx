@@ -418,10 +418,10 @@ export default function ProfilPage() {
             <Shell>
                 <div className="border-l-2 border-destructive bg-background p-10">
                     <h1 className="font-heading text-2xl font-bold text-destructive">
-                        {moderationTitle(moderation.state)}
+                        {moderationTitle(moderation)}
                     </h1>
                     <p className="mt-3 text-muted-foreground">
-                        {moderationBody(moderation.state)}
+                        {moderationBody(moderation)}
                     </p>
 
                     <div className="mt-6 flex flex-col gap-1 border-l-2 border-destructive bg-destructive/5 p-4">

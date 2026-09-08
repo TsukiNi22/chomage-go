@@ -6,17 +6,19 @@ export const authClient = createAuthClient({
     baseURL: API_URL,
     plugins: [
         inferAdditionalFields({
+            // Miroir de la configuration serveur : les champs `returned: false` restent
+            // modifiables depuis le client mais ne figurent pas dans la session.
             user: {
                 rank: { type: "number", input: false },
-                companiesId: { type: "number", required: false, input: false },
+                companiesId: { type: "number", required: false, input: false, returned: false },
                 firstname: { type: "string" },
                 lastname: { type: "string" },
-                emailContact: { type: "string", required: false },
-                address: { type: "string", required: false },
-                description: { type: "string", required: false },
-                resume: { type: "string", required: false },
+                emailContact: { type: "string", required: false, returned: false },
+                address: { type: "string", required: false, returned: false },
+                description: { type: "string", required: false, returned: false },
+                resume: { type: "string", required: false, returned: false },
                 localisation: { type: "boolean", required: false },
-                allowedAt: { type: "date", required: false, input: false },
+                allowedAt: { type: "date", required: false, input: false, returned: false },
             },
         }),
     ],

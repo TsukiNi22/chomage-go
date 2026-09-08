@@ -12,15 +12,41 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { fetchAccountState, type AccountModeration } from "@/lib/api";
 
-export function moderationTitle(state: AccountModeration["state"]): string {
-    if (state === "banned") {
+export function moderationTitle(moderation: AccountModeration): string {
+    if (moderation.source === "company") {
+        if (moderation.state === "banned") {
+            return "Votre entreprise a été bannie";
+        }
+        return "Votre entreprise est suspendue";
+    }
+
+    if (moderation.state === "banned") {
         return "Votre compte a été banni";
     }
     return "Votre compte est suspendu";
 }
 
-export function moderationBody(state: AccountModeration["state"]): string {
-    if (state === "banned") {
+export function moderationBody(moderation: AccountModeration): string {
+    if (moderation.source === "company") {
+        let name = "L'entreprise rattachée à votre compte";
+        if (moderation.companyName) {
+            name = moderation.companyName;
+        }
+
+        if (moderation.state === "banned") {
+            return (
+                name +
+                " a été bannie de la plateforme. Votre compte n'est pas banni, mais il perd les mêmes accès : ses offres et sa fiche sont retirées de la diffusion publique et vous ne pouvez plus publier ni gérer de candidatures."
+            );
+        }
+
+        return (
+            name +
+            " est suspendue. Votre compte n'est pas suspendu, mais il perd les mêmes accès tant que la suspension est en vigueur : ses offres et sa fiche sont retirées de la diffusion publique et vous ne pouvez plus publier ni gérer de candidatures."
+        );
+    }
+
+    if (moderation.state === "banned") {
         return "L'accès à la plateforme vous a été définitivement retiré par un administrateur. Vous ne pouvez plus candidater, publier d'offre ni modifier votre profil.";
     }
     return "Un administrateur a suspendu votre compte. Vous ne pouvez plus candidater, publier d'offre ni modifier votre profil tant que la suspension est en vigueur.";
@@ -84,13 +110,13 @@ export default function AccountModerationDialog() {
             <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle className="font-heading text-destructive">
-                        {moderationTitle(moderation.state)}
+                        {moderationTitle(moderation)}
                     </DialogTitle>
                 </DialogHeader>
 
                 <div className="flex flex-col gap-4">
                     <p className="text-sm text-muted-foreground">
-                        {moderationBody(moderation.state)}
+                        {moderationBody(moderation)}
                     </p>
 
                     <div className="flex flex-col gap-1 border-l-2 border-destructive bg-destructive/5 p-4">
