@@ -58,7 +58,7 @@ export const auth = betterAuth({
             const url = `${api}/api/auth/verify-email?token=${token}` +
                 `&callbackURL=${encodeURIComponent(front + "/profil?verifie=1")}`;
 
-            sendVerificationMail(user.email, { name: user.name, url: url });
+            await sendVerificationMail(user.email, { name: user.name, url: url });
         },
     },
     secret: process.env.BETTER_AUTH_SECRET!,

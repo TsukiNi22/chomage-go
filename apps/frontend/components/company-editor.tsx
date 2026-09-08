@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { authClient } from "@/lib/auth-client";
 import { UserRank } from "@/lib/user-rank";
-import { patchCompany, refreshCompanyFromSirene } from "@/lib/api";
+import {
+    fetchMyProfile,
+    patchCompany,
+    refreshCompanyFromSirene,
+    type UserProfile,
+} from "@/lib/api";
 
 type Props = {
     companyId: number;
@@ -22,7 +27,9 @@ type Props = {
  */
 export default function CompanyEditor(props: Props) {
     const router = useRouter();
-    const { data: session, isPending } = authClient.useSession();
+    const { data: session } = authClient.useSession();
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [checking, setChecking] = useState(true);
     const [description, setDescription] = useState(props.description);
     const [link, setLink] = useState(props.link);
     const [saving, setSaving] = useState(false);
@@ -30,16 +37,35 @@ export default function CompanyEditor(props: Props) {
     const [feedback, setFeedback] = useState<string | null>(null);
     const [failed, setFailed] = useState(false);
 
-    if (isPending || !session) {
-        return null;
-    }
+    const userId = session?.user?.id;
 
-    const isAdmin = session.user.rank === UserRank.ADMIN;
-    const belongsToCompany = session.user.companiesId === props.companyId;
+    // Le rattachement à l'entreprise est lu sur le profil et non sur la session :
+    // la session peut être servie depuis son cache et ignorer un rattachement récent.
+    useEffect(
+        function () {
+            if (userId === undefined) {
+                setProfile(null);
+                setChecking(false);
+                return;
+            }
 
-    if (!isAdmin && !belongsToCompany) {
-        return null;
-    }
+            let cancelled = false;
+            setChecking(true);
+
+            fetchMyProfile().then(function (data) {
+                if (cancelled) {
+                    return;
+                }
+                setProfile(data);
+                setChecking(false);
+            });
+
+            return function () {
+                cancelled = true;
+            };
+        },
+        [userId],
+    );
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -83,6 +109,17 @@ export default function CompanyEditor(props: Props) {
 
         setFeedback("Données légales resynchronisées depuis l'annuaire des entreprises.");
         router.refresh();
+    }
+
+    if (checking || profile === null) {
+        return null;
+    }
+
+    const isAdmin = profile.rank === UserRank.ADMIN;
+    const belongsToCompany = profile.companiesId === props.companyId;
+
+    if (!isAdmin && !belongsToCompany) {
+        return null;
     }
 
     let feedbackClass = "sr-only";

@@ -353,6 +353,8 @@ export async function getReports(req: Request, res: Response, next: NextFunction
         where = and(...filters);
     }
 
+    // Le détail complet de la cible est joint : l'administrateur doit pouvoir juger
+    // sur pièces sans naviguer ailleurs.
     const list = await db.query.reports.findMany({
         where: where,
         with: {
@@ -360,10 +362,27 @@ export async function getReports(req: Request, res: Response, next: NextFunction
                 columns: { id: true, firstname: true, lastname: true, email: true },
             },
             targetUser: {
-                columns: { id: true, firstname: true, lastname: true, email: true },
+                columns: {
+                    id: true,
+                    firstname: true,
+                    lastname: true,
+                    email: true,
+                    emailContact: true,
+                    emailVerified: true,
+                    address: true,
+                    description: true,
+                    resume: true,
+                    rank: true,
+                    suspendedAt: true,
+                    bannedAt: true,
+                    createdAt: true,
+                },
             },
             job: {
-                with: { company: true },
+                with: { company: true, address: true, skills: true },
+            },
+            company: {
+                with: { address: true },
             },
         },
     });
@@ -380,6 +399,7 @@ export async function getReports(req: Request, res: Response, next: NextFunction
                 report.job?.title || "",
                 report.job?.company?.name || "",
                 report.targetUser ? report.targetUser.firstname + " " + report.targetUser.lastname : "",
+                report.company?.name || "",
                 report.reporter ? report.reporter.firstname + " " + report.reporter.lastname : "",
             ].join(" ").toLowerCase();
             return haystack.includes(needle);
@@ -411,6 +431,118 @@ export async function patchReport(req: Request, res: Response, next: NextFunctio
     const rows = await db.update(reports)
         .set({status: req.body.status})
         .where(eq(reports.id, id))
+        .returning();
+
+    res.json(rows[0]);
+
+    next();
+}
+
+export async function getCompanies(req: Request, res: Response, next: NextFunction)
+{
+    await requireAdmin(req);
+
+    const term = searchTerm(req.query.q);
+
+    const list = await db.query.companies.findMany({
+        with: {
+            address: true,
+        },
+    });
+
+    const jobCounts = await db.select({companiesId: jobs.companiesId, total: count()})
+        .from(jobs)
+        .groupBy(jobs.companiesId);
+
+    const byCompany: Record<number, number> = {};
+    for (const row of jobCounts) {
+        byCompany[row.companiesId] = row.total;
+    }
+
+    const employeeCounts = await db.select({companiesId: users.companiesId, total: count()})
+        .from(users)
+        .groupBy(users.companiesId);
+
+    const employeesByCompany: Record<number, number> = {};
+    for (const row of employeeCounts) {
+        if (row.companiesId !== null) {
+            employeesByCompany[row.companiesId] = row.total;
+        }
+    }
+
+    let rows = list.map(function (company) {
+        let jobsCount = byCompany[company.id];
+        if (jobsCount === undefined) {
+            jobsCount = 0;
+        }
+        let employeesCount = employeesByCompany[company.id];
+        if (employeesCount === undefined) {
+            employeesCount = 0;
+        }
+        return { ...company, jobsCount: jobsCount, employeesCount: employeesCount };
+    });
+
+    if (term !== null) {
+        const needle = term.slice(1, -1).toLowerCase();
+        rows = rows.filter(function (company) {
+            const haystack = [
+                company.name,
+                company.legalName || "",
+                company.siret,
+                company.activity || "",
+                company.address?.city || "",
+            ].join(" ").toLowerCase();
+            return haystack.includes(needle);
+        });
+    }
+
+    res.json(rows);
+
+    next();
+}
+
+export async function patchCompanyModeration(req: Request, res: Response, next: NextFunction)
+{
+    await requireAdmin(req);
+
+    const id = parseId(req.params.id, "Identifiant d'entreprise invalide");
+
+    if (!validateJson(schemas.moderationSchema, req, res)) {
+        return;
+    }
+
+    const company = await db.query.companies.findFirst({
+        where: eq(companies.id, id),
+    });
+    if (!company) {
+        throw new HttpError(404, "Entreprise introuvable");
+    }
+
+    const action = req.body.action;
+    const values: {
+        suspendedAt?: Date | null;
+        bannedAt?: Date | null;
+        moderationReason?: string | null;
+    } = {};
+
+    if (action === "suspend") {
+        values.suspendedAt = new Date();
+        values.moderationReason = req.body.reason;
+    }
+    if (action === "reactivate") {
+        values.suspendedAt = null;
+        values.bannedAt = null;
+        values.moderationReason = null;
+    }
+    if (action === "ban") {
+        values.bannedAt = new Date();
+        values.suspendedAt = new Date();
+        values.moderationReason = req.body.reason;
+    }
+
+    const rows = await db.update(companies)
+        .set(values)
+        .where(eq(companies.id, id))
         .returning();
 
     res.json(rows[0]);

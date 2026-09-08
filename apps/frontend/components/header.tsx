@@ -24,6 +24,8 @@ import { useRouter } from "next/navigation";
 const links = [
     { label: "Comment ça marche", href: "/#how" },
     { label: "Carte des offres", href: "/carte" },
+    { label: "Carte des entreprises", href: "/entreprises" },
+    { label: "Annuaire", href: "/annuaire" },
 ];
 
 const PUBLISH_JOB_ROUTE = "/offres";
@@ -34,9 +36,12 @@ export default function Header() {
     const pathname = usePathname();
     const [modalOpen, setModalOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
-    const { data: session, isPending } = authClient.useSession();
+    const { data: session, isPending: sessionPending } = authClient.useSession();
+    // Le rendu serveur ignore la session : on attend l'hydratation avant de dépendre
+    // d'elle, sinon les deux rendus divergent.
+    const [hydrated, setHydrated] = useState(false);
+    const isPending = sessionPending || !hydrated;
     const cgu = useCgu();
-    const isJobSeeker = session?.user?.rank === UserRank.JOB_SEEKER;
     const router = useRouter();
 
     function openModal() {
@@ -52,9 +57,15 @@ export default function Header() {
     }
 
     const isOnPublishPage = pathname === PUBLISH_JOB_ROUTE;
-    const isEmployer = session?.user?.rank === UserRank.EMPLOYER;
-    const isAdmin = session?.user?.rank === UserRank.ADMIN;
+    const rank = isPending ? undefined : session?.user?.rank;
+    const isJobSeeker = rank === UserRank.JOB_SEEKER;
+    const isEmployer = rank === UserRank.EMPLOYER;
+    const isAdmin = rank === UserRank.ADMIN;
     const [pending, setPending] = useState(0);
+
+    useEffect(function () {
+        setHydrated(true);
+    }, []);
 
     useEffect(
         function () {
@@ -178,7 +189,7 @@ export default function Header() {
                     aria-label="Navigation principale"
                     className="hidden justify-self-center lg:block"
                 >
-                    <ul className="flex items-center gap-8">
+                    <ul className="flex items-center gap-6">
                         {links.map(function (link) {
                             return (
                                 <li key={link.href}>

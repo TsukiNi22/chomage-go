@@ -31,6 +31,7 @@ export type ApiJob = {
     companiesId?: number;
     company?: { id?: number; name: string } | null;
     address: ApiAddress | null;
+    skills?: { id: number; name: string }[];
 };
 
 export function toJob(row: ApiJob): Job {
@@ -91,6 +92,9 @@ export function toJob(row: ApiJob): Job {
         remote: remote,
         publishedAt: publishedAt,
         description: row.description || "",
+        skills: (row.skills || []).map(function (skill) {
+            return skill.name;
+        }),
     };
 }
 
@@ -153,8 +157,48 @@ export type CompanySummary = {
     legalName: string | null;
     sireneCheckedAt: string | null;
     addressId: number | null;
+    suspendedAt?: string | null;
+    bannedAt?: string | null;
+    moderationReason?: string | null;
     address?: CompanyAddress | null;
 };
+
+export type CompanyListItem = CompanySummary & {
+    jobsCount: number;
+};
+
+export const EMPLOYEE_RANGES = [
+    "0 à 10 salariés",
+    "11 à 100 salariés",
+    "101 à 500 salariés",
+    "Plus de 500 salariés",
+];
+
+export function employeeRangeLabel(range: number): string {
+    const label = EMPLOYEE_RANGES[range];
+    if (label === undefined) {
+        return "Effectif non renseigné";
+    }
+    return label;
+}
+
+/** Entreprises visibles publiquement, avec leur nombre d'offres en ligne. */
+export async function fetchCompanies(): Promise<CompanyListItem[]> {
+    let response;
+    try {
+        response = await fetch(apiBase() + "/api/companies", {
+            cache: "no-store",
+        });
+    } catch {
+        return [];
+    }
+
+    if (!response.ok) {
+        return [];
+    }
+
+    return await response.json();
+}
 
 export type SireneEstablishment = {
     siret: string;
@@ -518,9 +562,13 @@ export type Applicant = {
         lastname: string;
         email: string;
         emailContact: string | null;
+        emailVerified: boolean;
         description: string | null;
         resume: string | null;
         address: string | null;
+        createdAt: string | null;
+        suspendedAt: string | null;
+        bannedAt: string | null;
         skills: { id: number; name: string }[];
     } | null;
 };
@@ -848,6 +896,38 @@ export async function fetchAdminJobs(q: string = ""): Promise<AdminJob[]> {
     return await response.json();
 }
 
+export type ReportedUser = {
+    id: number;
+    firstname: string;
+    lastname: string;
+    email: string;
+    emailContact: string | null;
+    emailVerified: boolean;
+    address: string | null;
+    description: string | null;
+    resume: string | null;
+    rank: number;
+    suspendedAt: string | null;
+    bannedAt: string | null;
+    createdAt: string | null;
+};
+
+export type ReportedJob = {
+    id: number;
+    title: string;
+    description: string | null;
+    type: number;
+    sector: string | null;
+    remote: number;
+    salaryMin: number | null;
+    salaryMax: number | null;
+    createdAt: string | null;
+    companiesId: number;
+    company: CompanySummary | null;
+    address: { label: string; city: string | null; postalCode: string | null } | null;
+    skills: { id: number; name: string }[];
+};
+
 export type AdminReport = {
     id: number;
     reason: string;
@@ -860,14 +940,60 @@ export type AdminReport = {
         lastname: string;
         email: string;
     } | null;
-    targetUser: {
-        id: number;
-        firstname: string;
-        lastname: string;
-        email: string;
-    } | null;
-    job: { id: number; title: string; company: { name: string } | null } | null;
+    targetUser: ReportedUser | null;
+    job: ReportedJob | null;
+    company: CompanySummary | null;
 };
+
+export type AdminCompany = CompanyListItem & {
+    employeesCount: number;
+};
+
+export async function fetchAdminCompanies(q: string = ""): Promise<AdminCompany[]> {
+    let response;
+    try {
+        response = await fetch(
+            API_URL + "/api/admin/companies" + queryString({ q }),
+            { credentials: "include" },
+        );
+    } catch {
+        return [];
+    }
+
+    if (!response.ok) {
+        return [];
+    }
+
+    return await response.json();
+}
+
+export async function moderateCompany(
+    id: number,
+    action: "suspend" | "reactivate" | "ban",
+    reason: string,
+): Promise<boolean> {
+    const payload: { action: string; reason?: string } = { action };
+    if (reason !== "") {
+        payload.reason = reason;
+    }
+
+    let response;
+    try {
+        response = await fetch(
+            API_URL + "/api/admin/companies/" + id + "/moderation",
+            {
+                method: "PATCH",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            },
+        );
+    } catch {
+        return false;
+    }
+
+    return response.ok;
+}
 
 export async function fetchAdminReports(
     filters: { q?: string; status?: string } = {},
@@ -944,6 +1070,7 @@ export const REPORT_REASONS = [
     { value: "contenu-discriminatoire", label: "Contenu discriminatoire" },
     { value: "contenu-inapproprie", label: "Contenu inapproprié" },
     { value: "usurpation", label: "Usurpation d'identité" },
+    { value: "entreprise-non-conforme", label: "Entreprise non conforme" },
     { value: "spam", label: "Spam ou publicité" },
     { value: "autre", label: "Autre motif" },
 ];
@@ -966,6 +1093,7 @@ export type ReportResult = {
 export async function postReport(input: {
     job_id?: number;
     user_id?: number;
+    company_id?: number;
     reason: string;
     description?: string;
 }): Promise<ReportResult> {

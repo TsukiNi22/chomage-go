@@ -28,6 +28,8 @@ type Props = {
     jobId?: number | null;
     /** Profil signalé. Exclusif de jobId. */
     userId?: number | null;
+    /** Entreprise signalée. Exclusif des deux autres. */
+    companyId?: number | null;
     subject: string;
 };
 
@@ -70,6 +72,7 @@ export default function ReportDialog(props: Props) {
         const payload: {
             job_id?: number;
             user_id?: number;
+            company_id?: number;
             reason: string;
             description?: string;
         } = { reason: reason };
@@ -79,6 +82,9 @@ export default function ReportDialog(props: Props) {
         }
         if (props.userId !== undefined && props.userId !== null) {
             payload.user_id = props.userId;
+        }
+        if (props.companyId !== undefined && props.companyId !== null) {
+            payload.company_id = props.companyId;
         }
         if (description.trim() !== "") {
             payload.description = description.trim();

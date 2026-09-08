@@ -3,12 +3,13 @@ import {validateJson} from "../utils/validateJson.utils.ts";
 import {HttpError} from "../types/httpError.ts";
 import * as schemas from "../schemas/companies.schema.ts";
 import {getCurrentUser} from "../utils/currentUser.utils.ts";
+import {getOptionalUser, isModerated} from "../utils/optionalUser.utils.ts";
 import {isUniqueViolation} from "../utils/dbError.utils.ts";
 import {lookupSiret, normalizeSiret} from "../utils/sirene.utils.ts";
 import {createAddress} from "../utils/address.utils.ts";
 import {db} from "../db/index.ts";
-import {companies, users} from "../db/schema.ts";
-import {eq} from "drizzle-orm";
+import {companies, jobs, users} from "../db/schema.ts";
+import {count, eq} from "drizzle-orm";
 
 type CompanyValues = {
     description?: string | null;
@@ -28,13 +29,41 @@ function checkCompanyAccess(rank: number, companiesId: number | null, companyId:
 
 export async function getCompanies(req: Request, res: Response, next: NextFunction)
 {
+    const viewer = await getOptionalUser(req);
+    const isAdmin = viewer !== null && viewer.rank === 0;
+
     const list = await db.query.companies.findMany({
         with: {
             address: true,
         },
     });
 
-    res.json(list);
+    const jobCounts = await db.select({companiesId: jobs.companiesId, total: count()})
+        .from(jobs)
+        .groupBy(jobs.companiesId);
+
+    const byCompany: Record<number, number> = {};
+    for (const row of jobCounts) {
+        byCompany[row.companiesId] = row.total;
+    }
+
+    let rows = list;
+    // Une entreprise modérée sort de la diffusion publique, sauf pour les administrateurs.
+    if (!isAdmin) {
+        rows = rows.filter(function (company) {
+            return !isModerated(company);
+        });
+    }
+
+    const payload = rows.map(function (company) {
+        let jobsCount = byCompany[company.id];
+        if (jobsCount === undefined) {
+            jobsCount = 0;
+        }
+        return { ...company, jobsCount: jobsCount };
+    });
+
+    res.json(payload);
 
     next();
 }
@@ -60,6 +89,16 @@ export async function getCompanie(req: Request, res: Response, next: NextFunctio
     });
     if (!company) {
         throw new HttpError(404, "Entreprise introuvable");
+    }
+
+    if (isModerated(company)) {
+        const viewer = await getOptionalUser(req);
+        const isAdmin = viewer !== null && viewer.rank === 0;
+        const isMember = viewer !== null && viewer.companiesId === company.id;
+
+        if (!isAdmin && !isMember) {
+            throw new HttpError(404, "Entreprise introuvable");
+        }
     }
 
     res.json(company);

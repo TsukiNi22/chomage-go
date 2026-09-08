@@ -4,7 +4,7 @@ import {HttpError} from "../types/httpError.ts";
 import * as schemas from "../schemas/reports.schema.ts";
 import {getCurrentUser} from "../utils/currentUser.utils.ts";
 import {db} from "../db/index.ts";
-import {jobs, reports, users} from "../db/schema.ts";
+import {companies, jobs, reports, users} from "../db/schema.ts";
 import {and, eq} from "drizzle-orm";
 
 export async function postReport(req: Request, res: Response, next: NextFunction)
@@ -17,12 +17,17 @@ export async function postReport(req: Request, res: Response, next: NextFunction
 
     const jobId = req.body.job_id;
     const targetUserId = req.body.user_id;
+    const companyId = req.body.company_id;
 
-    if (jobId === undefined && targetUserId === undefined) {
-        throw new HttpError(400, "Indiquez l'offre ou le profil signalé");
+    const targets = [jobId, targetUserId, companyId].filter(function (value) {
+        return value !== undefined;
+    });
+
+    if (targets.length === 0) {
+        throw new HttpError(400, "Indiquez l'offre, le profil ou l'entreprise signalée");
     }
-    if (jobId !== undefined && targetUserId !== undefined) {
-        throw new HttpError(400, "Un signalement porte sur une offre ou sur un profil, pas les deux");
+    if (targets.length > 1) {
+        throw new HttpError(400, "Un signalement ne porte que sur un seul élément");
     }
 
     if (jobId !== undefined) {
@@ -42,15 +47,29 @@ export async function postReport(req: Request, res: Response, next: NextFunction
         }
     }
 
+    if (companyId !== undefined) {
+        if (companyId === user.companiesId) {
+            throw new HttpError(400, "Vous ne pouvez pas signaler votre propre entreprise");
+        }
+        const company = await db.query.companies.findFirst({ where: eq(companies.id, companyId) });
+        if (!company) {
+            throw new HttpError(404, "Entreprise introuvable");
+        }
+    }
+
     // Un même utilisateur ne signale une cible qu'une fois tant que le signalement est ouvert.
     let existing;
     if (jobId !== undefined) {
         existing = await db.query.reports.findFirst({
             where: and(eq(reports.reporterId, user.id), eq(reports.jobId, jobId), eq(reports.status, 0)),
         });
-    } else {
+    } else if (targetUserId !== undefined) {
         existing = await db.query.reports.findFirst({
             where: and(eq(reports.reporterId, user.id), eq(reports.targetUserId, targetUserId), eq(reports.status, 0)),
+        });
+    } else {
+        existing = await db.query.reports.findFirst({
+            where: and(eq(reports.reporterId, user.id), eq(reports.companyId, companyId), eq(reports.status, 0)),
         });
     }
     if (existing) {
@@ -61,6 +80,7 @@ export async function postReport(req: Request, res: Response, next: NextFunction
         reporterId: user.id,
         jobId: jobId,
         targetUserId: targetUserId,
+        companyId: companyId,
         reason: req.body.reason,
         description: req.body.description,
     }).returning();

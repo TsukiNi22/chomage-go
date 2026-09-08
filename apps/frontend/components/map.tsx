@@ -13,7 +13,18 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { Crosshair } from "lucide-react";
-import type { Job } from "@/lib/jobs";
+
+/** Point affiché sur la carte, indépendant de ce qu'il représente (offre, entreprise…). */
+export type MapPoint = {
+    id: number;
+    lat: number;
+    lon: number;
+    title: string;
+    subtitle: string;
+    detail: string;
+    /** Texte lu par les technologies d'assistance au survol du repère. */
+    label: string;
+};
 
 function createIcon(color: string, size: number) {
     return L.divIcon({
@@ -113,9 +124,9 @@ function RecenterButton(props: { userLat: number | null; userLon: number | null 
 }
 
 type Props = {
-    jobs: Job[];
-    selectedJob: Job | null;
-    onSelect: (job: Job) => void;
+    points: MapPoint[];
+    selectedId: number | null;
+    onSelect: (id: number) => void;
     targetLat: number | null;
     targetLon: number | null;
     targetZoom: number;
@@ -130,19 +141,6 @@ const IGN_WMTS_URL =
     "&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2" +
     "&STYLE=normal&FORMAT=image/png" +
     "&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}";
-
-function markerLabel(job: Job): string {
-    return (
-        job.title +
-        ", " +
-        job.company +
-        ", " +
-        job.contract +
-        ", " +
-        job.city +
-        ". Ouvrir le détail de l'offre."
-    );
-}
 
 export default function Map(props: Props) {
     let userLat = null;
@@ -220,23 +218,23 @@ export default function Map(props: Props) {
             {radiusCircle}
             {userMarker}
 
-            {props.jobs.map(function (job) {
+            {props.points.map(function (point) {
                 let icon = jobIcon;
                 let floating = false;
-                if (props.selectedJob !== null && props.selectedJob.id === job.id) {
+                if (props.selectedId !== null && props.selectedId === point.id) {
                     icon = activeJobIcon;
                     floating = true;
                 }
 
                 return (
                     <Marker
-                        key={job.id}
-                        position={[job.lat, job.lon]}
+                        key={point.id}
+                        position={[point.lat, point.lon]}
                         icon={icon}
-                        title={markerLabel(job)}
+                        title={point.label}
                         eventHandlers={{
                             click: function () {
-                                props.onSelect(job);
+                                props.onSelect(point.id);
                             },
                             keydown: function (event) {
                                 const key = event.originalEvent.key;
@@ -244,19 +242,19 @@ export default function Map(props: Props) {
                                     return;
                                 }
                                 event.originalEvent.preventDefault();
-                                props.onSelect(job);
+                                props.onSelect(point.id);
                             },
                         }}
                     >
                         <Tooltip direction="top" offset={[0, -10]} permanent={floating}>
                             <span className="font-heading text-sm font-semibold text-primary">
-                                {job.title}
+                                {point.title}
                             </span>
                             <br />
-                            <span className="text-xs">{job.company}</span>
+                            <span className="text-xs">{point.subtitle}</span>
                             <br />
                             <span className="text-xs text-muted-foreground">
-                                {job.contract} · {job.city}
+                                {point.detail}
                             </span>
                         </Tooltip>
                     </Marker>

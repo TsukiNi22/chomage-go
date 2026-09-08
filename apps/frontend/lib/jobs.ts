@@ -21,6 +21,7 @@ export type Job = {
     remote: "Aucun" | "Partiel" | "Total";
     publishedAt: string;
     description: string;
+    skills: string[];
 };
 
 export function locatedJobs(list: Job[]): Job[] {

@@ -3,6 +3,7 @@ import {validateJson} from "../utils/validateJson.utils.ts";
 import {HttpError} from "../types/httpError.ts";
 import * as schemas from "../schemas/jobs.schema.ts";
 import {getCurrentUser} from "../utils/currentUser.utils.ts";
+import {getOptionalUser, isModerated} from "../utils/optionalUser.utils.ts";
 import {isUniqueViolation} from "../utils/dbError.utils.ts";
 import {createAddress} from "../utils/address.utils.ts";
 import {db} from "../db/index.ts";
@@ -37,17 +38,55 @@ function checkCompanyAccess(rank: number, companiesId: number | null, companyId:
     throw new HttpError(403, "Vous ne gérez pas cette entreprise");
 }
 
+// Une offre disparaît de la diffusion publique dès que son entreprise ou l'employeur
+// qui l'a publiée est suspendu ou banni. Les administrateurs continuent de tout voir.
+const withModerationSources = {
+    company: true,
+    address: true,
+    skills: true,
+    poster: {
+        columns: { id: true, suspendedAt: true, bannedAt: true },
+    },
+} as const;
+
+type JobWithPoster = {
+    company: { suspendedAt: Date | null; bannedAt: Date | null } | null;
+    poster: { suspendedAt: Date | null; bannedAt: Date | null } | null;
+};
+
+function isPubliclyVisible(job: JobWithPoster): boolean
+{
+    if (job.company !== null && isModerated(job.company)) {
+        return false;
+    }
+    if (job.poster !== null && isModerated(job.poster)) {
+        return false;
+    }
+    return true;
+}
+
+function stripPoster<T extends { poster?: unknown }>(job: T)
+{
+    const copy = { ...job };
+    delete copy.poster;
+    return copy;
+}
+
 export async function getJobs(req: Request, res: Response, next: NextFunction)
 {
+    const viewer = await getOptionalUser(req);
+    const isAdmin = viewer !== null && viewer.rank === 0;
+
     const list = await db.query.jobs.findMany({
-        with: {
-            company: true,
-            address: true,
-            skills: true,
-        },
+        with: withModerationSources,
     });
 
-    res.json(list);
+    let rows = list;
+    if (!isAdmin) {
+        rows = rows.filter(isPubliclyVisible);
+    }
+
+    res.json(rows.map(stripPoster));
 
     next();
 }
@@ -61,17 +100,23 @@ export async function getJob(req: Request, res: Response, next: NextFunction)
 
     const job = await db.query.jobs.findFirst({
         where: eq(jobs.id, id),
-        with: {
-            company: true,
-            address: true,
-            skills: true,
-        },
+        with: withModerationSources,
     });
     if (!job) {
         throw new HttpError(404, "Offre introuvable");
     }
 
-    res.json(job);
+    if (!isPubliclyVisible(job)) {
+        const viewer = await getOptionalUser(req);
+        const isAdmin = viewer !== null && viewer.rank === 0;
+        const isMember = viewer !== null && viewer.companiesId === job.companiesId;
+
+        if (!isAdmin && !isMember) {
+            throw new HttpError(404, "Offre introuvable");
+        }
+    }
+
+    res.json(stripPoster(job));
 
     next();
 }
@@ -399,9 +444,13 @@ export async function getJobApplications(req: Request, res: Response, next: Next
                     lastname: true,
                     email: true,
                     emailContact: true,
+                    emailVerified: true,
                     description: true,
                     resume: true,
                     address: true,
+                    createdAt: true,
+                    suspendedAt: true,
+                    bannedAt: true,
                 },
                 with: {
                     skills: true,

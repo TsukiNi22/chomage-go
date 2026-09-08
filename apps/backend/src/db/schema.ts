@@ -47,6 +47,11 @@ export const companies = pgTable(
         activity: varchar("activity", { length: 255 }), // libellé de l'activité principale, renseigné par l'API Sirene
         legalName: varchar("legal_name", { length: 255 }), // dénomination légale retournée par l'API Sirene
         sireneCheckedAt: timestamp("sirene_checked_at"), // dernière confrontation du SIRET à l'API Sirene
+        // Modération : une entreprise suspendue ou bannie disparaît des recherches
+        // publiques, ainsi que ses offres. Seuls les administrateurs la voient encore.
+        suspendedAt: timestamp("suspended_at"),
+        bannedAt: timestamp("banned_at"),
+        moderationReason: text("moderation_reason"),
         // NOTE: addressId reste optionnel -> on met l'adresse à NULL si elle est supprimée,
         // on ne veut pas qu'une suppression d'adresse fasse disparaître l'entreprise entière.
         addressId: integer("address_id").references(() => addresses.id, { onDelete: "set null" }),
@@ -216,6 +221,7 @@ export const reports = pgTable(
         reporterId: integer("reporter_id").references(() => users.id, { onDelete: "set null" }),
         jobId: integer("job_id").references(() => jobs.id, { onDelete: "cascade" }), // offre signalée
         targetUserId: integer("target_user_id").references(() => users.id, { onDelete: "cascade" }), // profil signalé
+        companyId: integer("company_id").references(() => companies.id, { onDelete: "cascade" }), // entreprise signalée
         reason: varchar("reason", { length: 100 }).notNull(),
         description: text("description"),
         status: integer("status").notNull().default(0), // 0 ouvert, 1 traité, 2 rejeté
@@ -262,6 +268,7 @@ export const companiesRelations = relations(companies, ({ one, many }) => ({
     address: one(addresses, { fields: [companies.addressId], references: [addresses.id] }),
     employees: many(users),
     jobs: many(jobs),
+    reports: many(reports),
 }));
 
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -309,6 +316,7 @@ export const reportsRelations = relations(reports, ({ one }) => ({
     reporter: one(users, { fields: [reports.reporterId], references: [users.id], relationName: "reportsFiled" }),
     job: one(jobs, { fields: [reports.jobId], references: [jobs.id] }),
     targetUser: one(users, { fields: [reports.targetUserId], references: [users.id], relationName: "reportsReceived" }),
+    company: one(companies, { fields: [reports.companyId], references: [companies.id] }),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

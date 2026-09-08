@@ -43,6 +43,13 @@
       "when": 1788851132459,
       "tag": "0005_amusing_captain_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788855596700,
+      "tag": "0006_sparkling_vivisector",
+      "breakpoints": true
     }
   ]
 }

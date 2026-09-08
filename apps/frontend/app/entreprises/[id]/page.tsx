@@ -3,29 +3,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import CompanyEditor from "@/components/company-editor";
+import CompanyReportButton from "@/components/company-report-button";
 import { formatSiret } from "@/lib/siret";
-import { fetchCompany, toJob } from "@/lib/api";
-
-const EMPLOYEE_RANGES = [
-    "0 à 10 salariés",
-    "11 à 100 salariés",
-    "101 à 500 salariés",
-    "Plus de 500 salariés",
-];
+import { employeeRangeLabel, fetchCompany, toJob } from "@/lib/api";
 
 const CONTRACTS = ["CDI", "CDD", "Alternance", "Stage", "Freelance"];
 
 type Props = {
     params: Promise<{ id: string }>;
 };
-
-function employeeRangeLabel(range: number): string {
-    const label = EMPLOYEE_RANGES[range];
-    if (label === undefined) {
-        return "Effectif non renseigné";
-    }
-    return label;
-}
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
     const { id } = await props.params;
@@ -157,6 +143,38 @@ export default async function CompanyPage(props: Props) {
         );
     }
 
+    let moderationBanner = null;
+    if (company.suspendedAt || company.bannedAt) {
+        let title = "Entreprise suspendue";
+        let body =
+            "Cette fiche et les offres de l'entreprise sont retirées de la diffusion publique tant que la suspension est en vigueur.";
+        if (company.bannedAt) {
+            title = "Entreprise bannie";
+            body =
+                "Cette fiche et les offres de l'entreprise sont définitivement retirées de la diffusion publique.";
+        }
+
+        let reason = "Aucun motif n'a été précisé par la modération.";
+        if (company.moderationReason) {
+            reason = company.moderationReason;
+        }
+
+        moderationBanner = (
+            <div className="mt-6 border-l-2 border-destructive bg-destructive/5 p-5">
+                <h2 className="font-heading text-base font-bold text-destructive">
+                    {title}
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">{body}</p>
+                <p className="mt-3 text-sm">
+                    <span className="font-heading text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                        Motif —{" "}
+                    </span>
+                    {reason}
+                </p>
+            </div>
+        );
+    }
+
     return (
         <div className="bg-wash px-6 py-14">
             <div className="mx-auto max-w-3xl">
@@ -167,6 +185,8 @@ export default async function CompanyPage(props: Props) {
                 <h1 className="mt-3 font-heading text-3xl font-bold leading-tight text-primary">
                     {company.name}
                 </h1>
+
+                {moderationBanner}
 
                 {descriptionBlock}
 
@@ -194,7 +214,14 @@ export default async function CompanyPage(props: Props) {
                     link={company.link || ""}
                 />
 
-                <p className="mt-10 text-sm text-muted-foreground">
+                <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+                    <CompanyReportButton
+                        companyId={company.id}
+                        companyName={company.name}
+                    />
+                </div>
+
+                <p className="mt-6 text-sm text-muted-foreground">
                     <Link
                         href="/carte"
                         className="font-heading font-semibold text-primary underline underline-offset-4 hover:no-underline"

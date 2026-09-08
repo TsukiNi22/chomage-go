@@ -210,4 +210,60 @@ router.get("/reports", requireAuth, adminController.getReports);
  */
 router.patch("/reports/:id", requireAuth, adminController.patchReport);
 
+/**
+ * @openapi
+ * /admin/companies:
+ *   get:
+ *     summary: List every company with its moderation state (admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema: { type: string }
+ *         description: Free-text search on name, SIRET, activity or city
+ *     responses:
+ *       200:
+ *         description: List of companies
+ *       403:
+ *         description: Admin access required
+ */
+router.get("/companies", requireAuth, adminController.getCompanies);
+
+/**
+ * @openapi
+ * /admin/companies/{id}/moderation:
+ *   patch:
+ *     summary: Suspend, reactivate or ban a company (admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [action]
+ *             properties:
+ *               action:
+ *                 type: string
+ *                 enum: [suspend, reactivate, ban]
+ *               reason: { type: string }
+ *     responses:
+ *       200:
+ *         description: Company moderation state updated
+ *       403:
+ *         description: Admin access required
+ *       404:
+ *         description: Company not found
+ */
+router.patch("/companies/:id/moderation", requireAuth, adminController.patchCompanyModeration);
+
 export default router;

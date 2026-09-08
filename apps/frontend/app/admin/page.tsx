@@ -32,16 +32,21 @@ import {
 } from "@/components/ui/table";
 import { authClient } from "@/lib/auth-client";
 import { UserRank } from "@/lib/user-rank";
+import ReportDetailDialog from "@/components/report-detail-dialog";
 import {
     adminDeleteJob,
+    employeeRangeLabel,
+    fetchAdminCompanies,
     fetchAdminJobs,
     fetchAdminMetrics,
     fetchAdminReports,
     fetchAdminUsers,
+    moderateCompany,
     moderateUser,
     reportReasonLabel,
     setReportStatus,
     setUserRank,
+    type AdminCompany,
     type AdminJob,
     type AdminMetrics,
     type AdminReport,
@@ -140,6 +145,8 @@ export default function AdminPage() {
     const [users, setUsers] = useState<AdminUser[]>([]);
     const [jobs, setJobs] = useState<AdminJob[]>([]);
     const [reports, setReports] = useState<AdminReport[]>([]);
+    const [adminCompanies, setAdminCompanies] = useState<AdminCompany[]>([]);
+    const [openedReport, setOpenedReport] = useState<AdminReport | null>(null);
     const [loading, setLoading] = useState(true);
     const [busy, setBusy] = useState(0);
     const [reason, setReason] = useState("");
@@ -150,6 +157,7 @@ export default function AdminPage() {
     const [jobQuery, setJobQuery] = useState("");
     const [reportQuery, setReportQuery] = useState("");
     const [reportStatusFilter, setReportStatusFilter] = useState("tous");
+    const [companyQuery, setCompanyQuery] = useState("");
 
     const [rankTarget, setRankTarget] = useState<AdminUser | null>(null);
     const [rankValue, setRankValue] = useState("2");
@@ -170,7 +178,7 @@ export default function AdminPage() {
 
     const reload = useCallback(
         async function () {
-            const [m, u, j, r] = await Promise.all([
+            const [m, u, j, r, c] = await Promise.all([
                 fetchAdminMetrics(),
                 fetchAdminUsers({
                     q: userQuery,
@@ -182,14 +190,24 @@ export default function AdminPage() {
                     q: reportQuery,
                     status: filterValue(reportStatusFilter),
                 }),
+                fetchAdminCompanies(companyQuery),
             ]);
             setMetrics(m);
             setUsers(u);
             setJobs(j);
             setReports(r);
+            setAdminCompanies(c);
             setLoading(false);
         },
-        [userQuery, userRankFilter, userStateFilter, jobQuery, reportQuery, reportStatusFilter],
+        [
+            userQuery,
+            userRankFilter,
+            userStateFilter,
+            jobQuery,
+            reportQuery,
+            reportStatusFilter,
+            companyQuery,
+        ],
     );
 
     useEffect(
@@ -265,6 +283,16 @@ export default function AdminPage() {
     async function handleReportStatus(id: number, status: number) {
         setBusy(id);
         await setReportStatus(id, status);
+        await reload();
+        setBusy(0);
+    }
+
+    async function actOnCompany(
+        id: number,
+        action: "suspend" | "reactivate" | "ban",
+    ) {
+        setBusy(id);
+        await moderateCompany(id, action, reason.trim());
         await reload();
         setBusy(0);
     }
@@ -371,6 +399,9 @@ export default function AdminPage() {
                     </TabsTrigger>
                     <TabsTrigger value="offres" className="font-heading">
                         Offres
+                    </TabsTrigger>
+                    <TabsTrigger value="entreprises" className="font-heading">
+                        Entreprises
                     </TabsTrigger>
                     <TabsTrigger value="signalements" className="font-heading">
                         Signalements
@@ -690,6 +721,170 @@ export default function AdminPage() {
                     </section>
                 </TabsContent>
 
+                <TabsContent value="entreprises">
+                    <section className="mt-4">
+                        <div className="flex flex-wrap items-end justify-between gap-4">
+                            <div className="flex w-full max-w-md flex-col gap-1.5">
+                                <Label
+                                    htmlFor="company-search"
+                                    className="font-heading text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground"
+                                >
+                                    Rechercher une entreprise
+                                </Label>
+                                <Input
+                                    id="company-search"
+                                    type="search"
+                                    value={companyQuery}
+                                    onChange={function (event) {
+                                        setCompanyQuery(event.target.value);
+                                    }}
+                                    placeholder="Nom, SIRET, activité ou commune"
+                                />
+                            </div>
+                            <ResultCount
+                                total={adminCompanies.length}
+                                noun="entreprise(s)"
+                            />
+                        </div>
+
+                        <p className="mt-2 text-xs text-muted-foreground">
+                            Une entreprise suspendue ou bannie disparaît des recherches
+                            publiques, avec toutes ses offres. Le motif saisi plus haut est
+                            appliqué à la prochaine action.
+                        </p>
+
+                        <div className="mt-4 overflow-x-auto border border-border bg-background">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead scope="col">Entreprise</TableHead>
+                                        <TableHead scope="col">SIRET</TableHead>
+                                        <TableHead scope="col">Activité</TableHead>
+                                        <TableHead scope="col">Commune</TableHead>
+                                        <TableHead scope="col" className="text-right">
+                                            Offres
+                                        </TableHead>
+                                        <TableHead scope="col" className="text-right">
+                                            Comptes
+                                        </TableHead>
+                                        <TableHead scope="col">État</TableHead>
+                                        <TableHead scope="col" className="text-right">
+                                            Actions
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+
+                                <TableBody>
+                                    {adminCompanies.map(function (company) {
+                                        let state = (
+                                            <Badge variant="outline" className="font-heading">
+                                                Visible
+                                            </Badge>
+                                        );
+                                        if (company.suspendedAt) {
+                                            state = (
+                                                <Badge
+                                                    variant="outline"
+                                                    className="border-action-text font-heading text-action-text"
+                                                >
+                                                    Suspendue
+                                                </Badge>
+                                            );
+                                        }
+                                        if (company.bannedAt) {
+                                            state = (
+                                                <Badge
+                                                    variant="outline"
+                                                    className="border-destructive font-heading text-destructive"
+                                                >
+                                                    Bannie
+                                                </Badge>
+                                            );
+                                        }
+
+                                        let city = "—";
+                                        if (company.address && company.address.city) {
+                                            city = company.address.city;
+                                        }
+
+                                        return (
+                                            <TableRow key={company.id}>
+                                                <TableCell className="max-w-56 whitespace-normal break-words font-heading font-semibold text-primary">
+                                                    <Link
+                                                        href={"/entreprises/" + company.id}
+                                                        className="underline underline-offset-4 hover:no-underline"
+                                                    >
+                                                        {company.name}
+                                                    </Link>
+                                                </TableCell>
+                                                <TableCell className="text-sm tabular-nums text-muted-foreground">
+                                                    {company.siret}
+                                                </TableCell>
+                                                <TableCell className="max-w-56 whitespace-normal break-words text-sm text-muted-foreground">
+                                                    {company.activity || "—"}
+                                                    <span className="block text-xs">
+                                                        {employeeRangeLabel(company.employeeRange)}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="text-sm text-muted-foreground">
+                                                    {city}
+                                                </TableCell>
+                                                <TableCell className="text-right text-sm tabular-nums">
+                                                    {company.jobsCount}
+                                                </TableCell>
+                                                <TableCell className="text-right text-sm tabular-nums">
+                                                    {company.employeesCount}
+                                                </TableCell>
+                                                <TableCell>{state}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex flex-wrap justify-end gap-1">
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            disabled={busy === company.id}
+                                                            onClick={function () {
+                                                                actOnCompany(company.id, "suspend");
+                                                            }}
+                                                            className="font-heading text-xs font-semibold text-action-text hover:bg-accent"
+                                                        >
+                                                            Suspendre
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            disabled={busy === company.id}
+                                                            onClick={function () {
+                                                                actOnCompany(company.id, "reactivate");
+                                                            }}
+                                                            className="font-heading text-xs font-semibold text-primary hover:bg-accent"
+                                                        >
+                                                            Réactiver
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            disabled={busy === company.id}
+                                                            onClick={function () {
+                                                                actOnCompany(company.id, "ban");
+                                                            }}
+                                                            className="font-heading text-xs font-semibold text-destructive hover:bg-destructive/10"
+                                                        >
+                                                            Bannir
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </section>
+                </TabsContent>
+
                 <TabsContent value="signalements">
                     <section className="mt-4">
                         <div className="grid gap-3 lg:grid-cols-3">
@@ -768,6 +963,8 @@ export default function AdminPage() {
                                                 report.targetUser.firstname +
                                                 " " +
                                                 report.targetUser.lastname;
+                                        } else if (report.company !== null) {
+                                            target = "Entreprise : " + report.company.name;
                                         }
 
                                         let reporter = "Compte supprimé";
@@ -812,6 +1009,17 @@ export default function AdminPage() {
                                                             type="button"
                                                             variant="ghost"
                                                             size="sm"
+                                                            onClick={function () {
+                                                                setOpenedReport(report);
+                                                            }}
+                                                            className="font-heading text-xs font-semibold text-primary hover:bg-accent"
+                                                        >
+                                                            Détails
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
                                                             disabled={busy === report.id}
                                                             onClick={function () {
                                                                 handleReportStatus(report.id, 1);
@@ -843,6 +1051,13 @@ export default function AdminPage() {
                     </section>
                 </TabsContent>
             </Tabs>
+
+            <ReportDetailDialog
+                report={openedReport}
+                onClose={function () {
+                    setOpenedReport(null);
+                }}
+            />
 
             <Dialog open={rankTarget !== null} onOpenChange={cancelRankChange}>
                 <DialogContent className="max-w-md">

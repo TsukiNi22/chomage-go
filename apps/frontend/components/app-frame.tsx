@@ -5,7 +5,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import AccountModerationDialog from "@/components/account-moderation-dialog";
 
-const FULL_HEIGHT_PATHS = ["/carte"];
+const FULL_HEIGHT_PATHS = ["/carte", "/entreprises"];
 
 export default function AppFrame(props: { children: React.ReactNode }) {
     const pathname = usePathname();

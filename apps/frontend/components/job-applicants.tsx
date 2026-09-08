@@ -15,7 +15,7 @@ import {
     setApplicationStatus,
     type Applicant,
 } from "@/lib/api";
-import { safeResume } from "@/lib/resume";
+import { openResume, safeResume } from "@/lib/resume";
 import ReportDialog from "@/components/report-dialog";
 import { Flag } from "lucide-react";
 
@@ -109,6 +109,8 @@ export default function JobApplicants(props: Props) {
                     let contactEmail = "";
                     let profile = null;
                     let addressLine = null;
+                    let loginEmail = null;
+                    let verifiedBadge = null;
                     let resumeLink = null;
                     let skills = null;
                     let reportButton = null;
@@ -119,6 +121,37 @@ export default function JobApplicants(props: Props) {
                         contactEmail = user.email;
                         if (user.emailContact) {
                             contactEmail = user.emailContact;
+                        }
+
+                        if (user.emailContact && user.emailContact !== user.email) {
+                            loginEmail = (
+                                <div className="flex flex-col gap-0.5">
+                                    <span className="font-heading text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                                        Adresse de connexion
+                                    </span>
+                                    <span className="text-sm">{user.email}</span>
+                                </div>
+                            );
+                        }
+
+                        if (user.emailVerified) {
+                            verifiedBadge = (
+                                <Badge
+                                    variant="outline"
+                                    className="border-success font-heading text-success"
+                                >
+                                    Adresse vérifiée
+                                </Badge>
+                            );
+                        } else {
+                            verifiedBadge = (
+                                <Badge
+                                    variant="outline"
+                                    className="border-action-text font-heading text-action-text"
+                                >
+                                    Adresse non vérifiée
+                                </Badge>
+                            );
                         }
 
                         if (user.address) {
@@ -160,15 +193,33 @@ export default function JobApplicants(props: Props) {
                         );
 
                         const resumeHref = safeResume(user.resume);
+                        const resumeValue = user.resume;
                         if (resumeHref !== null) {
                             resumeLink = (
-                                <a
-                                    href={resumeHref}
-                                    download={"cv-" + user.lastname + ".pdf"}
-                                    className="font-heading text-sm font-medium text-primary underline underline-offset-4 hover:no-underline"
-                                >
-                                    Télécharger le CV
-                                </a>
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={function () {
+                                            openResume(resumeValue);
+                                        }}
+                                        className="font-heading text-sm font-medium text-primary underline underline-offset-4 hover:no-underline"
+                                    >
+                                        Consulter le CV
+                                    </button>
+                                    <a
+                                        href={resumeHref}
+                                        download={"cv-" + user.lastname + ".pdf"}
+                                        className="font-heading text-sm font-medium text-primary underline underline-offset-4 hover:no-underline"
+                                    >
+                                        Télécharger le CV
+                                    </a>
+                                </div>
+                            );
+                        } else {
+                            resumeLink = (
+                                <p className="text-sm italic text-muted-foreground">
+                                    Ce candidat n&apos;a pas déposé de CV.
+                                </p>
                             );
                         }
 
@@ -229,11 +280,15 @@ export default function JobApplicants(props: Props) {
                                         {contactEmail}
                                     </a>
                                 </div>
-                                <Badge variant="outline" className={statusClass}>
-                                    {statusLabel(applicant.status)}
-                                </Badge>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {verifiedBadge}
+                                    <Badge variant="outline" className={statusClass}>
+                                        {statusLabel(applicant.status)}
+                                    </Badge>
+                                </div>
                             </div>
 
+                            {loginEmail}
                             {addressLine}
                             {profile}
                             {skills}

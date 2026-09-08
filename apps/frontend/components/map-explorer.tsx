@@ -44,7 +44,10 @@ type ExplorerProps = {
 };
 
 export default function MapExplorer(props: ExplorerProps) {
-    const { data: session } = authClient.useSession();
+    const { data: session, isPending: sessionPending } = authClient.useSession();
+    // La session n'est pas connue au rendu serveur : tant que l'hydratation n'a pas eu
+    // lieu, on affiche un état neutre pour que les deux rendus soient identiques.
+    const [hydrated, setHydrated] = useState(false);
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [search, setSearch] = useState("");
@@ -160,6 +163,25 @@ export default function MapExplorer(props: ExplorerProps) {
 
     const visibleJobs = results.slice(0, DISPLAY_LIMIT);
     const mappableJobs = locatedJobs(visibleJobs);
+
+    const points = mappableJobs.map(function (job) {
+        return {
+            id: job.id,
+            lat: job.lat,
+            lon: job.lon,
+            title: job.title,
+            subtitle: job.company,
+            detail: job.contract + " · " + job.city,
+            label:
+                job.title + ", " + job.company + ", " + job.contract + ", " +
+                job.city + ". Ouvrir le détail de l'offre.",
+        };
+    });
+
+    let selectedId: number | null = null;
+    if (selectedJob !== null) {
+        selectedId = selectedJob.id;
+    }
     const lastSelectedLabelRef = useRef<string | null>(null);
 
     let targetLat = FRANCE_LAT;
@@ -187,6 +209,15 @@ export default function MapExplorer(props: ExplorerProps) {
     function selectJob(job: Job) {
         setSelectedJob(job);
         setDetailsOpen(true);
+    }
+
+    function selectJobById(id: number) {
+        const job = mappableJobs.find(function (item) {
+            return item.id === id;
+        });
+        if (job !== undefined) {
+            selectJob(job);
+        }
     }
 
     function closeDetails() {
@@ -272,8 +303,14 @@ export default function MapExplorer(props: ExplorerProps) {
         }
     }
 
+    useEffect(function () {
+        setHydrated(true);
+    }, []);
+
+    const sessionReady = hydrated && !sessionPending;
+
     let allowed = false;
-    if (session && session.user.localisation === true) {
+    if (sessionReady && session && session.user.localisation === true) {
         allowed = true;
     }
 
@@ -420,7 +457,14 @@ export default function MapExplorer(props: ExplorerProps) {
 
     let geoToggle: React.ReactNode;
 
-    if (!session) {
+    if (!sessionReady) {
+        geoToggle = (
+            <span className="flex items-center gap-1.5 border border-border bg-background px-3.5 py-1.5 font-heading text-xs font-medium text-muted-foreground">
+                <Crosshair className="h-3.5 w-3.5" />
+                Géolocalisation
+            </span>
+        );
+    } else if (!session) {
         geoToggle = (
             <button
                 type="button"
@@ -479,7 +523,9 @@ export default function MapExplorer(props: ExplorerProps) {
 
     let geoProfileLink: React.ReactNode = null;
 
-    if (!session) {
+    if (!sessionReady) {
+        geoProfileLink = null;
+    } else if (!session) {
         geoProfileLink = (
             <Link
                 href="/profil"
@@ -767,9 +813,9 @@ export default function MapExplorer(props: ExplorerProps) {
 
                 <div className="isolate order-1 h-72 w-full lg:order-2 lg:h-full lg:flex-1">
                     <Map
-                        jobs={mappableJobs}
-                        selectedJob={selectedJob}
-                        onSelect={selectJob}
+                        points={points}
+                        selectedId={selectedId}
+                        onSelect={selectJobById}
                         targetLat={targetLat}
                         targetLon={targetLon}
                         targetZoom={targetZoom}
