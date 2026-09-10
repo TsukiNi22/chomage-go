@@ -714,6 +714,7 @@ html { scroll-behavior: smooth; }
         <li><a href="#recette-front">Brancher le frontend</a></li>
         <li><a href="#recette-divers">Autres recettes</a></li>
         <li><a href="#exploitation">Environnement et exécution</a></li>
+        <li><a href="#performance">Performance et cache</a></li>
         <li><a href="#conventions">Conventions et pièges</a></li>
     </ol>
 </nav>
@@ -885,8 +886,8 @@ html { scroll-behavior: smooth; }
     </div>
 
     <div class="note">
-        <span class="note-label">Bon à savoir</span>
-        <p>Le backend n'est pas transpilé en développement : <code>tsx watch src/server.ts</code> exécute les sources directement, et le conteneur lance <code>pnpm dev</code> — y compris dans les images produites par la CI. <code>pnpm build</code> (tsc vers <code>dist/</code>) existe mais n'est pas utilisé par Compose.</p>
+        <span class="note-label">Développement et production</span>
+        <p>En développement, le backend n'est pas transpilé : <code>tsx watch src/server.ts</code> exécute les sources directement. Les images Docker, elles, compilent : le backend part de <code>dist/</code> via <code>tsc</code>, le frontend d'un <code>next build</code> servi par <code>next start</code>. Servir le mode développement en conteneur coûtait un facteur 2,6 sur le temps de rendu.</p>
     </div>
 </section>
 
@@ -1709,10 +1710,34 @@ docker compose down -v        <span class="c"># -v supprime aussi le volume db-d
 pnpm dev                <span class="c"># front + back en parallèle</span>
 pnpm dev:backend        <span class="c"># tsx watch src/server.ts</span>
 pnpm dev:frontend       <span class="c"># next dev</span>
+pnpm test               <span class="c"># vitest run sur les deux apps</span>
 pnpm typecheck          <span class="c"># tsc --noEmit sur les deux apps</span>
 pnpm lint               <span class="c"># eslint sur les deux apps</span>
 pnpm build              <span class="c"># tsc (back) + next build (front)</span></code></pre>
     </div>
+
+    <h3>Tests</h3>
+    <p>Vitest, une instance par app. La suite couvre la logique pure : validation Zod, middlewares, mappage des réponses de l'API, calcul de distance, contrôle des SIRET, rendu des e-mails. Elle ne touche ni la base ni le réseau — <code>fetch</code> est remplacé par une doublure, et aucun test n'ouvre de connexion PostgreSQL.</p>
+
+    <div class="scroller">
+    <table>
+        <thead><tr><th>Emplacement</th><th>Ce qui est couvert</th></tr></thead>
+        <tbody>
+            <tr><td><code>apps/backend/src/**/*.test.ts</code></td><td>Schémas Zod, <code>errorHandler</code>, <code>requireRank</code>, <code>validateJson</code>, <code>isUniqueViolation</code>, <code>HttpError</code>, <code>lookupSiret</code>, rendu des e-mails</td></tr>
+            <tr><td><code>apps/frontend/lib/**/*.test.ts</code></td><td><code>toJob</code>, <code>toCompanyPin</code>, distances et formatage, SIRET, adresse professionnelle, CV, géocodage BAN, CGU et mention géolocalisation</td></tr>
+            <tr><td><code>apps/backend/src/testing/</code></td><td>Doublures Express partagées : <code>mockRequest</code>, <code>mockResponse</code></td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <div class="snippet">
+        <div class="snippet-bar"><span class="path">racine du dépôt</span><span class="tag">shell</span><button class="copy" type="button">Copier</button></div>
+<pre><code>pnpm test                            <span class="c"># les deux apps, en parallèle</span>
+pnpm --filter backend test           <span class="c"># une seule</span>
+pnpm --filter frontend test:watch    <span class="c"># mode veille</span></code></pre>
+    </div>
+
+    <p>Un test se place à côté du fichier qu'il couvre, suffixé <code>.test.ts</code>. Les fonctions de Vitest s'importent explicitement (<code>import {describe, expect, it} from "vitest"</code>) : pas de globales, donc rien à déclarer dans les <code>tsconfig</code>. Côté backend, les fichiers de test et <code>src/testing/</code> sont exclus de <code>tsc</code> pour ne pas atterrir dans <code>dist/</code>.</p>
 
     <div class="note">
         <span class="note-label">Comptes de démonstration</span>
@@ -1721,6 +1746,44 @@ pnpm build              <span class="c"># tsc (back) + next build (front)</span>
 
     <h3>Intégration continue</h3>
     <p>Sur chaque push vers <code>main</code>, <code>.github/workflows/build.yml</code> reconstitue les fichiers d'environnement à partir des <code>.example</code>, construit les images, démarre la pile pour vérifier qu'elle tient debout, exporte <code>backend.tar</code> et <code>frontend.tar</code> avec un <code>docker-compose.dist.yml</code> et un README, puis publie le tout en artefact. Le changelog du front est régénéré au <code>prebuild</code> par <code>scripts/generate-changelog.mjs</code>.</p>
+</section>
+
+<section id="performance">
+    <h2>Performance et mise en cache</h2>
+    <p class="lede">Un tir de charge à 50 utilisateurs simultanés donnait p(95) = 9 s sur l'accueil. Le profilage V8 a montré que le coût par requête était du travail rigoureusement identique d'un visiteur à l'autre, refait à chaque fois. Trois correctifs, mesurés sur les conteneurs.</p>
+
+    <div class="scroller">
+    <table>
+        <thead><tr><th>Mesure (50 VU, 60 s, accueil)</th><th>Avant</th><th>Après</th></tr></thead>
+        <tbody>
+            <tr><td>p(95)</td><td>9,08 s</td><td>255 ms</td></tr>
+            <tr><td>Médiane</td><td>7,93 s</td><td>180 ms</td></tr>
+            <tr><td>Débit</td><td>5,6 req/s</td><td>42,3 req/s</td></tr>
+            <tr><td>Mémoire du service frontend</td><td>718 Mo</td><td>143 Mo</td></tr>
+            <tr><td>CPU backend pendant la charge</td><td>22–50 %</td><td>~0 %</td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <h3>Ce que le profilage a montré</h3>
+    <p>Sur <code>GET /api/jobs</code>, qui renvoie les 501 offres et leurs relations (557 Ko), le temps CPU se répartissait ainsi : mapping Drizzle des lignes 18 %, <code>JSON.stringify</code> 12 %, ramasse-miettes 6 %, décodage du résultat PostgreSQL 6 %. Soit plus de 40 % du CPU proportionnel à une charge utile recalculée pour chaque visiteur.</p>
+
+    <h3>Les trois leviers</h3>
+    <ul>
+        <li><strong>Cache court côté API</strong> — <code>utils/publicCache.utils.ts</code> mémorise la réponse <em>déjà sérialisée</em> de la liste publique pendant 30 s. La vue administrateur, qui contient le contenu modéré, n'est jamais mémorisée. L'invalidation est centralisée dans <code>routes/index.ts</code> : toute écriture réussie purge le cache, après la réponse.</li>
+        <li><strong>Rendu mémorisé côté Next</strong> — <code>fetchJobs</code> et <code>fetchCompanies</code> passent de <code>cache: "no-store"</code> à <code>next: { revalidate: 30 }</code>. L'accueil bascule de <code>ƒ</code> (rendu à chaque requête) à <code>○</code> avec revalidation, ce qui sort le rendu React du chemin de chaque visite.</li>
+        <li><strong>Images de production</strong> — les conteneurs servaient <code>pnpm dev</code>. Mesuré à 262 ms/requête en développement contre 102 ms sur un build de production.</li>
+    </ul>
+
+    <div class="note warn">
+        <span class="note-label">Contrepartie assumée</span>
+        <p>Une offre publiée peut mettre jusqu'à 30 s à apparaître sur les pages de liste si aucune écriture n'a purgé le cache entre-temps. Les deux durées sont réglables : <code>PUBLIC_CACHE_TTL_MS</code> côté backend, <code>LIST_REVALIDATE_SECONDS</code> côté frontend.</p>
+    </div>
+
+    <div class="note">
+        <span class="note-label">Piste restante</span>
+        <p>Le frontend reste mono-processus : un seul cœur travaille pendant qu'un tir de charge sature. Les 501 offres sont aussi sérialisées entières dans le HTML (573 Ko) alors que la carte n'en affiche que 120 — une pagination de <code>/api/jobs</code> réduirait la charge utile autant que le rendu.</p>
+    </div>
 </section>
 
 <section id="conventions">
@@ -1750,7 +1813,8 @@ pnpm build              <span class="c"># tsc (back) + next build (front)</span>
 
     <h3>Avant d'ouvrir une pull request</h3>
     <ul class="checklist">
-        <li><code>pnpm typecheck</code> et <code>pnpm lint</code> passent sur les deux apps.</li>
+        <li><code>pnpm test</code>, <code>pnpm typecheck</code> et <code>pnpm lint</code> passent sur les deux apps.</li>
+        <li>La logique ajoutée est couverte : un schéma Zod, un mapper ou une garde d'accès se teste sans base ni réseau.</li>
         <li>Le fichier de migration et son snapshot sont commités avec le schéma.</li>
         <li>Les blocs <code>@openapi</code> décrivent les nouveaux endpoints, y compris les codes d'erreur.</li>
         <li>Les nouveaux écrans respectent les jetons de couleur et gardent un contraste conforme au RGAA.</li>
