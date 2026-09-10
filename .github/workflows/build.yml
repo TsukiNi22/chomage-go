@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    if: github.repository != 'TsukiNi22/chomage-go'
+    if: github.repository != 'TsukiNi22/geo-emploi'
 
     runs-on: ${{ vars.RUNNER }}
     defaults:
@@ -36,8 +36,8 @@ jobs:
       - name: Export images
         run: |
           mkdir -p dist
-          docker save chomage-go-backend:latest -o dist/backend.tar
-          docker save chomage-go-frontend:latest -o dist/frontend.tar
+          docker save geo-emploi-backend:latest -o dist/backend.tar
+          docker save geo-emploi-frontend:latest -o dist/frontend.tar
 
       - name: Assemble distributable bundle
         run: |
@@ -73,7 +73,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v6
         with:
-          name: chomage-go-build-${{ github.sha }}
+          name: geo-emploi-build-${{ github.sha }}
           path: dist/
           include-hidden-files: true
           retention-days: 1
