@@ -12,7 +12,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:pull": "drizzle-kit pull"
+    "db:pull": "drizzle-kit pull",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "better-auth": "^1.7.2",
@@ -37,6 +39,7 @@
     "@types/swagger-ui-express": "^4.1.8",
     "drizzle-kit": "^0.31.10",
     "tsx": "^4.23.13",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
   }
 }
