@@ -54,6 +54,9 @@ services:
     build:
       context: .
       dockerfile: apps/frontend/Dockerfile
+      args:
+        # Fige dans le bundle client : doit etre l'URL vue par le navigateur.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     restart: unless-stopped
 
     env_file:
