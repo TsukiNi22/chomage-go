@@ -1,4 +1,4 @@
-name: chomage-go
+name: geo-emploi
 
 services:
   db:
