@@ -7,6 +7,7 @@ import applicationsRoutes from "./applications.routes.ts";
 import specialRoutes from "./special.routes.ts";
 import reportsRoutes from "./reports.routes.ts";
 import adminRoutes from "./admin.routes.ts";
+import utilsRoutes from "./utils.routes.ts";
 import {JOBS_CACHE_KEY, invalidatePublicCache} from "../utils/publicCache.utils.ts";
 
 // Init router
@@ -37,4 +38,5 @@ router.use("/jobs", jobsRoutes);
 router.use("/applications", applicationsRoutes);
 router.use("/reports", reportsRoutes);
 router.use("/admin", adminRoutes);
+router.use("/utils", utilsRoutes);
 router.use("", specialRoutes);

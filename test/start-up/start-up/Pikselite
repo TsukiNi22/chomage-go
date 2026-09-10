@@ -1,0 +1,17 @@
+Imposibiliter de test:
+    linux -> .exe nop
+    linux -> .bat nop
+    linux -> cmake nop
+
+no help
+edit button with placeholder
+can save file button in home menu and not on game?
+no pop-up save when changing scene
+2 sprite when moving erase each other
+can't deselect objet during placing if i do't want to
+velocity dosen't apply
+hierachy of object can't be changed or drag&drop
+responsive~~~ nop
+crash when first start new project
+hen cancel open project creatate invalid project display
+

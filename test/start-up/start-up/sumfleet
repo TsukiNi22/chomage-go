@@ -1,0 +1,15 @@
+button too small for hover detection
+pricing color on small one too bright, no too much contrast
+bigger title for data in organization
+no header when connected
+idk why the booking resevation when reservation name valid and date no
+i need to reload the page to see new employee
+pas de message d'erreur sur la plus part des slot d'enterer juste entourer en orange souvent
+the owner is counted in employee but can't be seen in employee management
+user: can't reserve a vehicule after returning it before the ending of it's reservation but can reserve it if i go directly to it's page (not from the home)
+i can cancel past booking ??? and reservation/cancel/return a bit bugged/inverted (they know)
+
+tab dosen't work:
+    on group selection for new employee creation
+
+can remove from a group a vehicule that is in use

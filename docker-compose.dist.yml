@@ -36,6 +36,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      # Cache disque des tuiles IGN : survit aux redemarrages.
+      - tiles-cache:/app/apps/backend/.cache/tuiles
     networks:
       - db-net
       - app-net
@@ -70,3 +73,4 @@ networks:
 
 volumes:
   db-data:
+  tiles-cache:

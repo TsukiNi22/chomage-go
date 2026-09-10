@@ -1,6 +1,7 @@
 import {db} from "./index.ts";
 import {users, jobs, jobsArchive, jobSkills, jobSkillsArchive} from "./schema.ts";
 import {lt, sql, eq} from "drizzle-orm";
+import {purgeExpiredTiles} from "../utils/tiles.utils.ts";
 
 const TWO_YEARS_MS = 2 * 365 * 24 * 60 * 60 * 1000;
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
@@ -80,4 +81,8 @@ export async function runDailyMaintenance()
     await archiveOldJobs();
     await purgeOldArchives();
     await purgeInactiveUsers();
+
+    // Le cache de tuiles ne ferait que croitre sans passage de nettoyage.
+    const tiles = await purgeExpiredTiles();
+    console.log(`[cleanup] ${tiles} tuile(s) perimee(s) supprimee(s)`);
 }
