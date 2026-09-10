@@ -1,0 +1,1823 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<title>Manuel du dépôt GéoEmploi</title>
+</head>
+<body>
+<style>
+:root {
+    color-scheme: light;
+
+    --ground: #f3f8f7;
+    --surface: #ffffff;
+    --surface-2: #eaf2f0;
+    --ink: #16192b;
+    --ink-soft: #4f5f5c;
+    --ink-faint: #778785;
+    --line: #d2e0de;
+    --line-soft: #e3ecea;
+
+    --primary: #0f5f5c;
+    --primary-soft: #dcecea;
+    --accent: #9c4429;
+    --accent-soft: #f6e6df;
+
+    --get: #0f5f5c;
+    --post: #1c6144;
+    --patch: #8a5a12;
+    --delete: #b3161b;
+
+    --code-bg: #10201f;
+    --code-ink: #dcece9;
+    --code-dim: #7d9a96;
+    --code-key: #7fd0c8;
+    --code-str: #e0a184;
+    --code-line: #26403d;
+
+    --shadow: 0 1px 2px rgba(16, 25, 43, .05), 0 8px 24px -18px rgba(16, 25, 43, .35);
+
+    --font-head: "Manrope", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Newsreader", Georgia, "Times New Roman", serif;
+    --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        color-scheme: dark;
+
+        --ground: #0e121b;
+        --surface: #151b26;
+        --surface-2: #1b2430;
+        --ink: #e9ecf4;
+        --ink-soft: #a8b7b5;
+        --ink-faint: #7d8d8b;
+        --line: #293838;
+        --line-soft: #202c2f;
+
+        --primary: #6fc7c1;
+        --primary-soft: #16302f;
+        --accent: #e59873;
+        --accent-soft: #2e211b;
+
+        --get: #6fc7c1;
+        --post: #6fc49b;
+        --patch: #d9b45c;
+        --delete: #e08672;
+
+        --code-bg: #0a1010;
+        --code-ink: #d7e6e3;
+        --code-dim: #6d8683;
+        --code-key: #7fd0c8;
+        --code-str: #e0a184;
+        --code-line: #1d2f2d;
+
+        --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -20px rgba(0, 0, 0, .8);
+    }
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --ground: #0e121b;
+    --surface: #151b26;
+    --surface-2: #1b2430;
+    --ink: #e9ecf4;
+    --ink-soft: #a8b7b5;
+    --ink-faint: #7d8d8b;
+    --line: #293838;
+    --line-soft: #202c2f;
+
+    --primary: #6fc7c1;
+    --primary-soft: #16302f;
+    --accent: #e59873;
+    --accent-soft: #2e211b;
+
+    --get: #6fc7c1;
+    --post: #6fc49b;
+    --patch: #d9b45c;
+    --delete: #e08672;
+
+    --code-bg: #0a1010;
+    --code-ink: #d7e6e3;
+    --code-dim: #6d8683;
+    --code-key: #7fd0c8;
+    --code-str: #e0a184;
+    --code-line: #1d2f2d;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -20px rgba(0, 0, 0, .8);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--primary-soft); color: var(--ink); }
+
+a { color: var(--primary); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { color: var(--accent); }
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+}
+
+/* ---------- masthead ---------- */
+
+.masthead {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+}
+
+.masthead-inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 44px 32px 34px;
+}
+
+.eyebrow {
+    font-family: var(--font-head);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 14px;
+}
+
+.masthead h1 {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: clamp(2.1rem, 4.6vw, 3.1rem);
+    line-height: 1.04;
+    letter-spacing: -.028em;
+    margin: 0;
+    text-wrap: balance;
+}
+
+.masthead h1 .mark { color: var(--primary); }
+
+.standfirst {
+    max-width: 62ch;
+    margin: 16px 0 0;
+    font-size: 1.14rem;
+    color: var(--ink-soft);
+}
+
+.facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    margin-top: 26px;
+    padding: 0;
+    list-style: none;
+}
+
+.facts li {
+    font-family: var(--font-head);
+    font-size: .74rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    padding: 5px 11px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink-soft);
+    background: var(--ground);
+}
+
+.facts li b {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* ---------- shell ---------- */
+
+.shell {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 32px 96px;
+    display: grid;
+    grid-template-columns: 226px minmax(0, 1fr);
+    gap: 60px;
+    align-items: start;
+}
+
+.toc {
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 40px 0 40px;
+    font-family: var(--font-head);
+    font-size: .82rem;
+}
+
+.toc-title {
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 12px;
+}
+
+.toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--line);
+}
+
+.toc a {
+    display: block;
+    padding: 5px 0 5px 14px;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    color: var(--ink-soft);
+    text-decoration: none;
+    line-height: 1.35;
+}
+
+.toc a:hover { color: var(--ink); }
+
+.toc a.is-current {
+    color: var(--primary);
+    font-weight: 700;
+    border-left-color: var(--primary);
+}
+
+.doc { padding-top: 40px; min-width: 0; }
+
+/* ---------- sections ---------- */
+
+section { scroll-margin-top: 24px; }
+
+section + section { margin-top: 68px; }
+
+h2 {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 1.72rem;
+    letter-spacing: -.02em;
+    line-height: 1.15;
+    margin: 0 0 6px;
+    padding-top: 18px;
+    border-top: 2px solid var(--ink);
+    text-wrap: balance;
+}
+
+h3 {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.12rem;
+    letter-spacing: -.01em;
+    margin: 38px 0 10px;
+    color: var(--ink);
+}
+
+h4 {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: .74rem;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 26px 0 8px;
+}
+
+p, ul, ol { max-width: 68ch; }
+
+p { margin: 0 0 14px; }
+
+.lede {
+    color: var(--ink-soft);
+    font-size: 1.06rem;
+    margin-bottom: 22px;
+}
+
+ul, ol { padding-left: 1.15em; }
+li { margin-bottom: 6px; }
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 34px 0;
+}
+</style>
+<style>
+/* ---------- code ---------- */
+
+code {
+    font-family: var(--font-mono);
+    font-size: .84em;
+}
+
+p code, li code, td code, th code {
+    background: var(--surface-2);
+    border: 1px solid var(--line-soft);
+    border-radius: 3px;
+    padding: .08em .34em;
+    color: var(--ink);
+    white-space: nowrap;
+}
+
+.snippet {
+    margin: 18px 0 22px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--code-bg);
+    box-shadow: var(--shadow);
+}
+
+.snippet-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px 8px 14px;
+    border-bottom: 1px solid var(--code-line);
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    color: var(--code-dim);
+}
+
+.snippet-bar .path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.snippet-bar .path b { color: var(--code-ink); font-weight: 600; }
+
+.snippet-bar .tag {
+    font-family: var(--font-head);
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--code-dim);
+    border: 1px solid var(--code-line);
+    border-radius: 999px;
+    padding: 2px 8px;
+    flex: none;
+}
+
+.copy {
+    font-family: var(--font-head);
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--code-dim);
+    background: transparent;
+    border: 1px solid var(--code-line);
+    border-radius: 4px;
+    padding: 3px 9px;
+    cursor: pointer;
+    flex: none;
+}
+
+.copy:hover { color: var(--code-ink); border-color: var(--code-dim); }
+
+.snippet pre {
+    margin: 0;
+    padding: 14px 16px 16px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: .795rem;
+    line-height: 1.62;
+    color: var(--code-ink);
+    tab-size: 4;
+}
+
+.snippet pre code { font-size: inherit; background: none; border: 0; padding: 0; white-space: pre; }
+
+.c { color: var(--code-dim); font-style: italic; }
+.k { color: var(--code-key); }
+.s { color: var(--code-str); }
+.n { color: #c4b0e0; }
+
+:root:not([data-theme="light"]) .n { color: #b9a5d8; }
+
+/* ---------- tables ---------- */
+
+.scroller {
+    overflow-x: auto;
+    margin: 18px 0 24px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-head);
+    font-size: .84rem;
+    font-variant-numeric: tabular-nums;
+}
+
+thead th {
+    text-align: left;
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+    background: var(--surface);
+}
+
+tbody td {
+    padding: 10px 14px;
+    border-top: 1px solid var(--line-soft);
+    vertical-align: top;
+    color: var(--ink-soft);
+    line-height: 1.5;
+}
+
+tbody tr:first-child td { border-top: 0; }
+tbody td:first-child { color: var(--ink); font-weight: 600; }
+tbody td code { white-space: nowrap; }
+
+td.route { font-family: var(--font-mono); font-size: .78rem; color: var(--ink); font-weight: 400; }
+
+.verb {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid currentColor;
+}
+
+.verb.get { color: var(--get); }
+.verb.post { color: var(--post); }
+.verb.patch { color: var(--patch); }
+.verb.delete { color: var(--delete); }
+.verb.all { color: var(--ink-faint); }
+
+.lock {
+    font-family: var(--font-head);
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--accent);
+}
+
+.lock.open { color: var(--ink-faint); }
+.lock.admin { color: var(--delete); }
+
+/* ---------- callouts ---------- */
+
+.note {
+    margin: 20px 0;
+    padding: 2px 0 2px 18px;
+    border-left: 3px solid var(--primary);
+    max-width: 68ch;
+}
+
+.note.warn { border-left-color: var(--accent); }
+
+.note p { margin: 0 0 8px; }
+.note p:last-child { margin-bottom: 0; }
+
+.note-label {
+    display: block;
+    font-family: var(--font-head);
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 5px;
+}
+
+.note.warn .note-label { color: var(--accent); }
+
+/* ---------- recipe steps ---------- */
+
+.recipe {
+    margin: 26px 0 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+    max-width: none;
+}
+
+.recipe > li {
+    counter-increment: step;
+    position: relative;
+    padding: 0 0 30px 46px;
+    margin: 0;
+    border-left: 1px solid var(--line);
+}
+
+.recipe > li:last-child { border-left-color: transparent; padding-bottom: 4px; }
+
+.recipe > li::before {
+    content: counter(step);
+    position: absolute;
+    left: -15px;
+    top: -2px;
+    width: 29px;
+    height: 29px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    font-family: var(--font-head);
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.recipe h4 {
+    margin: 0 0 6px;
+    font-size: .95rem;
+    letter-spacing: -.005em;
+    text-transform: none;
+    color: var(--ink);
+}
+
+/* ---------- misc blocks ---------- */
+
+.grid2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+    margin: 22px 0;
+}
+
+.panel {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    padding: 18px 20px 20px;
+}
+
+.panel h4 { margin-top: 0; }
+.panel p:last-child, .panel ul:last-child { margin-bottom: 0; }
+.panel ul { max-width: none; }
+
+.figure {
+    margin: 24px 0 26px;
+    padding: 22px 20px 16px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    overflow-x: auto;
+}
+
+.figure svg { display: block; min-width: 620px; width: 100%; height: auto; }
+
+figcaption {
+    font-family: var(--font-head);
+    font-size: .74rem;
+    color: var(--ink-faint);
+    margin-top: 14px;
+    line-height: 1.5;
+}
+
+.tree {
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    line-height: 1.75;
+    color: var(--ink-soft);
+    margin: 18px 0 24px;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    overflow-x: auto;
+    white-space: pre;
+    tab-size: 4;
+}
+
+.tree b { color: var(--ink); font-weight: 600; }
+.tree i { color: var(--ink-faint); font-style: normal; }
+
+.checklist { list-style: none; padding: 0; max-width: 68ch; }
+
+.checklist li {
+    position: relative;
+    padding-left: 28px;
+    margin-bottom: 9px;
+}
+
+.checklist li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .5em;
+    width: 13px;
+    height: 13px;
+    border: 1px solid var(--primary);
+    border-radius: 3px;
+}
+
+/* ---------- footer ---------- */
+
+.colophon {
+    border-top: 1px solid var(--line);
+    margin-top: 72px;
+    padding-top: 22px;
+    font-family: var(--font-head);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    max-width: 68ch;
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 900px) {
+    .shell {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+        padding: 0 22px 72px;
+    }
+
+    .toc {
+        position: static;
+        max-height: none;
+        padding: 26px 0 0;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 22px;
+    }
+
+    .toc ol {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        border-left: 0;
+        gap: 0 12px;
+    }
+
+    .toc a { border-left: 0; padding-left: 0; }
+    .toc a.is-current { border-left: 0; }
+
+    .masthead-inner { padding: 34px 22px 28px; }
+    body { font-size: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+html { scroll-behavior: smooth; }
+</style>
+
+<header class="masthead">
+    <div class="masthead-inner">
+        <p class="eyebrow">Documentation technique · monorepo geoemploi</p>
+        <h1><span class="mark">GéoEmploi</span> — manuel du dépôt</h1>
+        <p class="standfirst">Plateforme d'emploi cartographiée : les offres et les entreprises sont géocodées puis affichées sur un fond IGN. Ce document décrit l'architecture, les conventions du code, et la marche à suivre pour ajouter une route, une table ou un écran.</p>
+        <ul class="facts">
+            <li><b>pnpm</b> workspace · 2 apps</li>
+            <li><b>Next.js</b> 16 · React 19</li>
+            <li><b>Express</b> 5 · Node 22</li>
+            <li><b>PostgreSQL</b> 16 · Drizzle ORM</li>
+            <li><b>Better&nbsp;Auth</b> · sessions cookie</li>
+            <li><b>Leaflet</b> · fond IGN WMTS</li>
+            <li><b>Docker&nbsp;Compose</b> · 3 services</li>
+        </ul>
+    </div>
+</header>
+
+<div class="shell">
+
+<nav class="toc" aria-label="Sommaire">
+    <p class="toc-title">Sommaire</p>
+    <ol>
+        <li><a href="#architecture">Architecture générale</a></li>
+        <li><a href="#arborescence">Arborescence du dépôt</a></li>
+        <li><a href="#stack">Stack et outillage</a></li>
+        <li><a href="#frontend">Frontend — Next.js</a></li>
+        <li><a href="#backend">Backend — Express</a></li>
+        <li><a href="#base">Base de données</a></li>
+        <li><a href="#auth">Authentification et rôles</a></li>
+        <li><a href="#api">Référence de l'API</a></li>
+        <li><a href="#recette-table">Ajouter une table</a></li>
+        <li><a href="#recette-route">Ajouter une route + controller</a></li>
+        <li><a href="#recette-front">Brancher le frontend</a></li>
+        <li><a href="#recette-divers">Autres recettes</a></li>
+        <li><a href="#exploitation">Environnement et exécution</a></li>
+        <li><a href="#conventions">Conventions et pièges</a></li>
+    </ol>
+</nav>
+
+<main class="doc">
+
+<section id="architecture">
+    <h2>Architecture générale</h2>
+    <p class="lede">Trois processus, deux réseaux Docker. Le navigateur ne parle jamais à la base ; il parle au frontend Next.js et, pour tout ce qui est dynamique, directement à l'API Express sur le port 4000.</p>
+
+    <figure class="figure">
+        <svg viewBox="0 0 900 330" role="img" aria-label="Schéma : navigateur, frontend Next.js, backend Express, PostgreSQL et les services publics externes">
+            <defs>
+                <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-faint)"></path>
+                </marker>
+            </defs>
+
+            <!-- bande services externes -->
+            <text x="20" y="22" font-family="Manrope, sans-serif" font-size="10" font-weight="700" letter-spacing="1.6" fill="var(--ink-faint)">SERVICES PUBLICS EXTERNES</text>
+            <g font-family="Manrope, sans-serif" font-size="10.5" fill="var(--ink-soft)">
+                <rect x="20" y="32" width="176" height="30" rx="15" fill="var(--surface)" stroke="var(--line)"></rect>
+                <text x="108" y="51" text-anchor="middle">IGN Géoplateforme (WMTS)</text>
+                <rect x="212" y="32" width="196" height="30" rx="15" fill="var(--surface)" stroke="var(--line)"></rect>
+                <text x="310" y="51" text-anchor="middle">Base Adresse Nationale</text>
+                <rect x="424" y="32" width="216" height="30" rx="15" fill="var(--surface)" stroke="var(--line)"></rect>
+                <text x="532" y="51" text-anchor="middle">recherche-entreprises (Sirene)</text>
+                <rect x="656" y="32" width="106" height="30" rx="15" fill="var(--surface)" stroke="var(--line)"></rect>
+                <text x="709" y="51" text-anchor="middle">SMTP</text>
+            </g>
+
+            <!-- connecteurs vers services -->
+            <path d="M 96 150 L 96 62" stroke="var(--ink-faint)" stroke-width="1" stroke-dasharray="3 3" fill="none" marker-end="url(#ar)"></path>
+            <path d="M 300 140 L 300 62" stroke="var(--ink-faint)" stroke-width="1" stroke-dasharray="3 3" fill="none" marker-end="url(#ar)"></path>
+            <path d="M 520 140 L 520 62" stroke="var(--ink-faint)" stroke-width="1" stroke-dasharray="3 3" fill="none" marker-end="url(#ar)"></path>
+            <path d="M 560 140 L 700 62" stroke="var(--ink-faint)" stroke-width="1" stroke-dasharray="3 3" fill="none" marker-end="url(#ar)"></path>
+
+            <!-- boîtes principales -->
+            <g font-family="Manrope, sans-serif">
+                <rect x="20" y="150" width="152" height="86" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"></rect>
+                <text x="96" y="182" text-anchor="middle" font-size="13.5" font-weight="700" fill="var(--ink)">Navigateur</text>
+                <text x="96" y="200" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">React 19 · Leaflet</text>
+                <text x="96" y="216" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">cookie de session</text>
+
+                <rect x="236" y="140" width="176" height="106" rx="6" fill="var(--surface)" stroke="var(--primary)" stroke-width="1.5"></rect>
+                <text x="324" y="172" text-anchor="middle" font-size="13.5" font-weight="700" fill="var(--ink)">frontend</text>
+                <text x="324" y="190" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">Next.js 16 · App Router</text>
+                <text x="324" y="206" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">rendu serveur + client</text>
+                <text x="324" y="228" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="var(--primary)">:3000</text>
+
+                <rect x="452" y="140" width="176" height="106" rx="6" fill="var(--surface)" stroke="var(--primary)" stroke-width="1.5"></rect>
+                <text x="540" y="172" text-anchor="middle" font-size="13.5" font-weight="700" fill="var(--ink)">backend</text>
+                <text x="540" y="190" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">Express 5 · Better Auth</text>
+                <text x="540" y="206" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">Zod · Drizzle · node-cron</text>
+                <text x="540" y="228" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="var(--primary)">:4000</text>
+
+                <rect x="692" y="140" width="176" height="106" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"></rect>
+                <text x="780" y="172" text-anchor="middle" font-size="13.5" font-weight="700" fill="var(--ink)">db</text>
+                <text x="780" y="190" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">PostgreSQL 16 alpine</text>
+                <text x="780" y="206" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">volume db-data</text>
+                <text x="780" y="228" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="var(--primary)">:5432</text>
+            </g>
+
+            <!-- flèches horizontales -->
+            <path d="M 172 178 L 232 178" stroke="var(--ink-faint)" stroke-width="1.4" fill="none" marker-end="url(#ar)"></path>
+            <path d="M 412 178 L 448 178" stroke="var(--ink-faint)" stroke-width="1.4" fill="none" marker-end="url(#ar)"></path>
+            <path d="M 628 193 L 688 193" stroke="var(--ink-faint)" stroke-width="1.4" fill="none" marker-end="url(#ar)"></path>
+            <path d="M 172 208 C 250 285, 400 285, 452 214" stroke="var(--ink-faint)" stroke-width="1.4" stroke-dasharray="4 3" fill="none" marker-end="url(#ar)"></path>
+
+            <g font-family="Manrope, sans-serif" font-size="9.5" fill="var(--ink-faint)">
+                <text x="202" y="170" text-anchor="middle">HTML</text>
+                <text x="430" y="170" text-anchor="middle">SSR</text>
+                <text x="658" y="185" text-anchor="middle">SQL</text>
+                <text x="312" y="298" text-anchor="middle">fetch /api/* depuis le navigateur — credentials: "include"</text>
+            </g>
+
+            <!-- réseaux docker -->
+            <g font-family="JetBrains Mono, monospace" font-size="9.5" fill="var(--ink-faint)">
+                <path d="M 236 258 L 236 268 L 628 268 L 628 258" stroke="var(--line)" stroke-width="1" stroke-dasharray="4 3" fill="none"></path>
+                <text x="640" y="272">app-net</text>
+                <path d="M 540 116 L 540 106 L 780 106 L 780 136" stroke="var(--line)" stroke-width="1" stroke-dasharray="4 3" fill="none"></path>
+                <text x="660" y="100" text-anchor="middle">db-net</text>
+            </g>
+        </svg>
+        <figcaption>Le fond de carte est chargé par le navigateur directement chez l'IGN : aucune tuile ne transite par le backend. Le géocodage passe par la Base Adresse Nationale des deux côtés — <code>lib/geocoding.ts</code> côté front pour l'autocomplétion, <code>utils/address.utils.ts</code> côté back au moment de l'enregistrement.</figcaption>
+    </figure>
+
+    <h3>Qui fait quoi</h3>
+    <div class="grid2">
+        <div class="panel">
+            <h4>frontend</h4>
+            <p>Rend les pages, gère l'état d'interface et la carte. Il ne connaît pas la base : toute donnée passe par <code>lib/api.ts</code>, qui appelle l'API Express. Les pages serveur utilisent <code>BACKEND_URL</code> (nom de service Docker), le navigateur utilise <code>NEXT_PUBLIC_API_URL</code>.</p>
+        </div>
+        <div class="panel">
+            <h4>backend</h4>
+            <p>Seul à écrire en base. Il porte l'authentification (Better Auth monté sur <code>/api/auth/*</code>), la validation Zod, les règles de modération, l'enrichissement Sirene, l'envoi d'e-mails et la maintenance quotidienne (archivage des offres, purge des comptes inactifs).</p>
+        </div>
+        <div class="panel">
+            <h4>db</h4>
+            <p>PostgreSQL 16. Le schéma vit dans <code>src/db/schema.ts</code> ; les migrations SQL sont générées par <code>drizzle-kit</code> dans <code>apps/backend/drizzle/</code> et rejouées au démarrage du conteneur backend.</p>
+        </div>
+    </div>
+</section>
+
+<section id="arborescence">
+    <h2>Arborescence du dépôt</h2>
+    <p class="lede">Monorepo pnpm. <code>pnpm-workspace.yaml</code> déclare les paquets ; <code>packages/</code> est prévu pour du code partagé mais reste vide aujourd'hui.</p>
+
+    <div class="tree"><b>geoemploi/</b>
+├── <b>apps/backend/</b>              <i>API Express + accès base</i>
+│   ├── src/
+│   │   ├── app.ts              <i>montage CORS, Better Auth, Swagger, router</i>
+│   │   ├── server.ts           <i>point d'entrée : charge .env, cron, écoute</i>
+│   │   ├── cron.ts             <i>maintenance quotidienne (0 h, Europe/Paris)</i>
+│   │   ├── routes/             <i>déclaration des URL + annotations OpenAPI</i>
+│   │   ├── controllers/        <i>logique métier, une fonction par endpoint</i>
+│   │   ├── schemas/            <i>schémas Zod des corps de requête</i>
+│   │   ├── middlewares/        <i>requireAuth, requireRank, errorHandler</i>
+│   │   ├── utils/              <i>adresses, Sirene, e-mails, erreurs SQL</i>
+│   │   ├── types/              <i>HttpError, extensions Express</i>
+│   │   ├── config/             <i>swagger.config.ts</i>
+│   │   └── db/                 <i>schema.ts, index.ts, migrate.ts, seed.ts</i>
+│   ├── drizzle/                <i>migrations SQL générées + snapshots</i>
+│   └── drizzle.config.ts
+├── <b>apps/frontend/</b>             <i>Next.js App Router</i>
+│   ├── app/                    <i>une route = un dossier + page.tsx</i>
+│   ├── components/             <i>composants métier</i>
+│   │   └── ui/                 <i>primitives shadcn/ui (Radix + Tailwind)</i>
+│   ├── lib/                    <i>api.ts, auth-client.ts, geocoding.ts, env.ts…</i>
+│   └── next.config.ts
+├── <b>docs/</b>                      <i>RGPD, AIPD, RGAA, schéma DBML, captures</i>
+├── <b>scripts/</b>                   <i>generate-changelog.mjs (prebuild du front)</i>
+├── docker-compose.yml          <i>db + backend + frontend</i>
+└── .github/workflows/          <i>build des images, export du bundle de démo</i></div>
+</section>
+
+<section id="stack">
+    <h2>Stack et outillage</h2>
+    <p class="lede">Tout est en TypeScript, des migrations jusqu'aux composants. Aucune brique n'est optionnelle : retirer Zod ou Drizzle casse la couche correspondante.</p>
+
+    <div class="scroller">
+    <table>
+        <thead>
+            <tr><th>Outil</th><th>Version</th><th>Rôle dans le projet</th><th>Où</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Node.js</td><td>22 (alpine)</td><td>Exécution du backend et du serveur Next</td><td>Images Docker</td></tr>
+            <tr><td>pnpm</td><td>workspace</td><td>Installation, filtres par app, scripts racine</td><td>Racine</td></tr>
+            <tr><td>TypeScript</td><td>5.9</td><td>Typage strict des deux apps</td><td>Partout</td></tr>
+            <tr><td>Next.js</td><td>16.3</td><td>App Router, rendu serveur, routage de pages</td><td>frontend</td></tr>
+            <tr><td>React</td><td>19.2</td><td>Composants serveur et client</td><td>frontend</td></tr>
+            <tr><td>Tailwind CSS</td><td>4.3</td><td>Styles ; jetons de couleur dans <code>app/globals.css</code></td><td>frontend</td></tr>
+            <tr><td>shadcn/ui + Radix</td><td>—</td><td>Primitives accessibles copiées dans <code>components/ui/</code></td><td>frontend</td></tr>
+            <tr><td>Leaflet + react-leaflet</td><td>1.9 / 5.0</td><td>Carte, marqueurs, rayon de recherche</td><td>frontend</td></tr>
+            <tr><td>lucide-react</td><td>1.39</td><td>Jeu d'icônes</td><td>frontend</td></tr>
+            <tr><td>Express</td><td>5.2</td><td>Serveur HTTP et routage de l'API</td><td>backend</td></tr>
+            <tr><td>Drizzle ORM</td><td>0.45</td><td>Schéma typé, requêtes, relations</td><td>backend</td></tr>
+            <tr><td>drizzle-kit</td><td>0.31</td><td>Génération et application des migrations</td><td>backend</td></tr>
+            <tr><td>postgres (postgres-js)</td><td>3.4</td><td>Pilote PostgreSQL</td><td>backend</td></tr>
+            <tr><td>Better Auth</td><td>1.7</td><td>Inscription, session, vérification d'e-mail</td><td>les deux</td></tr>
+            <tr><td>Zod</td><td>4.5</td><td>Validation des corps de requête</td><td>backend</td></tr>
+            <tr><td>swagger-jsdoc + UI</td><td>6.3 / 5.0</td><td>Doc OpenAPI servie sur <code>/api-docs</code></td><td>backend</td></tr>
+            <tr><td>node-cron</td><td>4.6</td><td>Maintenance quotidienne</td><td>backend</td></tr>
+            <tr><td>nodemailer</td><td>10</td><td>E-mails de vérification et de candidature</td><td>backend</td></tr>
+            <tr><td>tsx</td><td>4.23</td><td>Exécution TypeScript en développement</td><td>backend</td></tr>
+            <tr><td>Docker Compose</td><td>—</td><td>Orchestration des trois services</td><td>Racine</td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <div class="note">
+        <span class="note-label">Bon à savoir</span>
+        <p>Le backend n'est pas transpilé en développement : <code>tsx watch src/server.ts</code> exécute les sources directement, et le conteneur lance <code>pnpm dev</code> — y compris dans les images produites par la CI. <code>pnpm build</code> (tsc vers <code>dist/</code>) existe mais n'est pas utilisé par Compose.</p>
+    </div>
+</section>
+
+<section id="frontend">
+    <h2>Frontend — Next.js</h2>
+    <p class="lede">App Router : un dossier sous <code>app/</code> vaut une URL, et le fichier <code>page.tsx</code> en est le point d'entrée. Les pages qui n'ont besoin que de lecture sont des composants serveur ; celles qui manipulent la session ou la carte sont marquées <code>"use client"</code>.</p>
+
+    <div class="scroller">
+    <table>
+        <thead><tr><th>URL</th><th>Fichier</th><th>Rendu</th><th>Contenu</th></tr></thead>
+        <tbody>
+            <tr><td class="route">/</td><td><code>app/page.tsx</code></td><td>serveur</td><td>Accueil : hero, chiffres clés, fonctionnement</td></tr>
+            <tr><td class="route">/carte</td><td><code>app/carte/page.tsx</code></td><td>serveur → client</td><td>Charge les offres puis délègue à <code>MapExplorer</code></td></tr>
+            <tr><td class="route">/offres</td><td><code>app/offres/page.tsx</code></td><td>client</td><td>Espace employeur : offres publiées, candidats, compétences</td></tr>
+            <tr><td class="route">/entreprises</td><td><code>app/entreprises/page.tsx</code></td><td>client</td><td>Carte et recherche d'entreprises</td></tr>
+            <tr><td class="route">/entreprises/[id]</td><td><code>app/entreprises/[id]/page.tsx</code></td><td>client</td><td>Fiche entreprise et ses offres</td></tr>
+            <tr><td class="route">/annuaire</td><td><code>app/annuaire/page.tsx</code></td><td>client</td><td>Liste tabulaire des entreprises</td></tr>
+            <tr><td class="route">/candidatures</td><td><code>app/candidatures/page.tsx</code></td><td>client</td><td>Suivi des candidatures du compte</td></tr>
+            <tr><td class="route">/profil</td><td><code>app/profil/page.tsx</code></td><td>client</td><td>Profil, compétences, expériences, export RGPD</td></tr>
+            <tr><td class="route">/admin</td><td><code>app/admin/page.tsx</code></td><td>client</td><td>Modération : comptes, offres, entreprises, signalements</td></tr>
+            <tr><td class="route">/registre</td><td><code>app/registre/page.tsx</code></td><td>serveur</td><td>Registre des traitements</td></tr>
+            <tr><td class="route">/risques</td><td><code>app/risques/page.tsx</code></td><td>serveur</td><td>Analyse d'impact (AIPD)</td></tr>
+            <tr><td class="route">/cgu</td><td><code>app/cgu/page.tsx</code></td><td>serveur</td><td>Conditions générales, version épinglée dans <code>lib/cgu.ts</code></td></tr>
+            <tr><td class="route">/changelog</td><td><code>app/changelog/page.tsx</code></td><td>serveur</td><td>Lit <code>lib/changelog.json</code>, régénéré au <code>prebuild</code></td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <h3>Les quatre couches côté client</h3>
+    <div class="grid2">
+        <div class="panel">
+            <h4>app/ — les écrans</h4>
+            <p><code>layout.tsx</code> installe les polices Manrope, le lien d'évitement, le fournisseur CGU, le contexte des candidatures et le cadre <code>AppFrame</code>. Chaque page exporte son <code>metadata</code>.</p>
+        </div>
+        <div class="panel">
+            <h4>components/ — le métier</h4>
+            <p>Un composant par bloc fonctionnel : <code>map-explorer</code>, <code>job-list</code>, <code>job-details</code>, <code>applications-table</code>, <code>auth-modal</code>… Ils reçoivent des données déjà typées et ne font pas d'appel réseau brut.</p>
+        </div>
+        <div class="panel">
+            <h4>components/ui/ — les primitives</h4>
+            <p>Boutons, dialogues, onglets, tableaux issus de shadcn/ui. Générés via <code>components.json</code>, style « new-york », alias <code>@/components</code>. On les modifie sur place, ils font partie du dépôt.</p>
+        </div>
+        <div class="panel">
+            <h4>lib/ — le pont vers l'API</h4>
+            <p><code>api.ts</code> concentre <em>tous</em> les appels HTTP et convertit les lignes de l'API en types d'affichage (<code>toJob</code>, <code>toCompanyPin</code>). <code>auth-client.ts</code> expose la session Better Auth.</p>
+        </div>
+    </div>
+
+    <h3>Deux bases d'URL, une seule raison</h3>
+    <p>Un composant serveur tourne <em>dans</em> le réseau Docker : il doit viser <code>http://backend:4000</code>. Le navigateur, lui, ne connaît que <code>http://localhost:4000</code>. D'où ce sélecteur, à réutiliser pour toute lecture faite côté serveur :</p>
+
+    <div class="snippet">
+        <div class="snippet-bar"><span class="path">apps/frontend/<b>lib/api.ts</b></span><button class="copy" type="button">Copier</button></div>
+<pre><code><span class="k">function</span> apiBase(): <span class="n">string</span> {
+    <span class="k">if</span> (<span class="k">typeof</span> window === <span class="s">"undefined"</span> &amp;&amp; process.env.BACKEND_URL) {
+        <span class="k">return</span> process.env.BACKEND_URL;
+    }
+    <span class="k">return</span> API_URL; <span class="c">// NEXT_PUBLIC_API_URL, validée dans lib/env.ts</span>
+}</code></pre>
+    </div>
+
+    <h3>La carte</h3>
+    <p>Leaflet touche <code>window</code> dès l'import : le composant <code>components/map.tsx</code> est donc chargé dynamiquement, SSR désactivé, avec un squelette pendant le chargement.</p>
+
+    <div class="snippet">
+        <div class="snippet-bar"><span class="path">apps/frontend/<b>components/map-explorer.tsx</b></span><button class="copy" type="button">Copier</button></div>
+<pre><code><span class="k">const</span> Map = dynamic(
+    <span class="k">function</span> () {
+        <span class="k">return</span> import(<span class="s">"@/components/map"</span>);
+    },
+    {
+        ssr: <span class="k">false</span>,
+        loading: <span class="k">function</span> () {
+            <span class="k">return</span> &lt;Skeleton className=<span class="s">"h-full w-full rounded-none"</span> /&gt;;
+        },
+    },
+);</code></pre>
+    </div>
+
+    <p>Le fond de plan est la couche <code>GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2</code> de la Géoplateforme IGN, appelée en WMTS avec le jeu de tuiles <code>PM</code> (Web Mercator). Les offres sans coordonnées sont écartées de la carte par <code>locatedJobs()</code> — le champ <code>needsLocationCheck</code> fait foi.</p>
+</section>
+
+<section id="backend">
+    <h2>Backend — Express</h2>
+    <p class="lede">Un découpage strict en cinq fichiers par ressource : la route déclare l'URL, le middleware garde la porte, le controller décide, Zod valide, Drizzle écrit. Aucune requête SQL n'est écrite ailleurs que dans un controller.</p>
+
+    <figure class="figure">
+        <svg viewBox="0 0 900 210" role="img" aria-label="Cycle d'une requête : route, requireAuth, controller, validation Zod, Drizzle, réponse JSON, avec la sortie errorHandler">
+            <defs>
+                <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-faint)"></path>
+                </marker>
+            </defs>
+            <g font-family="Manrope, sans-serif">
+                <rect x="6" y="26" width="132" height="56" rx="6" fill="var(--surface)" stroke="var(--line)"></rect>
+                <text x="72" y="50" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">routes/</text>
+                <text x="72" y="66" text-anchor="middle" font-size="9.5" fill="var(--ink-soft)">URL + OpenAPI</text>
+
+                <rect x="158" y="26" width="132" height="56" rx="6" fill="var(--surface)" stroke="var(--line)"></rect>
+                <text x="224" y="50" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">requireAuth</text>
+                <text x="224" y="66" text-anchor="middle" font-size="9.5" fill="var(--ink-soft)">session Better Auth</text>
+
+                <rect x="310" y="26" width="132" height="56" rx="6" fill="var(--surface)" stroke="var(--primary)" stroke-width="1.5"></rect>
+                <text x="376" y="50" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">controller</text>
+                <text x="376" y="66" text-anchor="middle" font-size="9.5" fill="var(--ink-soft)">droits + métier</text>
+
+                <rect x="462" y="26" width="132" height="56" rx="6" fill="var(--surface)" stroke="var(--line)"></rect>
+                <text x="528" y="50" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">validateJson</text>
+                <text x="528" y="66" text-anchor="middle" font-size="9.5" fill="var(--ink-soft)">schéma Zod → 400</text>
+
+                <rect x="614" y="26" width="132" height="56" rx="6" fill="var(--surface)" stroke="var(--line)"></rect>
+                <text x="680" y="50" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">Drizzle</text>
+                <text x="680" y="66" text-anchor="middle" font-size="9.5" fill="var(--ink-soft)">db.query / insert</text>
+
+                <rect x="766" y="26" width="128" height="56" rx="6" fill="var(--surface)" stroke="var(--line)"></rect>
+                <text x="830" y="50" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">res.json()</text>
+                <text x="830" y="66" text-anchor="middle" font-size="9.5" fill="var(--ink-soft)">200 · 201</text>
+
+                <rect x="310" y="146" width="284" height="48" rx="6" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5"></rect>
+                <text x="452" y="167" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">errorHandler.middleware.ts</text>
+                <text x="452" y="183" text-anchor="middle" font-size="9.5" fill="var(--ink-soft)">{ error: message, ...details } avec le bon statut</text>
+            </g>
+
+            <g stroke="var(--ink-faint)" stroke-width="1.4" fill="none" marker-end="url(#ar2)">
+                <path d="M 138 54 L 154 54"></path>
+                <path d="M 290 54 L 306 54"></path>
+                <path d="M 442 54 L 458 54"></path>
+                <path d="M 594 54 L 610 54"></path>
+                <path d="M 746 54 L 762 54"></path>
+            </g>
+            <g stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="4 3" fill="none" marker-end="url(#ar2)">
+                <path d="M 224 82 L 224 170 L 306 170"></path>
+                <path d="M 376 82 L 376 142"></path>
+                <path d="M 680 82 L 680 170 L 598 170"></path>
+            </g>
+            <text x="452" y="122" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="var(--accent)">throw new HttpError(status, message)</text>
+        </svg>
+        <figcaption>Un controller ne renvoie jamais d'erreur à la main : il lève un <code>HttpError</code>, et <code>errorHandler</code> — monté en dernier dans <code>app.ts</code> — le transforme en réponse JSON. Seul <code>validateJson()</code> répond directement, avec un 400 détaillé.</figcaption>
+    </figure>
+
+    <h3>Les fichiers d'une ressource</h3>
+    <div class="scroller">
+    <table>
+        <thead><tr><th>Fichier</th><th>Responsabilité</th><th>Ce qu'on n'y met pas</th></tr></thead>
+        <tbody>
+            <tr><td><code>routes/x.routes.ts</code></td><td>Verbes, chemins, middlewares, blocs <code>@openapi</code></td><td>Aucune logique</td></tr>
+            <tr><td><code>controllers/x.controller.ts</code></td><td>Droits, validation, requêtes Drizzle, réponse</td><td>Pas de définition d'URL</td></tr>
+            <tr><td><code>schemas/x.schema.ts</code></td><td>Schémas Zod <code>postX</code> / <code>patchX</code></td><td>Pas d'accès base</td></tr>
+            <tr><td><code>db/schema.ts</code></td><td>Tables, contraintes, index, relations</td><td>Pas de requêtes</td></tr>
+            <tr><td><code>routes/index.ts</code></td><td>Montage de la ressource sous son préfixe</td><td>—</td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <h3>Trois outils que tout controller utilise</h3>
+    <ul>
+        <li><code>getCurrentUser(req)</code> — recharge l'utilisateur en base et <strong>refuse</strong> les comptes suspendus ou bannis, ainsi que ceux dont l'entreprise l'est. À préférer systématiquement à <code>req.user</code>.</li>
+        <li><code>getOptionalUser(req)</code> — même chose sur une route publique, mais renvoie <code>null</code> au lieu d'échouer : c'est ce qui permet à un administrateur de voir ce que le public ne voit plus.</li>
+        <li><code>isUniqueViolation(error)</code> — détecte le code PostgreSQL <code>23505</code> et permet de répondre 409 plutôt que 500 sur une contrainte d'unicité.</li>
+    </ul>
+
+    <div class="note warn">
+        <span class="note-label">Convention d'imports</span>
+        <p>Le backend est en ESM <code>nodenext</code> avec <code>allowImportingTsExtensions</code> et <code>rewriteRelativeImportExtensions</code>. Les imports relatifs portent donc l'extension <code>.ts</code> : <code>import {db} from "../db/index.ts";</code>. Omettre l'extension casse l'exécution sous <code>tsx</code>.</p>
+    </div>
+</section>
+
+<section id="base">
+    <h2>Base de données</h2>
+    <p class="lede">Quinze tables déclarées dans un seul fichier, <code>apps/backend/src/db/schema.ts</code>. Les colonnes y sont en <code>camelCase</code> côté TypeScript et en <code>snake_case</code> côté SQL — le second argument de chaque helper porte le nom réel de la colonne.</p>
+
+    <div class="scroller">
+    <table>
+        <thead><tr><th>Table</th><th>Rôle</th><th>Colonnes structurantes</th></tr></thead>
+        <tbody>
+            <tr><td>addresses</td><td>Adresses normalisées et géocodées, partagées par les trois entités localisables</td><td><code>latitude</code>, <code>longitude</code>, <code>lambert_x/y</code> (EPSG:2154), <code>geocoding_source</code>, <code>needs_location_check</code></td></tr>
+            <tr><td>companies</td><td>Entreprises, enrichies depuis l'API Sirene</td><td><code>siret</code>, <code>employee_range</code>, <code>activity</code>, <code>sirene_checked_at</code>, unique <code>(name, siret)</code></td></tr>
+            <tr><td>users</td><td>Comptes, pilotés par Better Auth</td><td><code>rank</code> (0/1/2), <code>companies_id</code>, <code>email</code> unique, <code>last_login_at</code></td></tr>
+            <tr><td>session · account · verification</td><td>Tables imposées par Better Auth</td><td><code>token</code> unique, <code>expires_at</code>, <code>password</code> (haché)</td></tr>
+            <tr><td>user_skills</td><td>Compétences déclarées d'un candidat</td><td><code>user_id</code> → cascade</td></tr>
+            <tr><td>experience</td><td>Expériences professionnelles</td><td><code>companies_id</code> → cascade, <code>type</code>, <code>part_time</code></td></tr>
+            <tr><td>availability</td><td>Créneaux de disponibilité</td><td><code>start</code> obligatoire, <code>end</code> nullable</td></tr>
+            <tr><td>jobs</td><td>Offres d'emploi</td><td><code>companies_id</code>, <code>user_id</code> (l'employeur qui publie), <code>address_id</code>, <code>remote</code>, <code>max_applicants</code>, unique <code>(title, companies_id)</code></td></tr>
+            <tr><td>job_skills</td><td>Compétences attendues sur une offre</td><td><code>job_id</code> → cascade</td></tr>
+            <tr><td>applications</td><td>Candidatures — jonction users ↔ jobs</td><td><code>status</code> (0 en attente, 1 acceptée, 2 refusée), unique <code>(job_id, user_id)</code></td></tr>
+            <tr><td>reports</td><td>Signalements d'offre, de profil ou d'entreprise</td><td><code>reason</code>, <code>status</code>, index sur <code>status</code></td></tr>
+            <tr><td>jobs_archive · job_skills_archive</td><td>Offres basculées après 30 jours, purgées à 2 ans</td><td><code>original_job_id</code> (pas de clé étrangère), <code>archived_at</code></td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <h3>Deux politiques de suppression, choisies volontairement</h3>
+    <p><code>cascade</code> quand la ligne n'a aucun sens sans son parent (une candidature sans offre, une compétence sans profil). <code>set null</code> quand la disparition du parent ne doit pas emporter l'enfant : supprimer une adresse ne supprime pas l'entreprise, supprimer une entreprise ne supprime pas le compte de son employeur.</p>
+
+    <h3>Modération : des colonnes plutôt qu'une suppression</h3>
+    <p><code>users</code> et <code>companies</code> portent <code>suspended_at</code>, <code>banned_at</code> et <code>moderation_reason</code>. Une offre disparaît de la diffusion publique dès que son entreprise <em>ou</em> l'employeur qui l'a publiée est modéré ; les administrateurs continuent de tout voir. La règle est implémentée dans <code>jobs.controller.ts</code> :</p>
+
+    <div class="snippet">
+        <div class="snippet-bar"><span class="path">apps/backend/src/controllers/<b>jobs.controller.ts</b></span><button class="copy" type="button">Copier</button></div>
+<pre><code><span class="k">function</span> isPubliclyVisible(job: <span class="n">JobWithPoster</span>): <span class="n">boolean</span>
+{
+    <span class="k">if</span> (job.company !== <span class="k">null</span> &amp;&amp; isModerated(job.company)) {
+        <span class="k">return</span> <span class="k">false</span>;
+    }
+    <span class="k">if</span> (job.poster !== <span class="k">null</span> &amp;&amp; isModerated(job.poster)) {
+        <span class="k">return</span> <span class="k">false</span>;
+    }
+    <span class="k">return</span> <span class="k">true</span>;
+}</code></pre>
+    </div>
+
+    <h3>Migrations</h3>
+    <p>Le schéma TypeScript est la source de vérité ; le SQL est généré, jamais écrit à la main. Sept migrations sont présentes, journalisées dans <code>drizzle/meta/_journal.json</code>.</p>
+
+    <div class="snippet">
+        <div class="snippet-bar"><span class="path">depuis la racine du dépôt</span><span class="tag">shell</span><button class="copy" type="button">Copier</button></div>
+<pre><code><span class="c"># 1. écrire la table dans src/db/schema.ts, puis :</span>
+pnpm --filter backend db:generate   <span class="c"># crée drizzle/00XX_nom.sql + le snapshot</span>
+pnpm --filter backend db:migrate    <span class="c"># applique les migrations en attente</span>
+pnpm --filter backend db:studio     <span class="c"># inspecteur graphique de la base</span></code></pre>
+    </div>
+
+    <div class="note warn">
+        <span class="note-label">En conteneur</span>
+        <p>Le backend exécute <code>node src/db/migrate.ts &amp;&amp; node src/db/seed.ts</code> à chaque démarrage. Une migration commitée est donc appliquée automatiquement chez les autres — mais le fichier SQL doit être commité, pas seulement le schéma.</p>
+    </div>
+
+    <h3>Maintenance quotidienne</h3>
+    <p><code>src/cron.ts</code> planifie <code>runDailyMaintenance()</code> à minuit, fuseau <code>Europe/Paris</code> : archivage des offres de plus de 30 jours dans <code>jobs_archive</code> (transaction, compétences comprises, puis suppression de l'originale), purge des archives de plus de 2 ans, et suppression des comptes sans connexion depuis 2 ans.</p>
+</section>
+
+<section id="auth">
+    <h2>Authentification et rôles</h2>
+    <p class="lede">Better Auth gère les comptes des deux côtés. Le backend le monte en amont de <code>express.json()</code> — le handler lit le corps lui-même — et le frontend consomme la même session via <code>authClient</code>.</p>
+
+    <div class="snippet">
+        <div class="snippet-bar"><span class="path">apps/backend/src/<b>app.ts</b></span><button class="copy" type="button">Copier</button></div>
+<pre><code>app.all(<span class="s">"/api/auth/{*splat}"</span>, toNodeHandler(auth)); <span class="c">// AVANT express.json()</span>
+
+app.use(express.json());
+app.use(<span class="s">"/api-docs"</span>, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use(<span class="s">"/api"</span>, router);
+app.use(errorHandler); <span class="c">// toujours en dernier</span></code></pre>
+    </div>
+
+    <h3>Les trois rangs</h3>
+    <div class="scroller">
+    <table>
+        <thead><tr><th>rank</th><th>Rôle</th><th>Peut</th></tr></thead>
+        <tbody>
+            <tr><td>0</td><td>Administrateur</td><td>Tout voir, y compris le contenu modéré ; suspendre, bannir, changer un rang, traiter les signalements. Attribué à la main.</td></tr>
+            <tr><td>1</td><td>Employeur</td><td>Gérer <em>son</em> entreprise (<code>companies_id</code>), publier des offres, consulter et traiter les candidatures reçues.</td></tr>
+            <tr><td>2</td><td>Candidat</td><td>Valeur par défaut. Profil, compétences, expériences, disponibilités, candidatures, signalements.</td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <p>Le contrôle d'accès se fait à deux niveaux. <code>requireAuth</code> ouvre la porte ; le contrôle fin appartient au controller, en général via une garde locale du type <code>checkCompanyAccess()</code> qui laisse passer le rang 0 puis compare <code>user.companiesId</code> à l'entreprise visée. Le middleware <code>requireRank(...rangs)</code> existe pour les cas simples et se place <em>après</em> <code>requireAuth</code>.</p>
+
+    <h3>Session</h3>
+    <ul>
+        <li>Durée 3 jours, prolongée au bout d'un jour d'usage ; cache cookie de 5 minutes.</li>
+        <li>Un hook <code>databaseHooks.session.create.after</code> met à jour <code>users.last_login_at</code> — c'est cette colonne que lit la purge des comptes inactifs.</li>
+        <li>E-mail de vérification envoyé à l'inscription, valide 1 heure. Sans <code>SMTP_HOST</code>, le lien est simplement écrit dans les logs du backend.</li>
+        <li><code>emailAndPassword.requireEmailVerification</code> est à <code>false</code> : un compte non vérifié peut se connecter.</li>
+    </ul>
+
+    <div class="note">
+        <span class="note-label">Côté navigateur</span>
+        <p>Le cookie de session est envoyé par le navigateur, pas par un en-tête <code>Authorization</code>. Tout appel authentifié depuis <code>lib/api.ts</code> doit porter <code>credentials: "include"</code>, et l'origine du front doit figurer dans <code>FRONTEND_URL</code> (CORS + <code>trustedOrigins</code>). Un 401 inexpliqué vient presque toujours de l'un de ces deux points.</p>
+    </div>
+</section>
+
+<section id="api">
+    <h2>Référence de l'API</h2>
+    <p class="lede">Base <code>http://localhost:4000</code>. Tout est monté sous <code>/api</code>, sauf la sonde <code>GET /health</code> et l'interface Swagger <code>GET /api-docs</code>, qui reflète les blocs <code>@openapi</code> écrits dans les fichiers de routes.</p>
+
+    <p><span class="lock open">publique</span> — aucune session requise. <span class="lock">session</span> — cookie Better Auth obligatoire. <span class="lock admin">admin</span> — session + <code>rank = 0</code>.</p>
+
+    <h3>Authentification</h3>
+    <div class="scroller">
+    <table>
+        <thead><tr><th>Méthode</th><th>Chemin</th><th>Accès</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td><span class="verb all">ALL</span></td><td class="route">/api/auth/*</td><td><span class="lock open">publique</span></td><td>Délégué intégralement à Better Auth : <code>sign-up/email</code>, <code>sign-in/email</code>, <code>sign-out</code>, <code>get-session</code>, <code>verify-email</code>…</td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <h3>Offres</h3>
+    <div class="scroller">
+    <table>
+        <thead><tr><th>Méthode</th><th>Chemin</th><th>Accès</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/jobs</td><td><span class="lock open">publique</span></td><td>Toutes les offres visibles, avec entreprise, adresse et compétences</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/jobs/:id</td><td><span class="lock open">publique</span></td><td>Une offre ; 404 si elle est modérée et que le visiteur n'y a pas droit</td></tr>
+            <tr><td><span class="verb post">POST</span></td><td class="route">/api/jobs</td><td><span class="lock">session</span></td><td>Publie une offre pour son entreprise ; 409 si le titre existe déjà</td></tr>
+            <tr><td><span class="verb patch">PATCH</span></td><td class="route">/api/jobs/:id</td><td><span class="lock">session</span></td><td>Modifie les champs fournis ; 400 si le corps est vide</td></tr>
+            <tr><td><span class="verb delete">DELETE</span></td><td class="route">/api/jobs/:id</td><td><span class="lock">session</span></td><td>Supprime l'offre et, en cascade, ses compétences et candidatures</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/jobs/:id/skills</td><td><span class="lock open">publique</span></td><td>Compétences attendues</td></tr>
+            <tr><td><span class="verb post">POST</span></td><td class="route">/api/jobs/:id/skills</td><td><span class="lock">session</span></td><td>Ajoute une compétence</td></tr>
+            <tr><td><span class="verb patch">PATCH</span></td><td class="route">/api/jobs/:id/skills/:skillId</td><td><span class="lock">session</span></td><td>Renomme une compétence</td></tr>
+            <tr><td><span class="verb delete">DELETE</span></td><td class="route">/api/jobs/:id/skills/:skillId</td><td><span class="lock">session</span></td><td>Retire une compétence</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/jobs/:id/applications</td><td><span class="lock">session</span></td><td>Candidats de l'offre ; 403 si l'offre n'appartient pas à son entreprise</td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <h3>Entreprises</h3>
+    <div class="scroller">
+    <table>
+        <thead><tr><th>Méthode</th><th>Chemin</th><th>Accès</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/companies</td><td><span class="lock open">publique</span></td><td>Annuaire, avec nombre d'offres</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/companies/:id</td><td><span class="lock open">publique</span></td><td>Fiche entreprise</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/companies/siret/:siret</td><td><span class="lock open">publique</span></td><td>Interroge l'API Sirene et pré-remplit une fiche</td></tr>
+            <tr><td><span class="verb post">POST</span></td><td class="route">/api/companies</td><td><span class="lock">session</span></td><td>Crée l'entreprise à partir d'un SIRET et rattache le compte</td></tr>
+            <tr><td><span class="verb patch">PATCH</span></td><td class="route">/api/companies/:id</td><td><span class="lock">session</span></td><td>Description, lien, adresse</td></tr>
+            <tr><td><span class="verb post">POST</span></td><td class="route">/api/companies/:id/refresh</td><td><span class="lock">session</span></td><td>Reconfronte le SIRET à l'API Sirene</td></tr>
+            <tr><td><span class="verb delete">DELETE</span></td><td class="route">/api/companies/:id</td><td><span class="lock">session</span></td><td>Supprime l'entreprise et ses offres</td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <h3>Profils</h3>
+    <div class="scroller">
+    <table>
+        <thead><tr><th>Méthode</th><th>Chemin</th><th>Accès</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/users</td><td><span class="lock">session</span></td><td>Profil du compte connecté</td></tr>
+            <tr><td><span class="verb patch">PATCH</span></td><td class="route">/api/users</td><td><span class="lock">session</span></td><td>Met à jour son profil</td></tr>
+            <tr><td><span class="verb delete">DELETE</span></td><td class="route">/api/users</td><td><span class="lock">session</span></td><td>Supprime son compte</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/users/:id</td><td><span class="lock">session</span></td><td>Profil public d'un autre compte</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/users/skills · experience · availability</td><td><span class="lock">session</span></td><td>Listes du compte connecté</td></tr>
+            <tr><td><span class="verb post">POST</span></td><td class="route">/api/users/skills · experience · availability</td><td><span class="lock">session</span></td><td>Ajoute une entrée</td></tr>
+            <tr><td><span class="verb patch">PATCH</span></td><td class="route">/api/users/skills/:skillId <span style="opacity:.6">(idem experience, availability)</span></td><td><span class="lock">session</span></td><td>Modifie une entrée</td></tr>
+            <tr><td><span class="verb delete">DELETE</span></td><td class="route">/api/users/skills/:skillId <span style="opacity:.6">(idem experience, availability)</span></td><td><span class="lock">session</span></td><td>Supprime une entrée</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/users/:id/skills · experience · availability</td><td><span class="lock open">publique</span></td><td>Listes publiques d'un profil</td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <h3>Candidatures, signalements, RGPD</h3>
+    <div class="scroller">
+    <table>
+        <thead><tr><th>Méthode</th><th>Chemin</th><th>Accès</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td><span class="verb post">POST</span></td><td class="route">/api/applications</td><td><span class="lock">session</span></td><td>Postule à une offre ; 409 si déjà postulé</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/applications</td><td><span class="lock">session</span></td><td>Ses propres candidatures</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/applications/received</td><td><span class="lock">session</span></td><td>Candidatures reçues sur les offres de son entreprise</td></tr>
+            <tr><td><span class="verb patch">PATCH</span></td><td class="route">/api/applications/:id</td><td><span class="lock">session</span></td><td>Change le statut (acceptée / refusée) — côté employeur</td></tr>
+            <tr><td><span class="verb delete">DELETE</span></td><td class="route">/api/applications/:id</td><td><span class="lock">session</span></td><td>Retire sa candidature</td></tr>
+            <tr><td><span class="verb post">POST</span></td><td class="route">/api/reports</td><td><span class="lock">session</span></td><td>Signale une offre, un profil ou une entreprise</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/reports</td><td><span class="lock">session</span></td><td>Ses propres signalements</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/extract</td><td><span class="lock">session</span></td><td>Export RGPD complet du compte, en JSON</td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <h3>Administration</h3>
+    <div class="scroller">
+    <table>
+        <thead><tr><th>Méthode</th><th>Chemin</th><th>Accès</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/admin/metrics</td><td><span class="lock admin">admin</span></td><td>Compteurs de la plateforme</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/admin/users</td><td><span class="lock admin">admin</span></td><td>Recherche de comptes</td></tr>
+            <tr><td><span class="verb patch">PATCH</span></td><td class="route">/api/admin/users/:id/moderation</td><td><span class="lock admin">admin</span></td><td>Suspend, bannit ou rétablit un compte</td></tr>
+            <tr><td><span class="verb patch">PATCH</span></td><td class="route">/api/admin/users/:id/rank</td><td><span class="lock admin">admin</span></td><td>Change le rang</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/admin/jobs</td><td><span class="lock admin">admin</span></td><td>Toutes les offres, modérées comprises</td></tr>
+            <tr><td><span class="verb delete">DELETE</span></td><td class="route">/api/admin/jobs/:id</td><td><span class="lock admin">admin</span></td><td>Retire n'importe quelle offre</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/admin/companies</td><td><span class="lock admin">admin</span></td><td>Toutes les entreprises</td></tr>
+            <tr><td><span class="verb patch">PATCH</span></td><td class="route">/api/admin/companies/:id/moderation</td><td><span class="lock admin">admin</span></td><td>Suspend ou bannit une entreprise et ses offres</td></tr>
+            <tr><td><span class="verb get">GET</span></td><td class="route">/api/admin/reports</td><td><span class="lock admin">admin</span></td><td>File des signalements</td></tr>
+            <tr><td><span class="verb patch">PATCH</span></td><td class="route">/api/admin/reports/:id</td><td><span class="lock admin">admin</span></td><td>Marque un signalement traité ou rejeté</td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <div class="note">
+        <span class="note-label">Format des corps</span>
+        <p>L'API reçoit du <code>snake_case</code> (<code>companies_id</code>, <code>salary_min</code>, <code>max_applicants</code>) et renvoie du <code>camelCase</code>, tel que Drizzle le produit. La conversion se fait dans le controller, champ par champ — c'est volontaire, et c'est ce qui permet à <code>PATCH</code> de distinguer « champ absent » de « champ mis à <code>null</code> ».</p>
+    </div>
+</section>
+
+<section id="recette-table">
+    <h2>Recette — ajouter une table</h2>
+    <p class="lede">Exemple suivi dans les trois recettes suivantes : des <strong>favoris</strong>, permettant à un candidat de mettre une offre de côté. Une table de jonction, une contrainte d'unicité, deux clés étrangères en cascade.</p>
+
+    <ol class="recipe">
+        <li>
+            <h4>Déclarer la table dans le schéma</h4>
+            <p>Tout se passe dans <code>schema.ts</code>. Les colonnes reçoivent leur nom SQL en argument ; les contraintes de table vont dans le tableau retourné par le troisième paramètre.</p>
+            <div class="snippet">
+                <div class="snippet-bar"><span class="path">apps/backend/src/db/<b>schema.ts</b></span><span class="tag">ajout</span><button class="copy" type="button">Copier</button></div>
+<pre><code><span class="k">export const</span> favorites = pgTable(
+    <span class="s">"favorites"</span>,
+    {
+        id: serial(<span class="s">"id"</span>).primaryKey(),
+        userId: integer(<span class="s">"user_id"</span>).notNull().references(() => users.id, { onDelete: <span class="s">"cascade"</span> }),
+        jobId: integer(<span class="s">"job_id"</span>).notNull().references(() => jobs.id, { onDelete: <span class="s">"cascade"</span> }),
+        createdAt: timestamp(<span class="s">"created_at"</span>).defaultNow(),
+    },
+    (t) => [unique().on(t.userId, t.jobId)] <span class="c">// un favori par couple candidat/offre</span>
+);</code></pre>
+            </div>
+        </li>
+        <li>
+            <h4>Déclarer les relations</h4>
+            <p>Sans bloc <code>relations</code>, l'option <code>with:</code> de <code>db.query</code> ne saura pas joindre. Il faut aussi ajouter le <code>many()</code> réciproque dans les relations existantes de <code>users</code> et <code>jobs</code>.</p>
+            <div class="snippet">
+                <div class="snippet-bar"><span class="path">apps/backend/src/db/<b>schema.ts</b></span><span class="tag">ajout</span><button class="copy" type="button">Copier</button></div>
+<pre><code><span class="k">export const</span> favoritesRelations = relations(favorites, ({ one }) => ({
+    user: one(users, { fields: [favorites.userId], references: [users.id] }),
+    job: one(jobs, { fields: [favorites.jobId], references: [jobs.id] }),
+}));
+
+<span class="c">// dans usersRelations : ajouter   favorites: many(favorites),</span>
+<span class="c">// dans jobsRelations  : ajouter   favorites: many(favorites),</span></code></pre>
+            </div>
+        </li>
+        <li>
+            <h4>Générer puis appliquer la migration</h4>
+            <p><code>db:generate</code> compare le schéma au dernier snapshot et écrit un fichier SQL numéroté. Relisez-le : c'est là qu'on repère une colonne oubliée ou un <code>NOT NULL</code> ajouté sur une table déjà remplie.</p>
+            <div class="snippet">
+                <div class="snippet-bar"><span class="path">racine du dépôt</span><span class="tag">shell</span><button class="copy" type="button">Copier</button></div>
+<pre><code>pnpm --filter backend db:generate
+<span class="c"># → apps/backend/drizzle/0007_xxx.sql + drizzle/meta/0007_snapshot.json</span>
+
+pnpm --filter backend db:migrate
+<span class="c"># en conteneur, migrate.ts tourne déjà au démarrage du service backend</span></code></pre>
+            </div>
+        </li>
+        <li>
+            <h4>Commiter le SQL avec le schéma</h4>
+            <p>Le fichier <code>drizzle/00XX_*.sql</code>, le snapshot et <code>drizzle/meta/_journal.json</code> font partie du changement. Sans eux, la base des autres ne bougera pas.</p>
+        </li>
+    </ol>
+
+    <div class="note warn">
+        <span class="note-label">Ne jamais faire</span>
+        <p>Modifier un fichier de migration déjà appliqué, ou renommer une migration existante. Le journal se désynchronise et <code>db:migrate</code> rejoue ou saute des étapes. Une correction se fait toujours par une nouvelle migration.</p>
+    </div>
+</section>
+
+<section id="recette-route">
+    <h2>Recette — ajouter une route et son controller</h2>
+    <p class="lede">Cinq fichiers touchés, toujours les mêmes, toujours dans cet ordre. On expose ici <code>/api/favorites</code>.</p>
+
+    <ol class="recipe">
+        <li>
+            <h4>Le schéma de validation</h4>
+            <p>Un fichier par ressource, deux exports par verbe qui écrit. Le <code>patch</code> se dérive du <code>post</code> avec <code>.partial()</code>.</p>
+            <div class="snippet">
+                <div class="snippet-bar"><span class="path">apps/backend/src/schemas/<b>favorites.schema.ts</b></span><span class="tag">nouveau</span><button class="copy" type="button">Copier</button></div>
+<pre><code><span class="k">import</span> {z} <span class="k">from</span> <span class="s">"zod"</span>;
+
+<span class="k">export const</span> postFavoriteSchema = z.object({
+    job_id: z.number().int(), <span class="c">// l'API reçoit du snake_case</span>
+});</code></pre>
+            </div>
+        </li>
+        <li>
+            <h4>Le controller</h4>
+            <p>Une fonction exportée par endpoint, signature Express complète, <code>next()</code> en fin de fonction comme partout ailleurs dans le projet. On récupère l'utilisateur par <code>getCurrentUser</code>, on valide, on vérifie l'existence, puis on écrit.</p>
+            <div class="snippet">
+                <div class="snippet-bar"><span class="path">apps/backend/src/controllers/<b>favorites.controller.ts</b></span><span class="tag">nouveau</span><button class="copy" type="button">Copier</button></div>
+<pre><code><span class="k">import</span> {Request, Response, NextFunction} <span class="k">from</span> <span class="s">"express"</span>;
+<span class="k">import</span> {validateJson} <span class="k">from</span> <span class="s">"../utils/validateJson.utils.ts"</span>;
+<span class="k">import</span> {getCurrentUser} <span class="k">from</span> <span class="s">"../utils/currentUser.utils.ts"</span>;
+<span class="k">import</span> {isUniqueViolation} <span class="k">from</span> <span class="s">"../utils/dbError.utils.ts"</span>;
+<span class="k">import</span> {HttpError} <span class="k">from</span> <span class="s">"../types/httpError.ts"</span>;
+<span class="k">import</span> * <span class="k">as</span> schemas <span class="k">from</span> <span class="s">"../schemas/favorites.schema.ts"</span>;
+<span class="k">import</span> {db} <span class="k">from</span> <span class="s">"../db/index.ts"</span>;
+<span class="k">import</span> {favorites, jobs} <span class="k">from</span> <span class="s">"../db/schema.ts"</span>;
+<span class="k">import</span> {and, eq} <span class="k">from</span> <span class="s">"drizzle-orm"</span>;
+
+<span class="k">export async function</span> getFavorites(req: <span class="n">Request</span>, res: <span class="n">Response</span>, next: <span class="n">NextFunction</span>)
+{
+    <span class="k">const</span> user = <span class="k">await</span> getCurrentUser(req);
+
+    <span class="k">const</span> rows = <span class="k">await</span> db.query.favorites.findMany({
+        where: eq(favorites.userId, user.id),
+        with: { job: { with: { company: <span class="k">true</span>, address: <span class="k">true</span> } } },
+    });
+
+    res.json(rows);
+
+    next();
+}
+
+<span class="k">export async function</span> postFavorite(req: <span class="n">Request</span>, res: <span class="n">Response</span>, next: <span class="n">NextFunction</span>)
+{
+    <span class="k">const</span> user = <span class="k">await</span> getCurrentUser(req);
+
+    <span class="k">if</span> (!validateJson(schemas.postFavoriteSchema, req, res)) {
+        <span class="k">return</span>; <span class="c">// validateJson a déjà répondu 400</span>
+    }
+
+    <span class="k">const</span> job = <span class="k">await</span> db.query.jobs.findFirst({ where: eq(jobs.id, req.body.job_id) });
+    <span class="k">if</span> (!job) {
+        <span class="k">throw new</span> HttpError(<span class="n">404</span>, <span class="s">"Offre introuvable"</span>);
+    }
+
+    <span class="k">let</span> created;
+    <span class="k">try</span> {
+        <span class="k">const</span> rows = <span class="k">await</span> db.insert(favorites).values({
+            userId: user.id,
+            jobId: req.body.job_id,
+        }).returning();
+        created = rows[<span class="n">0</span>];
+    } <span class="k">catch</span> (error) {
+        <span class="k">if</span> (isUniqueViolation(error)) {
+            <span class="k">throw new</span> HttpError(<span class="n">409</span>, <span class="s">"Cette offre est déjà dans vos favoris"</span>);
+        }
+        <span class="k">throw</span> error;
+    }
+
+    res.status(<span class="n">201</span>).json(created);
+
+    next();
+}
+
+<span class="k">export async function</span> deleteFavorite(req: <span class="n">Request</span>, res: <span class="n">Response</span>, next: <span class="n">NextFunction</span>)
+{
+    <span class="k">const</span> user = <span class="k">await</span> getCurrentUser(req);
+
+    <span class="k">const</span> id = Number(req.params.id);
+    <span class="k">if</span> (isNaN(id)) {
+        <span class="k">throw new</span> HttpError(<span class="n">400</span>, <span class="s">"Identifiant de favori invalide"</span>);
+    }
+
+    <span class="c">// le filtre sur userId fait office de contrôle de propriété</span>
+    <span class="k">const</span> rows = <span class="k">await</span> db.delete(favorites)
+        .where(and(eq(favorites.id, id), eq(favorites.userId, user.id)))
+        .returning();
+    <span class="k">if</span> (rows.length === <span class="n">0</span>) {
+        <span class="k">throw new</span> HttpError(<span class="n">404</span>, <span class="s">"Favori introuvable"</span>);
+    }
+
+    res.json({ deleted: rows[<span class="n">0</span>].id });
+
+    next();
+}</code></pre>
+            </div>
+        </li>
+        <li>
+            <h4>Le fichier de routes</h4>
+            <p>Rien d'autre que le câblage et la documentation OpenAPI. Le bloc <code>@openapi</code> alimente <code>/api-docs</code> : les chemins s'y écrivent <em>sans</em> le préfixe <code>/api</code>, déjà déclaré comme serveur dans <code>swagger.config.ts</code>.</p>
+            <div class="snippet">
+                <div class="snippet-bar"><span class="path">apps/backend/src/routes/<b>favorites.routes.ts</b></span><span class="tag">nouveau</span><button class="copy" type="button">Copier</button></div>
+<pre><code><span class="k">import</span> {Router} <span class="k">from</span> <span class="s">"express"</span>;
+<span class="k">import</span> {requireAuth} <span class="k">from</span> <span class="s">"../middlewares/requireAuth.middleware.ts"</span>;
+<span class="k">import</span> * <span class="k">as</span> favoritesController <span class="k">from</span> <span class="s">"../controllers/favorites.controller.ts"</span>;
+
+<span class="k">const</span> router = Router();
+
+<span class="c">/**
+ * @openapi
+ * /favorites:
+ *   get:
+ *     summary: List the current user's saved jobs
+ *     tags: [Favorites]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of favorites
+ *       401:
+ *         description: Missing or invalid session
+ */</span>
+router.get(<span class="s">"/"</span>, requireAuth, favoritesController.getFavorites);
+
+<span class="c">/**
+ * @openapi
+ * /favorites:
+ *   post:
+ *     summary: Save a job
+ *     tags: [Favorites]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [job_id]
+ *             properties:
+ *               job_id: { type: integer }
+ *     responses:
+ *       201:
+ *         description: Favorite created
+ *       409:
+ *         description: Already saved
+ */</span>
+router.post(<span class="s">"/"</span>, requireAuth, favoritesController.postFavorite);
+
+<span class="c">/**
+ * @openapi
+ * /favorites/{id}:
+ *   delete:
+ *     summary: Remove a saved job
+ *     tags: [Favorites]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Favorite deleted
+ *       404:
+ *         description: Favorite not found
+ */</span>
+router.delete(<span class="s">"/:id"</span>, requireAuth, favoritesController.deleteFavorite);
+
+<span class="k">export default</span> router;</code></pre>
+            </div>
+        </li>
+        <li>
+            <h4>Monter la ressource</h4>
+            <p>Deux lignes dans le routeur racine. L'ordre compte : <code>specialRoutes</code> est monté sur la chaîne vide et doit rester en dernier.</p>
+            <div class="snippet">
+                <div class="snippet-bar"><span class="path">apps/backend/src/routes/<b>index.ts</b></span><span class="tag">modifié</span><button class="copy" type="button">Copier</button></div>
+<pre><code><span class="k">import</span> favoritesRoutes <span class="k">from</span> <span class="s">"./favorites.routes.ts"</span>;
+
+router.use(<span class="s">"/favorites"</span>, favoritesRoutes);
+<span class="c">// … router.use("", specialRoutes); reste la dernière ligne</span></code></pre>
+            </div>
+        </li>
+        <li>
+            <h4>Vérifier</h4>
+            <p><code>tsx watch</code> recharge seul. Contrôlez que la route apparaît sur <a href="http://localhost:4000/api-docs">/api-docs</a>, puis testez les trois cas : sans session (401), corps invalide (400), doublon (409).</p>
+            <div class="snippet">
+                <div class="snippet-bar"><span class="path">vérification rapide</span><span class="tag">shell</span><button class="copy" type="button">Copier</button></div>
+<pre><code>curl -i http://localhost:4000/api/favorites            <span class="c"># attendu : 401</span>
+curl -i -X POST http://localhost:4000/api/favorites \
+     -H <span class="s">'Content-Type: application/json'</span> -d <span class="s">'{}'</span>          <span class="c"># attendu : 401 puis 400 une fois connecté</span></code></pre>
+            </div>
+        </li>
+    </ol>
+
+    <div class="note">
+        <span class="note-label">Nommage des chemins</span>
+        <p>Sous Express 5, les segments génériques s'écrivent <code>{*splat}</code> et non plus <code>*</code> — c'est la forme utilisée pour Better Auth dans <code>app.ts</code>. Une route <code>/:id</code> doit toujours être déclarée <em>après</em> les chemins littéraux qui pourraient s'y confondre (<code>/received</code>, <code>/siret/:siret</code>).</p>
+    </div>
+</section>
+
+<section id="recette-front">
+    <h2>Recette — brancher le frontend</h2>
+    <p class="lede">Le front ne parle à l'API qu'à travers <code>lib/api.ts</code>. Un composant qui appelle <code>fetch</code> lui-même est un bug de conception : la base d'URL, la gestion d'erreur et le typage s'y perdent.</p>
+
+    <ol class="recipe">
+        <li>
+            <h4>Ajouter le type et les appels</h4>
+            <p>Une fonction par endpoint. Convention du fichier : jamais d'exception vers l'appelant — un échec réseau rend une valeur vide, un échec HTTP rend le message d'erreur de l'API via <code>errorMessage()</code>.</p>
+            <div class="snippet">
+                <div class="snippet-bar"><span class="path">apps/frontend/<b>lib/api.ts</b></span><span class="tag">ajout</span><button class="copy" type="button">Copier</button></div>
+<pre><code><span class="k">export type</span> <span class="n">Favorite</span> = {
+    id: <span class="n">number</span>;
+    createdAt: <span class="n">string</span> | <span class="k">null</span>;
+    job: <span class="n">ApiJob</span>;
+};
+
+<span class="k">export async function</span> fetchFavorites(): <span class="n">Promise</span>&lt;<span class="n">Favorite</span>[]> {
+    <span class="k">let</span> response;
+    <span class="k">try</span> {
+        response = <span class="k">await</span> fetch(API_URL + <span class="s">"/api/favorites"</span>, {
+            credentials: <span class="s">"include"</span>, <span class="c">// indispensable : la session est un cookie</span>
+            cache: <span class="s">"no-store"</span>,
+        });
+    } <span class="k">catch</span> {
+        <span class="k">return</span> [];
+    }
+
+    <span class="k">if</span> (!response.ok) {
+        <span class="k">return</span> [];
+    }
+
+    <span class="k">return</span> (<span class="k">await</span> response.json()) <span class="k">as</span> <span class="n">Favorite</span>[];
+}
+
+<span class="k">export async function</span> postFavorite(jobId: <span class="n">number</span>): <span class="n">Promise</span>&lt;<span class="n">string</span> | <span class="k">null</span>> {
+    <span class="k">let</span> response;
+    <span class="k">try</span> {
+        response = <span class="k">await</span> fetch(API_URL + <span class="s">"/api/favorites"</span>, {
+            method: <span class="s">"POST"</span>,
+            credentials: <span class="s">"include"</span>,
+            headers: { <span class="s">"Content-Type"</span>: <span class="s">"application/json"</span> },
+            body: JSON.stringify({ job_id: jobId }), <span class="c">// snake_case côté API</span>
+        });
+    } <span class="k">catch</span> {
+        <span class="k">return</span> <span class="s">"Le service ne répond pas. Réessayez."</span>;
+    }
+
+    <span class="k">if</span> (response.ok) {
+        <span class="k">return</span> <span class="k">null</span>; <span class="c">// null = succès</span>
+    }
+
+    <span class="k">return await</span> errorMessage(response, <span class="s">"Impossible d'ajouter cette offre aux favoris."</span>);
+}</code></pre>
+            </div>
+        </li>
+        <li>
+            <h4>Créer l'écran</h4>
+            <p>Un dossier sous <code>app/</code> et un <code>page.tsx</code> suffisent : la route existe. Ici la page a besoin de la session, elle est donc cliente ; une page en lecture seule resterait un composant serveur et appellerait <code>fetchFavorites()</code> directement dans son corps <code>async</code>.</p>
+            <div class="snippet">
+                <div class="snippet-bar"><span class="path">apps/frontend/app/favoris/<b>page.tsx</b></span><span class="tag">nouveau</span><button class="copy" type="button">Copier</button></div>
+<pre><code><span class="s">"use client"</span>;
+
+<span class="k">import</span> { useEffect, useState } <span class="k">from</span> <span class="s">"react"</span>;
+<span class="k">import</span> { authClient } <span class="k">from</span> <span class="s">"@/lib/auth-client"</span>;
+<span class="k">import</span> { fetchFavorites, toJob, <span class="k">type</span> <span class="n">Favorite</span> } <span class="k">from</span> <span class="s">"@/lib/api"</span>;
+<span class="k">import</span> JobList <span class="k">from</span> <span class="s">"@/components/job-list"</span>;
+
+<span class="k">export default function</span> FavorisPage() {
+    <span class="k">const</span> { data: session } = authClient.useSession();
+    <span class="k">const</span> [favorites, setFavorites] = useState&lt;<span class="n">Favorite</span>[]>([]);
+
+    useEffect(<span class="k">function</span> () {
+        <span class="k">if</span> (!session) {
+            <span class="k">return</span>;
+        }
+        fetchFavorites().then(setFavorites);
+    }, [session]);
+
+    <span class="k">if</span> (!session) {
+        <span class="k">return</span> &lt;p className=<span class="s">"p-8"</span>>Connectez-vous pour retrouver vos offres mises de côté.&lt;/p>;
+    }
+
+    <span class="k">return</span> &lt;JobList jobs={favorites.map(<span class="k">function</span> (f) { <span class="k">return</span> toJob(f.job); })} />;
+}</code></pre>
+            </div>
+        </li>
+        <li>
+            <h4>Rendre l'écran atteignable</h4>
+            <p>Ajouter l'entrée dans <code>components/header.tsx</code> (ou <code>footer.tsx</code>), et un <code>export const metadata</code> si la page est un composant serveur — le <code>template</code> défini dans <code>app/layout.tsx</code> y ajoute automatiquement « — GéoEmploi ».</p>
+        </li>
+    </ol>
+
+    <div class="note warn">
+        <span class="note-label">Piège classique</span>
+        <p>Une page serveur qui appelle une route authentifiée ne recevra rien : le cookie n'est pas transmis automatiquement par un <code>fetch</code> côté serveur. Tout ce qui dépend de la session se lit côté client, ou en repassant explicitement les en-têtes.</p>
+    </div>
+</section>
+
+<section id="recette-divers">
+    <h2>Autres recettes</h2>
+
+    <h3>Ajouter un champ à une table existante</h3>
+    <ol>
+        <li>Ajouter la colonne dans <code>schema.ts</code>. Sur une table déjà peuplée, la rendre nullable ou lui donner un <code>.default()</code> — un <code>NOT NULL</code> sans défaut fait échouer la migration.</li>
+        <li><code>pnpm --filter backend db:generate</code>, relire le SQL, <code>db:migrate</code>.</li>
+        <li>Étendre le schéma Zod correspondant (<code>postXSchema</code> ; le <code>patch</code> suit automatiquement via <code>.partial()</code>).</li>
+        <li>Reporter le champ dans le controller : le bloc <code>values</code> du <code>POST</code>, et un <code>if (req.body.champ !== undefined)</code> dans le <code>PATCH</code>.</li>
+        <li>Compléter le bloc <code>@openapi</code> de la route, puis le type <code>ApiX</code> et le mapper (<code>toJob</code>, <code>toCompanyPin</code>…) côté front.</li>
+    </ol>
+
+    <h3>Ajouter une primitive d'interface</h3>
+    <p>Les composants <code>components/ui/</code> viennent de shadcn/ui, configuré par <code>components.json</code> (style « new-york », icônes Lucide, alias <code>@/components</code> et <code>@/lib/utils</code>). Une nouvelle primitive s'ajoute avec la CLI depuis <code>apps/frontend</code>, puis vit dans le dépôt comme n'importe quel fichier — on la modifie librement.</p>
+    <div class="snippet">
+        <div class="snippet-bar"><span class="path">apps/frontend</span><span class="tag">shell</span><button class="copy" type="button">Copier</button></div>
+<pre><code>pnpm dlx shadcn@latest add accordion</code></pre>
+    </div>
+    <p>Les couleurs ne se codent pas en dur : elles passent par les jetons de <code>app/globals.css</code> (<code>--primary</code>, <code>--action</code>, <code>--muted</code>…), déclinés en clair et en sombre, et exposés à Tailwind 4 par le bloc <code>@theme inline</code>. <code>--action-text</code> existe spécifiquement pour garder 4,5:1 de contraste sur du texte, exigence RGAA du projet.</p>
+
+    <h3>Afficher une nouvelle donnée sur la carte</h3>
+    <p><code>components/map.tsx</code> ne connaît que des <code>MapPoint</code> — un identifiant, des coordonnées, un titre, un sous-titre, un détail et un libellé lu par les lecteurs d'écran. Pour cartographier autre chose que des offres, il suffit d'écrire un mapper vers ce type, comme <code>toCompanyPin()</code> le fait pour les entreprises. Filtrez toujours en amont sur <code>needsLocationCheck === false</code> : une entité non géocodée n'a pas de coordonnées exploitables.</p>
+
+    <h3>Ajouter une tâche planifiée</h3>
+    <p>Écrire la fonction dans <code>db/maintenance.ts</code>, l'appeler depuis <code>runDailyMaintenance()</code>. <code>cron.ts</code> n'a pas à changer tant que la fréquence reste quotidienne ; pour un autre rythme, ajouter un <code>cron.schedule()</code> en conservant <code>timezone: "Europe/Paris"</code>. Toute opération qui touche plusieurs tables passe par <code>db.transaction()</code>, comme l'archivage des offres.</p>
+</section>
+
+<section id="exploitation">
+    <h2>Environnement et exécution</h2>
+
+    <h3>Trois fichiers d'environnement</h3>
+    <div class="scroller">
+    <table>
+        <thead><tr><th>Fichier</th><th>Lu par</th><th>Contenu</th></tr></thead>
+        <tbody>
+            <tr><td><code>.env</code> (racine)</td><td>Docker Compose et les deux services</td><td>Base, ports, secrets, URLs, SMTP — le fichier complet</td></tr>
+            <tr><td><code>apps/backend/.env</code></td><td>Backend lancé hors conteneur</td><td>Base, Better Auth, SMTP</td></tr>
+            <tr><td><code>apps/frontend/.env.local</code></td><td>Front lancé hors conteneur</td><td>Uniquement <code>NEXT_PUBLIC_API_URL</code></td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <div class="scroller">
+    <table>
+        <thead><tr><th>Variable</th><th>Exemple</th><th>Effet</th></tr></thead>
+        <tbody>
+            <tr><td>DB_HOST · DB_USER · DB_PASSWORD · DB_NAME</td><td><code>db · root · root · chomage-go</code></td><td>Chaîne de connexion, reconstruite dans <code>db/index.ts</code> et <code>drizzle.config.ts</code></td></tr>
+            <tr><td>PORT_DB · PORT_BACKEND · PORT_FRONTEND</td><td><code>5432 · 4000 · 3000</code></td><td>Ports publiés par Compose et port d'écoute d'Express</td></tr>
+            <tr><td>BETTER_AUTH_SECRET</td><td>32 caractères</td><td>Signature des sessions. À changer hors développement.</td></tr>
+            <tr><td>BETTER_AUTH_URL</td><td><code>http://localhost:4000</code></td><td>Base des liens envoyés par e-mail (vérification d'adresse)</td></tr>
+            <tr><td>FRONTEND_URL</td><td><code>http://localhost:3000</code></td><td>Origine autorisée : CORS + <code>trustedOrigins</code> Better Auth</td></tr>
+            <tr><td>BACKEND_URL</td><td><code>http://backend:4000</code></td><td>Cible des appels faits depuis le rendu serveur Next</td></tr>
+            <tr><td>NEXT_PUBLIC_API_URL</td><td><code>http://localhost:4000</code></td><td>Cible des appels faits depuis le navigateur. Absente, le build échoue.</td></tr>
+            <tr><td>SMTP_* · MAIL_FROM · MAIL_OUTBOX_DIR</td><td>vide en local</td><td>Sans <code>SMTP_HOST</code>, les messages sont journalisés au lieu d'être envoyés</td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <h3>Lancer</h3>
+    <div class="snippet">
+        <div class="snippet-bar"><span class="path">pile complète, base comprise</span><span class="tag">shell</span><button class="copy" type="button">Copier</button></div>
+<pre><code>cp .env.example .env
+docker compose up -d          <span class="c"># db → backend (migrate + seed) → frontend</span>
+docker compose logs -f backend
+<span class="c"># front  http://localhost:3000   ·   API http://localhost:4000   ·   doc /api-docs</span>
+docker compose down -v        <span class="c"># -v supprime aussi le volume db-data</span></code></pre>
+    </div>
+
+    <div class="snippet">
+        <div class="snippet-bar"><span class="path">hors conteneur — une base PostgreSQL doit tourner</span><span class="tag">shell</span><button class="copy" type="button">Copier</button></div>
+<pre><code>pnpm install
+pnpm dev                <span class="c"># front + back en parallèle</span>
+pnpm dev:backend        <span class="c"># tsx watch src/server.ts</span>
+pnpm dev:frontend       <span class="c"># next dev</span>
+pnpm typecheck          <span class="c"># tsc --noEmit sur les deux apps</span>
+pnpm lint               <span class="c"># eslint sur les deux apps</span>
+pnpm build              <span class="c"># tsc (back) + next build (front)</span></code></pre>
+    </div>
+
+    <div class="note">
+        <span class="note-label">Comptes de démonstration</span>
+        <p>Le seed crée <code>admin@demo.local</code>, <code>employer@demo.local</code> et <code>candidate@demo.local</code>, mot de passe <code>demo1234</code>. Les offres proviennent de <code>src/db/jobs.seed.json</code>.</p>
+    </div>
+
+    <h3>Intégration continue</h3>
+    <p>Sur chaque push vers <code>main</code>, <code>.github/workflows/build.yml</code> reconstitue les fichiers d'environnement à partir des <code>.example</code>, construit les images, démarre la pile pour vérifier qu'elle tient debout, exporte <code>backend.tar</code> et <code>frontend.tar</code> avec un <code>docker-compose.dist.yml</code> et un README, puis publie le tout en artefact. Le changelog du front est régénéré au <code>prebuild</code> par <code>scripts/generate-changelog.mjs</code>.</p>
+</section>
+
+<section id="conventions">
+    <h2>Conventions et pièges</h2>
+
+    <h3>Style de code</h3>
+    <ul>
+        <li>Indentation 4 espaces, guillemets doubles, points-virgules.</li>
+        <li>Backend : accolade ouvrante à la ligne pour les déclarations de fonction, imports collés aux accolades (<code>import {db} from …</code>).</li>
+        <li>Frontend : <code>function () {}</code> plutôt que les fonctions fléchées dans les callbacks — c'est la forme employée partout dans <code>components/</code> et <code>lib/</code>.</li>
+        <li>Conditions explicites : <code>if (value !== undefined &amp;&amp; value !== null)</code>, pas de <code>if (value)</code> sur un nombre ou une chaîne.</li>
+        <li>Commentaires en français, réservés au « pourquoi ». Les commentaires <code>legacy</code> du schéma signalent des colonnes conservées pour compatibilité mais non exposées.</li>
+    </ul>
+
+    <h3>Ce qui casse le plus souvent</h3>
+    <ul class="checklist">
+        <li><strong>Import sans extension <code>.ts</code></strong> dans le backend → module introuvable au démarrage.</li>
+        <li><strong>Import de Leaflet dans un composant serveur</strong> → erreur <code>window is not defined</code>. Passer par <code>dynamic(..., { ssr: false })</code>.</li>
+        <li><strong><code>credentials: "include"</code> oublié</strong> → 401 sur une route pourtant ouverte à la session.</li>
+        <li><strong><code>NEXT_PUBLIC_API_URL</code> absente</strong> → <code>next.config.ts</code> lève au démarrage, volontairement, plutôt que de laisser un front muet.</li>
+        <li><strong>Nouvelle table absente de l'export de <code>schema.ts</code></strong> → <code>db.query.maTable</code> n'existe pas ; l'objet <code>schema</code> passé à <code>drizzle()</code> est ce qui peuple <code>db.query</code>.</li>
+        <li><strong>Relation oubliée</strong> → <code>with: { … }</code> échoue silencieusement au typage puis à l'exécution.</li>
+        <li><strong><code>errorHandler</code> déplacé</strong> → il doit rester le dernier <code>app.use()</code>, sinon les erreurs remontent brutes.</li>
+        <li><strong>Contrainte d'unicité non interceptée</strong> → 500 au lieu du 409 attendu. Enrober l'insertion et tester <code>isUniqueViolation(error)</code>.</li>
+        <li><strong>Route <code>/:id</code> déclarée trop tôt</strong> → elle capture <code>/received</code> ou <code>/siret/…</code>.</li>
+    </ul>
+
+    <h3>Avant d'ouvrir une pull request</h3>
+    <ul class="checklist">
+        <li><code>pnpm typecheck</code> et <code>pnpm lint</code> passent sur les deux apps.</li>
+        <li>Le fichier de migration et son snapshot sont commités avec le schéma.</li>
+        <li>Les blocs <code>@openapi</code> décrivent les nouveaux endpoints, y compris les codes d'erreur.</li>
+        <li>Les nouveaux écrans respectent les jetons de couleur et gardent un contraste conforme au RGAA.</li>
+        <li>Toute donnée personnelle ajoutée est reportée dans <code>docs/rgpd.md</code>, l'export <code>/api/extract</code> et le registre des traitements.</li>
+    </ul>
+</section>
+
+<footer class="colophon">
+    <p>GéoEmploi — monorepo <code>geoemploi</code>. Documents connexes dans <code>docs/</code> : registre RGPD, AIPD, contrôle RGAA, diagramme de base au format DBML. La référence exécutable de l'API reste <code>/api-docs</code>, générée depuis les fichiers de routes.</p>
+</footer>
+
+</main>
+</div>
+
+<script>
+(function () {
+    var buttons = document.querySelectorAll(".copy");
+    for (var i = 0; i < buttons.length; i++) {
+        buttons[i].addEventListener("click", function (event) {
+            var snippet = event.target.closest(".snippet");
+            var code = snippet.querySelector("pre");
+            var button = event.target;
+            navigator.clipboard.writeText(code.innerText).then(function () {
+                button.textContent = "Copié";
+                setTimeout(function () { button.textContent = "Copier"; }, 1400);
+            }).catch(function () {
+                button.textContent = "Échec";
+                setTimeout(function () { button.textContent = "Copier"; }, 1400);
+            });
+        });
+    }
+
+    var links = document.querySelectorAll(".toc a");
+    var byId = {};
+    for (var j = 0; j < links.length; j++) {
+        byId[links[j].getAttribute("href").slice(1)] = links[j];
+    }
+
+    var sections = document.querySelectorAll("main section[id]");
+    var visible = {};
+
+    function refresh() {
+        var current = null;
+        for (var k = 0; k < sections.length; k++) {
+            if (visible[sections[k].id]) {
+                current = sections[k].id;
+                break;
+            }
+        }
+        for (var id in byId) {
+            byId[id].classList.toggle("is-current", id === current);
+        }
+    }
+
+    if ("IntersectionObserver" in window) {
+        var observer = new IntersectionObserver(function (entries) {
+            for (var n = 0; n < entries.length; n++) {
+                visible[entries[n].target.id] = entries[n].isIntersecting;
+            }
+            refresh();
+        }, { rootMargin: "-10% 0px -70% 0px" });
+
+        for (var m = 0; m < sections.length; m++) {
+            observer.observe(sections[m]);
+        }
+    }
+})();
+</script>
+</body>
+</html>
