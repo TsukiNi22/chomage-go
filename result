@@ -1,0 +1,49 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: scenario.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 50 max VUs, 3m30s max duration (incl. graceful stop):
+              * default: Up to 50 looping VUs for 3m0s over 3 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+
+
+running (0m01.0s), 50/50 VUs, 0 complete and 0 interrupted iterations
+default   [   1% ] 50/50 VUs  0m01.0s/3m00.0s
+
+running (3m11.0s), 07/50 VUs, 645 complete and 0 interrupted iterations
+default ↓ [ 100% ] 50/50 VUs  3m0s
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 652     3.40331/s
+    checks_succeeded...: 100.00% 652 out of 652
+    checks_failed......: 0.00%   0 out of 652
+
+    ✓ homepage status 200
+
+    HTTP
+    http_req_duration..............: avg=13.25s min=1.54s med=12.36s max=47.54s p(90)=17.06s p(95)=18.17s
+      { expected_response:true }...: avg=13.25s min=1.54s med=12.36s max=47.54s p(90)=17.06s p(95)=18.17s
+    http_req_failed................: 0.00%  0 out of 652
+    http_reqs......................: 652    3.40331/s
+
+    EXECUTION
+    iteration_duration.............: avg=14.25s min=2.54s med=13.36s max=48.56s p(90)=18.06s p(95)=19.17s
+    iterations.....................: 652    3.40331/s
+    vus............................: 7      min=7        max=50
+    vus_max........................: 50     min=50       max=50
+
+    NETWORK
+    data_received..................: 348 MB 1.8 MB/s
+    data_sent......................: 49 kB  255 B/s
+
+running (3m11.6s), 00/50 VUs, 652 complete and 0 interrupted iterations
+default ✓ [ 100% ] 00/50 VUs  3m0s

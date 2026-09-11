@@ -9,6 +9,12 @@ import {createAddress} from "../utils/address.utils.ts";
 import {db} from "../db/index.ts";
 import {applications, companies, jobs, jobSkills} from "../db/schema.ts";
 import {eq} from "drizzle-orm";
+import {
+    JOBS_CACHE_KEY,
+    invalidatePublicCache,
+    readPublicCache,
+    writePublicCache,
+} from "../utils/publicCache.utils.ts";
 
 type JobValues = {
     title?: string;
@@ -77,6 +83,17 @@ export async function getJobs(req: Request, res: Response, next: NextFunction)
     const viewer = await getOptionalUser(req);
     const isAdmin = viewer !== null && viewer.rank === 0;
 
+    // La liste publique est la meme pour tout le monde : on sert la reponse
+    // deja serialisee plutot que de refaire mapping + JSON.stringify par visiteur.
+    if (!isAdmin) {
+        const cached = readPublicCache(JOBS_CACHE_KEY);
+        if (cached !== null) {
+            res.type("application/json").send(cached);
+            next();
+            return;
+        }
+    }
+
     const list = await db.query.jobs.findMany({
         with: withModerationSources,
     });
@@ -86,7 +103,17 @@ export async function getJobs(req: Request, res: Response, next: NextFunction)
         rows = rows.filter(isPubliclyVisible);
     }
 
-    res.json(rows.map(stripPoster));
+    const payload = rows.map(stripPoster);
+
+    if (isAdmin) {
+        res.json(payload); // vue administrateur : jamais memorisee
+        next();
+        return;
+    }
+
+    const body = JSON.stringify(payload);
+    writePublicCache(JOBS_CACHE_KEY, body);
+    res.type("application/json").send(body);
 
     next();
 }

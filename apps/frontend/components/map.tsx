@@ -12,6 +12,7 @@ import {
     useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { API_URL } from "@/lib/env";
 import { Crosshair } from "lucide-react";
 
 /** Point affiché sur la carte, indépendant de ce qu'il représente (offre, entreprise…). */
@@ -135,12 +136,10 @@ type Props = {
     radiusKm?: number | null;
 };
 
-const IGN_WMTS_URL =
-    "https://data.geopf.fr/wmts?" +
-    "SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile" +
-    "&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2" +
-    "&STYLE=normal&FORMAT=image/png" +
-    "&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}";
+// Les tuiles passent par l'API plutot que d'aller directement chez l'IGN :
+// le backend les met en cache sur disque, donc le meme fond n'est telecharge
+// qu'une fois pour l'ensemble des visiteurs. L'attribution reste due a l'IGN.
+const TILE_URL = API_URL + "/api/utils/tiles/{z}/{x}/{y}";
 
 export default function Map(props: Props) {
     let userLat = null;
@@ -204,7 +203,7 @@ export default function Map(props: Props) {
             />
 
             <TileLayer
-                url={IGN_WMTS_URL}
+                url={TILE_URL}
                 attribution='&copy; <a href="https://www.ign.fr/">IGN</a> - Géoplateforme'
                 maxZoom={18}
             />

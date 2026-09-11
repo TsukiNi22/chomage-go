@@ -113,6 +113,17 @@ async function errorMessage(
     return fallback;
 }
 
+/**
+ * Duree de fraicheur des listes publiques (offres, entreprises).
+ *
+ * Ces pages etaient rendues a chaque visite : avec `cache: "no-store"`, Next
+ * refaisait l'appel API et le rendu serveur pour chaque requete, ce qui plafonne
+ * le debit a ce qu'un seul thread Node peut rendre. Les offres changent a
+ * l'echelle de la journee, pas de la seconde : on accepte quelques secondes de
+ * retard en echange d'un rendu memorise.
+ */
+export const LIST_REVALIDATE_SECONDS = 30;
+
 function apiBase(): string {
     if (typeof window === "undefined" && process.env.BACKEND_URL) {
         return process.env.BACKEND_URL;
@@ -123,7 +134,9 @@ function apiBase(): string {
 export async function fetchJobs(): Promise<Job[]> {
     let response;
     try {
-        response = await fetch(apiBase() + "/api/jobs", { cache: "no-store" });
+        response = await fetch(apiBase() + "/api/jobs", {
+            next: { revalidate: LIST_REVALIDATE_SECONDS },
+        });
     } catch {
         return [];
     }
@@ -187,7 +200,7 @@ export async function fetchCompanies(): Promise<CompanyListItem[]> {
     let response;
     try {
         response = await fetch(apiBase() + "/api/companies", {
-            cache: "no-store",
+            next: { revalidate: LIST_REVALIDATE_SECONDS },
         });
     } catch {
         return [];

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import "./cron";
+import "./cron.ts";
 import {createApp} from "./app.ts";
 
 const PORT = process.env.PORT_BACKEND ? Number(process.env.PORT_BACKEND) : 4000;
